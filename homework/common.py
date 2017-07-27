@@ -15,7 +15,9 @@ def pad_design_matrix(X):
 
 def plot_boundaries(X, Y, beta, quadratic=False):
     """Plot a 2-dimensional dataset and the class
-    boundaries according to the given betas."""
+    boundaries according to the given betas.
+    If it's a two-class problem, plot the line that separates,
+    otherwise, plot the hyperplane intersections."""
     for cls in set(Y):
         plt.scatter(X[Y == cls].T[0], X[Y == cls].T[1])
 
@@ -113,5 +115,41 @@ def ordinary_least_squares(X, Y, l=0):
 
 
 def mse(X, beta, Y):
+    """Returns the mean squared error given the data and params."""
     # mean squared error
     return np.mean((pad_design_matrix(X).dot(beta) - Y).ravel() ** 2)
+
+
+def gradient_descent(theta, grad_func, alpha=0.001, epochs=100):
+    """Perform gradient descent on the given values with a given
+    learning rate and yield, for ever step, the optimized params."""
+    yield theta
+    for i in range(epochs):
+        theta -= alpha * grad_func(theta)  # descend on the gradient
+        yield theta
+
+
+def classify(X, beta):
+    """Returns the classificationsof the given data"""
+    return np.argmax((beta.T.dot(X.T)), axis=0)
+
+
+def classification_accuracy(Y_preds, Y_real):
+    """Returns the classifiction accuracy of the predictions"""
+    return np.mean(1. * (Y_preds == Y_real))
+
+
+def k_fold_split(X, Y, k=5):
+    """Yields all fold splits of the train data as
+    (X_train, Y_train, X_test, Y_test). Defaults to
+    80/20 split(aka. 5 folds)."""
+    splits = np.linspace(0, X.shape[0], k + 1).astype(int)
+    intervals = zip(splits[:-1], splits[1:])  # the intervals for the test data
+
+    for start, stop in intervals:
+        # the training set is the entire set excluding test
+        X_train = np.vstack([X[:start], X[stop:]])
+        Y_train = np.concatenate([Y[:start], Y[stop:]])
+        X_test = X[start:stop]
+        Y_test = Y[start:stop]
+        yield (X_train, Y_train, X_test, Y_test)

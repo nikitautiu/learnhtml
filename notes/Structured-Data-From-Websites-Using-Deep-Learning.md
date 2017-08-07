@@ -14,7 +14,8 @@ For the the first set of features, we will be trying to classify both on the HLD
 
 * 1A. Classifying using only DOM  fetures on HDL
 * 1B. Classifying on randomly generated XPath labels(generating labels for tags extracted with the same random Xpath) to see how does the ML model compare.
-* 2. Classifying HDL based on visual features.
+* 2 . Classifying HDL based on visual features.
+* 3 . Leave-one-out prediction for feaures to see corelations and decide which is stronger
 
 We will be splitting the data into 3:
 * D1. data on pages containing the labels
@@ -25,12 +26,26 @@ We will be splitting the data into 3:
 * R1. 1A vs 1Brand vs 2
 * R2. 1A & 2 for HDL
 
+### Usecases
+* API generation from html websites - Given a website, extract structured data and expose it as an API
+  * for a single unindexed site
+  * for multiple similar websites(ie. blogpost aggregator)
+* borad crawls for complex structured data - Broad crawls are notoriusly hard to do if the data is not immediatley parsable. A model that cand extract random structured data could accomplish such a task. ( this depends on how well the model generalizes)
+* site migration. After extracting structured data, the site could be migrated to another html structure.
+
 ### Conclusion
 
 ### Related work
-Other papers and how they ralate to this(~3 papers)
+* *Cross-Supervised Synthesis of Web-Crawlers - Adi Omari* 
+  * Generating XPaths from labels
+  * Generalizing to new websites based on equivalence relationship between content(with edit distance). This is based on the assumption that the same exact data is on both websites.
+  * Generating XPaths for the new site
+  * Three-tiered filtering of content. Selectign urls, selectign data container and selcting data from the container
+  
+  This could be relevant as the process of gathering new data with the equivalence relationship can help groe the dataset synthetically.
 
 ### Other ideas
 1. Decide framework of website from features
 2. Decide content type(blog, forum, ecommerce, tutorial, etc)
 3. Extract semantic tree information from website(needs more data)
+4. Try using RNNs on DOm trees

@@ -1,4 +1,6 @@
 import itertools
+from urllib.parse import urlparse
+
 from lxml import etree
 
 import pandas as pd
@@ -24,7 +26,7 @@ def extract_no_children(nodes):
 
 
 def extract_tag_types(nodes):
-    return pd.Series(data=(node.tag if type(node.tag) is str else 'comment' for node in nodes))
+    return pd.Series(data=(node.tag if type(node.tag) is str else 'html_comment' for node in nodes))
 
 
 def extract_has_text(nodes):
@@ -54,6 +56,17 @@ def extract_has_id(nodes):
 def extract_no_classes(nodes):
     """Extracts the number of classes for each node"""
     return pd.Series(data=(len(classes) for classes in extract_classes(nodes)))
+
+
+def get_sibling_pos(node):
+    if node.getparent() is None:
+        return 0
+    return node.getparent().index(node) # return the position
+
+
+def extract_sibling_pos(nodes):
+    """Returns a Series of the position of each node amongst its siblings"""
+    return pd.Series(data=(get_sibling_pos(node) for node in nodes))
 
 
 def get_descendants(node, depth):
@@ -96,6 +109,7 @@ def get_ancestors(node, height):
 def extract_node_features(nodes):
     """Returns a dataframe of features from the nodes"""
     depth_features = extract_depths(nodes)  # depths
+    sibling_pos_features = extract_sibling_pos(nodes)  # position among siblings
     tag_type_features = extract_tag_types(nodes)  # tag types
     no_classes_features = extract_no_classes(nodes)  # # of classes
     has_id_features = extract_has_id(nodes)  # has id
@@ -104,10 +118,10 @@ def extract_node_features(nodes):
     classes_features = extract_classes(nodes)
 
     # series of features, and their names
-    series = [depth_features, tag_type_features, no_classes_features,
+    series = [depth_features, sibling_pos_features, tag_type_features, no_classes_features,
               has_id_features, no_children_features, has_text_features,
               classes_features]
-    columns = ['depth', 'tag', 'no_classes', 'has_id', 'no_children', 'has_text', 'classes']
+    columns = ['depth', 'sibling_pos', 'tag', 'no_classes', 'has_id', 'no_children', 'has_text', 'classes']
     df_items = zip(columns, series)
 
     return pd.DataFrame.from_items(df_items)
@@ -120,7 +134,7 @@ def iter_df_records(df):
 
 def get_empty_features():
     """Returns the null equivalent of empty features for a node"""
-    return np.array([0., '', 0., False, 0., False, list()], dtype=object)
+    return np.array([0., 0., '', 0., False, 0., False, list()], dtype=object)
 
 
 def aggregate_features(feat_list):
@@ -238,3 +252,27 @@ def extract_features_from_html(html, depth, height):
     height are respectively non-null."""
     root = etree.HTML(html)  # get the nodes
     return extract_features_from_nodes(list(root.iter()), depth, height)
+
+
+def get_domain_from_url(url):
+    """Returns the fully-qualified domain of an url."""
+    parsed_uri = urlparse(url)
+    return parsed_uri.netloc
+
+
+def extract_features_from_df(df, depth, height):
+    """Given a dataframe of htmls and urls, return
+    a dataframe of node features, return a dataframe
+    with the node features extracted also, for each node,
+    add the url and domain respectively."""
+    feat_dfs = []
+    for index, row in df.iterrows():
+        # extract the html features from each of the entries
+        feat_df = extract_features_from_html(row['html'], depth, height)
+        feat_df['url'] = row['url']
+        feat_dfs.append(feat_df)  # add the features to the list
+
+    # concat them all
+    result_df = pd.concat(feat_dfs, axis='rows', ignore_index=True)
+    result_df['domain'] = result_df.url.apply(get_domain_from_url)
+    return result_df

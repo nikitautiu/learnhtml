@@ -51,10 +51,11 @@ We will be splitting the data into 3:
 
 
 #### [A quantitative comparison of semantic web page segmentation algorithms - Kreuzer 2013](papers/reuzer.md)
-* defines a *semantic block* as continuuous HTML fragment rendered as a graphically consistent block
-* defines *granularity* as the nesting level of blocks. in this case we are basically doing flat segmentation
-* no direct correspondence between visual block and html block. A heuristic such as *grouping  toghether* adjacent tags that are part of the same semantic block
-* some sort of fuzzy matching metric could be defined, maybe based on the above definition of semantic blocks and the use of grouping to relax th e
+* defines a **semantic block** as continuuous HTML fragment rendered as a graphically consistent block
+* defines **granularity** as the nesting level of blocks. in this case we are basically doing flat segmentation or a basic 2 level one
+* no direct correspondence between visual block and html block. A heuristic such as **grouping  toghether** adjacent tags that are part of the same semantic block
+* some sort of fuzzy matching metric could be defined, maybe based on the above definition of semantic blocks and the use of grouping to relax the constraints
+* mentions good performance of depth, positioning and area in the WebTerrain algorithm
 
 ### Conclusion
 

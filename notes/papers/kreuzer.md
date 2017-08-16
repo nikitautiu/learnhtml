@@ -5,7 +5,14 @@
 2. Visual based 
 3. Text based - text density, link density. based on quantitatie linguistics
 
+Older algorithms do not adapt well to newer pages. Semantic web technologies are not used and  algorithms that leverage them haven't been used outside of research.
+
+
+Raises the quiestion of how well do old algorithms perform on newer pages
+
 ### Related work
+Usuallyy a **Two-step process** of segmentation and classification. Segmentation can be  **flat** or **nested** depending on the chosen granularity. AS seen below, the ontology of classfication is conventional.
+
 References *Identifying Primary Content from Web Pages and its Application to Web Search Ranking*, which groups tags into content segments or **noise segments**. Uses visual and content properties.
 
 *Extracting content structure for web pages based on visual representation*
@@ -19,7 +26,7 @@ Most writers make their dataset by hand-labeling pages into semantic blocks. Som
 
 
 ### Approach
-*Semantic block* = contiuous html fragemnt which renders as graphically consistent block. 
+**Semantic block** = contiuous html fragemnt which renders as graphically consistent block. Allows nesting
 
 Segmentation with granularity of 1 => flat segmentation.
 
@@ -28,7 +35,7 @@ Blocks are usually visually defined but do not have direct dom correspondence, a
 Chains of nested dom elements can be **grouped together** as there is no one mapping telling which one is the relevant one.
 
 
-Uses *recall*, *precission* and *F1score*.
+Uses *recall*, *precission* and *F1score*. Also there are a few datasets used for comparative results, but no well established one to compare performance. The dataset was built by the author to compare the selected algorithms.
 
 For evaulation tests both exact and *fuzzy* matching. For exact matching, it checks wehther the results are exactly the ones expected. For fuzzy, it checks whether the result matches the expection with 80% accuracy.
 

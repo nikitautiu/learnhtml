@@ -4,7 +4,7 @@
 
 ### Introduction
 * *Data record* and *data item* extraction based on engineered visual features
-* Reffers especially to unindexed, unstrctured pages
+* Referrs especially to unindexed, unstrctured pages
 * Assumption of visual regularity
 * Also uses some non-visual features(data type) for robustness
 

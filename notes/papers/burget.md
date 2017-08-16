@@ -16,13 +16,13 @@ Works with a model of the page rendering insteaf of modelling of document code. 
 References Vips algorithm which is used by ViDE as well. Unlike Song, it assigns classes instead of a general importance level, it assigns classes to the elements. Looks for areas similar in their visual appearance.
 
 ### Approach
-Page segmentation using line detection and subsequent bock detection. Uses a basic css box layout engine. Block detection is based on *VIPS*. Uses CSS rendering to get the features then heuristically groups contents into what they call *a basic visual area*. Creates a tree of visual areas based on whether **the eintire area of a node is contained in another**. 
+Page segmentation using line detection and subsequent bock detection. Uses a basic css box layout engine. Block detection is based on *VIPS*. Uses CSS rendering to get the features then heuristically groups contents into what they call *a basic visual area*. Creates a tree of visual areas based on whether **the eintire area of a node is contained in another**.
 
-Content leaf nodes(images and text boxes) are considered *visually separated*. Also if it hase a non transparent background or visible border around it. 
+Content leaf nodes(images and text boxes) are considered *visually separated*. Also if it hase a non transparent background or visible border around it.
 
-It uses an area grid by separating the pages into rows and columns and assigning to each visual area its starting/end row/column to describe their mutual positions. 
+It uses an area grid by separating the pages into rows and columns and assigning to each visual area its starting/end row/column to describe their mutual positions.
 
-Uses continuous text lines to join horizontally adjacent *visually separable boxes*. It then uses VIPS to divide the found blocks. The result is a tree of segmented blocks. 
+Uses continuous text lines to join horizontally adjacent *visually separable boxes*. It then uses VIPS to divide the found blocks. The result is a tree of segmented blocks.
 
 
 The classification step classifies the resulting visual blocks using the follosing features:
@@ -42,8 +42,4 @@ Extracts classes specific to article pages. Usead an interactive annotation tool
 Similar to what we are trying to implement. 
 1. Use the entire set as training and test
 2. Use different for test and training but same source
-3. 6 training sources 4 as testing, to check generalization power
-
-```python
-
-```
+3. 6 training sources 4 as testing, to check generalization power(source = site)

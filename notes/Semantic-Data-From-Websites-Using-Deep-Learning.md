@@ -15,13 +15,27 @@ We tackle the following tasks:
 For the the first set of features, we will be trying to classify both on the HLD(hand labeled data) and on some syntheticly generated labels.
 
 * 1A. Classifying using only DOM  fetures on HDL
-* 1B. Classifying on randomly generated XPath labels(generating labels for tags extracted with the same random Xpath) to see how does the ML model compare.
+* 1B. Classifying on randomly generated XPath labels(generating labels for tags extracted with the same random Xpath) to see how does the ML model compare.(**note** this is not useful for semantic segmentation, jsut to see the overall capablities of the model)
 * 2. Classifying HDL based on visual features.
 
-We will be splitting the data into 3:
-* D1. data on pages containing the labels
-* D2. data on pages of the same website
-* D3. data on all the websites
+#### Experimental design
+As for how we will be doing dataset splitting for experiments, we will be iterating on the the 3 datasets proposed in [5-data-preparation](5-data-preparation.ipynb) and on the datasets proposed by [Burget et al.](../notes/papers/burget.md). We we also justify this decision through a mathematical assumption. 
+
+We assume that webpages within a site are implementaed based on several types of templates which are resused within it. Every tag on a page's extracted features can be considered a random variable $T_{s,t}$ distributed according to site $s$'s template $t$'s distribution. For a machine learning, or any kind of statistical estimator to perform well the samples must accurately portray the distribution. These distributions are purely hypothetical, so we do not know how much they diverge between templates of the same site or between those of different sites. 
+
+To test this, we will split the date as mentioned before: 
+1. data on pages containing the labels - $\{ T_{s,t} \mid \text{pages t contain label l} \} \text{where l and s fixed}$
+2. data on pages of the same website - $\{ T_{s,t} \} \text{where l and s fixed}$
+3. data on all the websites -  $\{ T_{s,t} \} \text{where l fixed}$
+
+This means $ 1 \subset 2 \subset 3 $
+
+
+For these datsets, we will have 5 experiments. To check the divergence between the distributions and the model's generalization capability, we will have two types of test scenarios:
+1. Training done on dataset $i$ and test still on $i$
+2. Training done on $i$ and test on $i+1$
+
+All but the last dataset will have the second variation of testing, as tere is no more data to test on for it. The motivation of the second experiment is to see the potential of  actually **reducing the size of the training dataset**(maybe even for potential future work using online learning).
 
 ### Results
 * R1. 1A vs 1Brand vs 2
@@ -79,7 +93,3 @@ We will be splitting the data into 3:
 2. Decide content type(blog, forum, ecommerce, tutorial, etc)
 3. Extract semantic tree information from website(needs more data) - **semantic page segmentation**
 4. Researcha active learning and somehow try to obtain more and more data for the dataset
-
-```python
-
-```

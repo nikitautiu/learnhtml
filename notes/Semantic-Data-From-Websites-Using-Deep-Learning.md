@@ -19,9 +19,9 @@ For the the first set of features, we will be trying to classify both on the HLD
 * 2. Classifying HDL based on visual features.
 
 #### Experimental design
-As for how we will be doing dataset splitting for experiments, we will be iterating on the the 3 datasets proposed in [5-data-preparation](5-data-preparation.ipynb) and on the datasets proposed by [Burget et al.](../notes/papers/burget.md). We we also justify this decision through a mathematical assumption. 
+As for how we will be doing dataset splitting for experiments, we will be iterating on the the 3 datasets proposed in [5-data-preparation](5-data-preparation.ipynb) and on the datasets proposed by [Burget et al.](../notes/papers/burget.md). We we also justify this decision through a mathematical assumption.
 
-We assume that webpages within a site are implementaed based on several types of templates which are resused within it. Every tag on a page's extracted features can be considered a random variable $T_{s,t}$ distributed according to site $s$'s template $t$'s distribution. For a machine learning, or any kind of statistical estimator to perform well the samples must accurately portray the distribution. These distributions are purely hypothetical, so we do not know how much they diverge between templates of the same site or between those of different sites. 
+We assume that webpages within a site are implementaed based on several types of templates which are resused within it. Every tag on a page's extracted features can be considered a random variable $T_{s,t}$ distributed according to site $s$'s template $t$'s distribution. For a machine learning, or any kind of statistical estimator to perform well the samples must accurately portray the distribution. These distributions are purely hypothetical, so we do not know how much they diverge between templates of the same site or between those of different sites.
 
 To test this, we will split the date as mentioned before: 
 1. data on pages containing the labels - $\{ T_{s,t} \mid \text{pages t contain label l} \} \text{where l and s fixed}$
@@ -83,6 +83,13 @@ All but the last dataset will have the second variation of testing, as tere is n
 * it is basically a **clustering** algorithm that doesn not make assumptions about the template of the page such as other methods => our mathod is supervizd,but aims to infer any sort of underlying template structure
 * similar to the *ViDE* region-record-item heirarachy
 * we might try to minimize such entropy as well with a clustering algorithm on the leaf nodes(potential future work??)
+
+#### [Learning to harvest information for the semantic web - Ciravegna et al. 2004](papers/ciravenga.md)
+#### [Learning deep structured semantic models for web search using clickthrough data - Huang et al. 2013](papers/huang.md)
+#### [A Survey on Region Extractors - Sleiman et al. 2013](papers/sleiman.md)
+#### [Extracting Content Structure for Web Pages Based on Visual Representation - Cai et al. 2003](papers/cai.md)
+#### [A hybrid approach for content extraction with text density and visual importance of DOM nodes - Song et al. 2012](papers/song-hybrid.md)
+#### [Learning Block Importance Models for Web Pages - Song et al. 2004](papers/song.md)
 
 ### Conclusion
 

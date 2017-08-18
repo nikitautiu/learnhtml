@@ -1,0 +1,172 @@
+{
+  "urls": [
+    "https://www.olx.ro/auto-masini-moto-ambarcatiuni/autoturisme/",
+    "https://www.olx.ro/auto-masini-moto-ambarcatiuni/autoturisme/daewoo/?search%5Bfilter_float_price%3Ato%5D=200",
+    "https://www.olx.ro/casa-gradina/gradina/",
+    "https://www.olx.ro/casa-gradina/gradina/?search%5Bprivate_business%5D=business&page=12",
+    "https://www.olx.ro/servicii-afaceri-colaborari/meseriasi-constructori/fundulea/",
+    "https://www.olx.ro/oferta/zmeur-polka-si-citrya-galben-ID6ZqZq.html#9689dfbbb9",
+    "https://www.olx.ro/oferta/butasi-mure-mari-redusi-25-ID6ZqSi.html",
+    "https://www.olx.ro/oferta/boiler-80l-stare-perfecta-de-functionare-ID5HoTe.html#6e84df002a",
+    "https://www.olx.ro/oferta/etrieri-pod-cabluri-ID7d3PV.html#2bceab15ed",
+    "https://www.olx.ro/oferta/mimoza-pudica-ID93rAh.html#6ac64d3a4f",
+    "https://www.olx.ro/cont/?ref%5B0%5D%5Baction%5D=myaccount&ref%5B0%5D%5Bmethod%5D=index",
+    "https://www.olx.ro/",
+    "https://www.olx.ro/popular/",
+    "https://www.olx.ro/sitemap/",
+
+    "https://www.emag.ro/resigilate/placi_video/c?ref=banner_0_0",
+    "https://www.emag.ro/resigilate/ventilatoare-pc/brand/noctua/pret,intre-50-si-100/c",
+    "https://www.emag.ro/resigilate",
+    "https://www.emag.ro/label/pret,intre-200-si-500/Lichidari-de-stoc-Electrocasnice-mari",
+    "https://www.emag.ro/search/camera%20foto?ref=trending",
+    "https://www.emag.ro/hota-incorporabila-telescopica-whirlpool-putere-de-absorbtie-185-mc-h-1-motor-60-cm-inox-akr-641-gy/pd/E6TXDBBBM/",
+    "https://www.emag.ro/monitor-led-philips-18-5-wide-negru-193v5lsb2-10/pd/E1ZB0BBBM/",
+    "https://www.emag.ro/cazma-pentru-masina-fiskars-solid-1170mm-131417/pd/DJPL2MBBM/?ref=hp_prod_widget_live_asp_2_3",
+    "https://www.emag.ro/fierastrau-cu-rama-de-24-inch-fiskars-sw31-625-mm-500-g-124810/pd/DCXWXBBBM/?ref=others-interested-bought_center-1_6&recid=j6gdvpxf-i1nbsn0uwg3-C.c17_a189.S.VP_AP_CMD-1bki23k",
+    "https://www.emag.ro/telefon-mobil-samsung-galaxy-a5-2017-32gb-4g-black-sm-a520fzkarom/pd/DXTK07BBM/?ref=hp_prod_widget_live_asp_2_2",
+    "https://www.emag.ro/info/suport-247",
+    "https://www.emag.ro/",
+    "https://www.emag.ro/info/30-de-zile-drept-de-retur",
+    "https://www.emag.ro/ino/topic/informatii-generale",
+    "https://www.emag.ro/info/topic/contul-meu",
+
+    "https://lajumate.ro/",
+    "https://lajumate.ro/anunturi_casa-gradina.html",
+
+    "https://www.aliexpress.com/",
+    "https://www.aliexpress.com/category/2118/printers.html?site=glo&tc=af",
+
+    "http://www.piata-az.ro/",
+    "http://www.piata-az.ro/anunturi/apartamente-de-vanzare-1001?page=2",
+
+    "https://www.okazii.ro/",
+    "https://www.okazii.ro/iphone/",
+
+    "https://www.amazon.com/"
+  ],
+
+  "rules": [
+    {
+      "url_regex": ".*olx\\.ro.*oferta.*",
+      "xpaths": {
+        "detail_description": "//*[(@id = \"textContent\")]//*[contains(concat( \" \", @class, \" \" ), concat( \" \", \"large\", \" \" ))]",
+        "detail_image": "//*[contains(concat( \" \", @class, \" \" ), concat( \" \", \"scale4\", \" \" ))]//*[contains(concat( \" \", @class, \" \" ), concat( \" \", \"fleft\", \" \" ))]",
+        "detail_price": "//div[contains(@class, \"offer-titlebox\")]//h1",
+        "detail_title": "//h1"
+      }
+    },
+    {
+      "url_regex": ".*olx\\.ro((?!oferta).)*",
+      "xpaths": {
+        "list_image": "//*[contains(concat( \" \", @class, \" \" ), concat( \" \", \"scale4\", \" \" ))]//*[contains(concat( \" \", @class, \" \" ), concat( \" \", \"fleft\", \" \" ))]",
+        "list_price": "//td[contains(@class,\"offer\")]//p[contains(@class,\"price\")]/strong",
+        "list_title": "//td[contains(@class,\"offer\")]//a/strong"
+      }
+    },
+    {
+      "url_regex": ".*emag\\.ro.*/pd/[A-Z0-9]*/.*",
+      "xpaths": {
+        "detail_price": "//*[contains(concat( \" \", @class, \" \" ), concat( \" \", \"product-page-pricing\", \" \" ))]//*[contains(concat( \" \", @class, \" \" ), concat( \" \", \"product-new-price\", \" \" ))]",
+        "detail_title": "//*[contains(concat( \" \", @class, \" \" ), concat( \" \", \"page-title\", \" \" ))]",
+        "detail_description": "//*[(@id = \"description-body\")]",
+        "detail_image": "//*[(@id = \"product-gallery\")]//img"
+      }
+    },
+    {
+      "url_regex": ".*emag\\.ro.*",
+      "xpaths": {
+        "list_title": "//*[contains(concat( \" \", @class, \" \" ), concat( \" \", \"product-title\", \" \" ))]",
+        "list_price": "//*[contains(concat( \" \", @class, \" \" ), concat( \" \", \"product-new-price\", \" \" ))]",
+        "list_image": "//*[(@id = \"card_grid\")]//img"
+      }
+    },
+    {
+      "url_regex": "^.*lajumate\\.ro.*((?!anunturi).)+$",
+      "xpaths": {
+        "detail_price": "//*[(@id = \"price\")]",
+        "detail_title": "//*[@id=\"main_info_holder\"]//h1",
+        "detail_description": "//*[(@id = \"description\")]//p",
+        "detail_image": "//*[(@id = \"holder_popup\")]//img"
+      }
+    },
+    {
+      "url_regex": ".*lajumate\\.ro.*anunturi.*",
+      "xpaths": {
+        "list_title": "//*[@id=\"list_cart_holder\"]//*[contains(@class,\"title\")]",
+        "list_price": "//*[(@id = \"list_cart_holder\")]//*[contains(concat( \" \", @class, \" \" ), concat( \" \", \"shadow\", \" \" ))]",
+        "list_image": "//*[(@id = \"image_holder\")]//img"
+      }
+    },
+    {
+      "url_regex": ".*okazii.*a[0-9]+$",
+      "xpaths": {
+        "detail_price": "//*[@id=\"buy_form\"]/div[1]/div[2]/span/span/span[1]/span/span[1]",
+        "detail_title": "//*[contains(concat( \" \", @class, \" \" ), concat( \" \", \"fn\", \" \" ))]",
+        "detail_description": "//*[(@id = \"description_tmce\")]",
+        "detail_image": "//*[(@id = \"gallery_show_big_img\")]"
+      }
+    },
+    {
+      "url_regex": ".*okazii.*[^0-9][0-9]{0,5}$",
+      "xpaths": {
+        "list_title": "//*[contains(@class,\"item-title\")]//h2//span",
+        "list_price": "//*[contains(@class,\"prSup\")][span]",
+        "list_image": "//*[contains(concat( \" \", @class, \" \" ), concat( \" \", \"ajaxTrackable\", \" \" ))]//img"
+      }
+    },
+    {
+        "url_regex": ".*piata-ax\\.ro.*anunturi.*[0-9]+$",
+        "xpaths": {
+          "detail_price": "//*[@id=\"detaliu-pret\"]",
+          "detail_title": "//h1",
+          "detail_description": "//*[@id=\"anunt-descriere\"]/p[1]",
+          "detail_image": "//*[@id=\"slider\"]/div/ul/li[1]/a/img"
+        }
+      },
+      {
+        "url_regex": ".*piata-ax\\.ro.*(page|cautare).*",
+        "xpaths": {
+          "list_title": "//div[contains(@class, \"anunt-promo\")]//h3",
+          "list_price": "//div[contains(@class, \"anunt-promo\")]//div[contains(@class, \"pret\")]",
+          "list_image": "//div[contains(@class, \"anunt-promo\")]//div[contains(@class, \"pic\")]//img"
+        }
+      },
+      {
+        "url_regex": ".*/www\\.aliexpress\\.com.*item.*",
+        "xpaths": {
+          "detail_price": "//*[@id=\"detaliu-pret\"]",
+          "detail_title": "//h1[contains(@itemprop,\"name\")]",
+          "detail_description": "//*[@id=\"j-product-description\"]//div[contains(@class,\"description-content\")]",
+          "detail_image": "//*[@id=\"magnifier\"]/div/a/img"
+        }
+      },
+      {
+        "url_regex": ".*/www\\.aliexpress\\.com.*category.*",
+        "xpaths": {
+          "list_title": "//li[contains(@class,\"list-item\")]//a[contains(@class,\"product\")]",
+          "list_price": "//li[contains(@class,\"list-item\")]//span[contains(@class,\"price\")]",
+          "list_image": "//li[contains(@class,\"list-item\")]//img[contains(@itemprop,\"image\")]"
+        }
+      },
+    {
+      "url_regex": ".*/www\\.amazon\\.com.*",
+      "xpaths": {
+        "detail_price": "//*[@id=\"priceblock_ourprice\"]",
+        "detail_title": "//*[@id=\"productTitle\"]",
+        "detail_description": "//*[@id=\"productDescription\"]",
+        "detail_image": "//*[@id=\"landingImage\"]"
+      }
+    },
+    {
+      "url_regex": ".*/www\\.amazon\\.com.*",
+      "xpaths": {
+        "list_title": "//div[contains(@class,\"s-item-container\")]//h2",
+        "list_price": "//span[contains(@class,\"-price-whole\")]",
+        "list_image": "//div[contains(@class,\"s-item-container\")]//img[contains(@class,\"s-access-image\")]"
+    }
+  }
+
+
+  ]
+}

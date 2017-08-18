@@ -1,6 +1,8 @@
 # because we don't have enough memory to actually load all
 # of them in memory, we will have to iterate over their chunks
 # chunk-concatenate the dataframes
+from itertools import chain
+
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import LabelBinarizer
@@ -19,26 +21,26 @@ def cont_to_csv(chunk_gen, *args, **kwargs):
             chunk.to_csv(*args, mode='a', header=False, **kwargs)
 
 
-def url_label_chunk_gen(label, dataset_df, oh_dfs):
+def url_label_chunk_gen(labels, dataset_df, oh_dfs):
     """Given a label, yield all the
     dataframe chunks of them concatenated and filtered
     to only the urls containing the label."""
     chunk_iters = zip(*(iterate_chunks(df) for df in [dataset_df] + oh_dfs))
-    valid_urls = get_containing_urls(dataset_df, label)  # al the urls to use
+    valid_urls = {x for x in chain(get_containing_urls(dataset_df, label) for label in labels)}  # all the urls to use
 
     # labels to drop
     all_labels = set(dataset_df.filter(axis='columns', regex='^.*_label$').columns)
-    dropped_labels = all_labels - set(label)
+    dropped_labels = all_labels - set(labels)
 
     # process them sequentially with chunks
     for chunks in chunk_iters:
         concat_chunks = filter_by_urls(pd.concat(chunks, axis='columns'), valid_urls)
         # drop the unneeded labels, rename the needed one simply to "label" and yield
-        yield concat_chunks.drop(dropped_labels, axis='columns').rename({label: 'label'})
+        yield concat_chunks.drop(dropped_labels, axis='columns')
 
 
 def filter_by_urls(df, urls):
-    """Returns the df, filtered by """
+    """Returns the df, filtered by the urls"""
     return df[df['url'].isin(urls)]
 
 
@@ -50,7 +52,7 @@ def get_containing_urls(df, label):
 
 
 def iterate_chunks(df, chunksize=1000):
-    """Iterates over a """
+    """Iterates over a dataframe in chunks of a given size"""
     yield from (g for _, g in df.groupby(np.arange(len(df)) // chunksize))
 
 

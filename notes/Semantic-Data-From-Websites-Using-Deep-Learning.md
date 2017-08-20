@@ -68,15 +68,15 @@ All but the last dataset will have the second variation of testing, as tere is n
 * basically does **three level segementation** => granularity = 3 (data region - data record - data item)
 * **idea for future work** => arbitrary granularity visual block segmentation
 
+* some sort of fuzzy matching metric could be defined, maybe based on the above definition of semantic blocks and the use of grouping to relax the constraints
+* mentions good performance of **depth, positioning and area** in the WebTerrain segmentation algorithm
+* there are **no well-established datasets** avaialble to compare perfomance against => free to use whatever
+
 #### [A quantitative comparison of semantic web page segmentation algorithms - Kreuzer 2013](papers/reuzer.md)
 * many papers describe **two-step process** of segentation and classification => both our steps will be ML, and the first is not a segmentation per-se but a visual classification step, as the segmentation is not general purpose, but domain-specific
 * defines a **semantic block** as continuuous HTML fragment rendered as a graphically consistent block
 * defines **granularity** as the nesting level of blocks. in this case we are basically doing flat segmentation or a basic 2 level one
 * **no single mapping between visual block** and html block. A heuristic such as **grouping  toghether** adjacent tags that are part of the same semantic block  => We should be also be searching for the **block** that contains the semantic info necessary at the visual step, then enance it with other features. The visual step should detect all tags within the group
-
-* some sort of fuzzy matching metric could be defined, maybe based on the above definition of semantic blocks and the use of grouping to relax the constraints
-* mentions good performance of **depth, positioning and area** in the WebTerrain segmentation algorithm
-* there are **no well-established datasets** avaialble to compare perfomance against => free to use whatever
 
 #### [Semantic Partitioning of Web Pages - Vadrevu et al. 2005](papers/vadrevu.md)
 * uses information theroy **entropy** to segemnt a the page based on **root-to-leaf** paths => our neighbourhood could be seen as a particularization of the concept
@@ -85,7 +85,15 @@ All but the last dataset will have the second variation of testing, as tere is n
 * we might try to minimize such entropy as well with a clustering algorithm on the leaf nodes(potential future work??)
 
 #### [Learning to harvest information for the semantic web - Ciravegna et al. 2004](papers/ciravenga.md)
+* not very related to the subject 
+* presents a framework of extracting *very* domain-specific information such as papers written by certain authors through correlation with information from other sources, and external sources of related information(names), **but** the frameowrk doesn't seem to apply to generic data  without specific tailoring of kinda *knowledge bases*
+
 #### [Learning deep structured semantic models for web search using clickthrough data - Huang et al. 2013](papers/huang.md)
+* **fascinating** and very well written article. 
+* shows a new model for extracting semantic information **from text**
+* elaborates on Hinton's work with **deep-autoencoders** but makes it supervised
+* might be useful if used with textual data from classes and ids to learn features to feed to the model
+
 #### [A Survey on Region Extractors - Sleiman et al. 2013](papers/sleiman.md)
 #### [Extracting Content Structure for Web Pages Based on Visual Representation - Cai et al. 2003](papers/cai.md)
 #### [A hybrid approach for content extraction with text density and visual importance of DOM nodes - Song et al. 2012](papers/song-hybrid.md)

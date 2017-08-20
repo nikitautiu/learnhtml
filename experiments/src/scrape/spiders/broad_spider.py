@@ -33,7 +33,8 @@ class HtmlSpider(CrawlSpider):
     def parse(self, response):
         """Parse the responses"""
         # increment the number of pages extracted from the page
-        yield PageItem(url=response.url, html=response.text)
+        if get_domain_from_url(response.url) in self.allowed_domains:
+            yield PageItem(url=response.url, html=response.text)
 
         # iterate links and traverse
         for link in self.link_extractor.extract_links(response):

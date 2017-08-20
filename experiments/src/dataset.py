@@ -80,7 +80,7 @@ def scrape(output_file, rules, logfile, loglevel, pages, start_url):
         ]
     }
     """
-    if start_url != '':
+    if start_url:
         urls = [start_url]
     else:
         # load the json

@@ -2,6 +2,7 @@ import re
 
 import numpy as np
 import pandas as pd
+from dask import dataframe as dd
 from lxml import etree
 
 from utils import get_domain_from_url
@@ -87,6 +88,7 @@ def label_data(df, rules):
     # workaround because we cannot filter duplicates
     label_names = set(filter(lambda x: 'label' in x, list(results.columns)))
     grouped_labels = results.loc[:, label_names].groupby(results.loc[:, label_names].columns, axis='columns').any()  # true if any
+    grouped_labels = grouped_labels.astype(int)  # better representation
 
     # remove all urls and paths other than one each
     paths = results.loc[:, 'path'].iloc[:, 0]
@@ -112,3 +114,12 @@ def get_stats(df):
     dom_tot_labl_df = sum_df.groupby('domain').sum()
 
     return domain_df.compute(),  dom_tot_labl_df.compute(), dom_label_df.compute()
+
+
+def label_scraped_data(input_file, rules):
+    """Given a csv of html, label the the data and """
+    # stupid workaround, defeats the point
+    ddf = dd.from_pandas(pd.read_csv(input_file), chunksize=25)
+
+    # works just like that <3
+    return ddf.map_partitions(lambda df: label_data(df, rules))

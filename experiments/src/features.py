@@ -1,10 +1,12 @@
 import itertools
+import re
 from urllib.parse import urlparse
 
 from lxml import etree
 
 import pandas as pd
 import numpy as np
+import dask.dataframe as dd
 
 
 def get_depth(node):
@@ -243,7 +245,8 @@ def extract_features_from_nodes(nodes, depth, height):
         feat_dfs.append(extractor.extract_ancestor_features((height)))
 
     # either concatenate or not
-    return feat_dfs[0] if len(feat_dfs) == 1 else pd.concat(feat_dfs, axis='columns')
+    features = feat_dfs[0] if len(feat_dfs) == 1 else pd.concat(feat_dfs, axis='columns')
+    return features
 
 
 def extract_features_from_html(html, depth, height):
@@ -251,7 +254,12 @@ def extract_features_from_html(html, depth, height):
     including the descendant and ancestor ones if depthe and
     height are respectively non-null."""
     root = etree.HTML(html)  # get the nodes
-    return extract_features_from_nodes(list(root.iter()), depth, height)
+    features = extract_features_from_nodes(list(root.iter()), depth, height)
+
+    # add the paths to the elements for identification
+    features.loc[:, 'path'] = pd.Series((node.getroottree().getpath(node) for node in root.iter()))
+
+    return features
 
 
 def get_domain_from_url(url):
@@ -264,9 +272,14 @@ def extract_features_from_df(df, depth, height):
     """Given a dataframe of htmls and urls, return
     a dataframe of node features, return a dataframe
     with the node features extracted also, for each node,
-    add the url and domain respectively."""
+    add the url and path respectively"""
     feat_dfs = []
-    for index, row in df.iterrows():
+    rows = df.iterrows()
+    if len(df) == 0:
+        # return dummy data in non inputed(for dask)
+        rows = [(0, {'html': '<html><head></head><body></body></html>', 'url': 'aaa'})]
+
+    for index, row in rows:
         # extract the html features from each of the entries
         feat_df = extract_features_from_html(row['html'], depth, height)
         feat_df['url'] = row['url']
@@ -274,5 +287,75 @@ def extract_features_from_df(df, depth, height):
 
     # concat them all
     result_df = pd.concat(feat_dfs, axis='rows', ignore_index=True)
-    result_df['domain'] = result_df.url.apply(get_domain_from_url)
     return result_df
+
+
+def count_values(lst, values):
+    """Given an iterable of values and one of keys, return the count of
+    the keys in the list(with 0 as default)"""
+    count_dict = {val: 0 for val in values}  # for overwriting with values
+    for elem in lst:
+        count_dict[elem] += 1
+    return count_dict
+
+
+def freq_vect_series(ser):
+    """Given a series whose elements are python lists, return
+    a dataframe where each record is the frequency vector for a certain
+    element in the list. The columns will be prefixed with the series name
+
+    Returns a dask datagrame."""
+    # reduce all to a single set of tags
+    avail_tags = ser.to_bag().fold(lambda a, b: a | set(b), set.union, initial=set()).compute()
+    # compute the frequencies of the given tags, pass the index as an argument to concat it to the dict
+    # to preserv it
+    freqcol_names = {tag_name: int for tag_name in avail_tags}
+    freqs = ser.apply(lambda x: pd.Series(count_values(x, avail_tags)), meta=freqcol_names)
+
+    # rename the columns to be prefixed with the name of the series
+    col_renames = {col_name: ser.name + '_' + col_name for col_name in avail_tags}
+    return freqs.rename(columns=col_renames)
+
+
+def freq_vect_dataframe(ddf):
+    """Given a dataframe of columns with python lists compute
+    the merged dataframe of the frequency vectors returned
+    by freq_vect_series."""
+    ddfs = [freq_vect_series(ddf.loc[:, col_name]) for col_name in ddf.columns.tolist()]
+    # basically compute all the frequency dataframes and returned the one-by-one merge result
+    result = ddfs[0]
+    for ddf in ddfs[1:]:
+        result.assign(**{col_name: col_name for col_name in ddf.columns.tolist()})
+    return result
+
+
+def one_hot_dataframe(ddf):
+    """Given a dask dataframe encode its columns using one-hot. Every new column will
+    be prefixed with the original name.
+
+    Returns a dask dataframe."""
+    tag_cats = ddf.categorize()  # converted to categoricals
+    one_hot = dd.get_dummies(data=tag_cats, prefix=tag_cats.columns.tolist())
+    return one_hot
+
+
+def extract_features_from_ddf(ddf, depth, height):
+    """Given a dask dataframe of the raw data, return the dask dataset containing all the
+    extracted features and dropping the redundant ones."""
+    feat_ddf = ddf.map_partitions(lambda df: extract_features_from_df(df, depth, height),
+                                  meta=extract_features_from_df(pd.DataFrame(), depth, height)).clear_divisions()
+    feat_ddf = feat_ddf.categorize(['url', 'path'])
+    columns = feat_ddf.columns.tolist()  # used for filtering
+
+    # one hot encoding
+    one_hot_cols = list(filter(lambda col: re.match(r'.*tag$', col), columns))
+    one_hot_ddf = one_hot_dataframe(feat_ddf.loc[:, one_hot_cols])
+
+    # frequency vects
+    freq_cols = list(filter(lambda col: re.match(r'descend.*tags$', col), columns))
+    freq_ddf = freq_vect_dataframe(feat_ddf.loc[:, freq_cols])
+
+    # drop redundant cols
+    classes_cols = list(filter(lambda col: re.match(r'^((descendant|ancestor)[0-9]+_)?classes$', col), columns))
+    feat_ddf = feat_ddf.drop(one_hot_cols + freq_cols + classes_cols, axis='columns')
+    return one_hot_ddf, freq_ddf, feat_ddf

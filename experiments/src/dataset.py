@@ -3,12 +3,11 @@
 import json
 
 import click
-import pandas as pd
 import dask.dataframe as dd
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 
-from labeling import label_data, get_stats
+from labeling import get_stats, label_scraped_data
 from scrape.spiders.broad_spider import HtmlSpider
 
 
@@ -36,15 +35,6 @@ def run_scrape(start_urls, format, output, logfile=None, loglevel=None, use_spla
     crawler = CrawlerProcess(settings=settings)
     crawler.crawl(HtmlSpider, start_url=start_urls, use_splash=use_splash, follow_links=True, max_pages=max_pages)
     crawler.start()
-
-
-def label_scraped_data(input_file, rules):
-    """Given a csv of html, label the the data and """
-    # stupid workaround, defeats the point
-    ddf = dd.from_pandas(pd.read_csv(input_file), chunksize=25)
-
-    # works just like that <3
-    return ddf.map_partitions(lambda df: label_data(df, rules))
 
 
 @click.group()
@@ -124,7 +114,7 @@ def stats(input_file):
     click.secho("Total labels per domain", bold=True)
     click.echo(total_labels)
 
-    click.secho("PAges with labels per domain", bold=True)
+    click.secho("Pages with labels per domain", bold=True)
     click.echo(have_labels)
 
 

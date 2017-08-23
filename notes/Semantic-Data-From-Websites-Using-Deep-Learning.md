@@ -104,9 +104,10 @@ All but the last dataset will have the second variation of testing, as tere is n
 * **RNN** to perform language modeling on textual description associated with the input image  
 * task of **generating code** from **GUI screenshots** is similar to generating English **textual descriptions** given a **scene photography**
 * 3 sub-problems:
-* 1. Understanding the **scene**: inferring the objects, identities, positions and poses: **buttons, labels, element containers**.
-* 2. Understanding the **text**: generating **syntactically** and **semantically correct** samples.
-* 3. Combine scene and text(code) understanding to generate code that maps to a certain scene.
+	* Understanding the **scene**: inferring the objects, identities, positions and poses: **buttons, labels, element containers**.
+	* Understanding the **text**: generating **syntactically** and **semantically correct** samples.
+	* Combine scene and text(code) understanding to generate code that maps to a certain scene.
+#### [OverFeat:Integrated Recognition, Localization and Detection using Convolutional Networks](papers/overfeat.md)
 
 ### Conclusion
 

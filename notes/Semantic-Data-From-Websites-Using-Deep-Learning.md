@@ -102,6 +102,11 @@ All but the last dataset will have the second variation of testing, as tere is n
 * 2 main components:
 * **CNN** for transforming raw visual input into an intermediary learned representation
 * **RNN** to perform language modeling on textual description associated with the input image  
+* task of **generating code** from **GUI screenshots** is similar to generating English **textual descriptions** given a **scene photography**
+* 3 sub-problems:
+* 1. Understanding the **scene**: inferring the objects, identities, positions and poses: **buttons, labels, element containers**.
+* 2. Understanding the **text**: generating **syntactically** and **semantically correct** samples.
+* 3. Combine scene and text(code) understanding to generate code that maps to a certain scene.
 
 ### Conclusion
 

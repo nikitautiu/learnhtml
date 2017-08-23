@@ -107,7 +107,7 @@ All but the last dataset will have the second variation of testing, as tere is n
 	* Understanding the **scene**: inferring the objects, identities, positions and poses: **buttons, labels, element containers**.
 	* Understanding the **text**: generating **syntactically** and **semantically correct** samples.
 	* Combine scene and text(code) understanding to generate code that maps to a certain scene.
-#### [OverFeat:Integrated Recognition, Localization and Detection using Convolutional Networks](papers/overfeat.md)
+#### [OverFeat: Integrated Recognition, Localization and Detection using Convolutional Networks](papers/overfeat.md)
 
 ### Conclusion
 

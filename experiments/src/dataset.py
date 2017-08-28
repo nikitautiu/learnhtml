@@ -6,6 +6,7 @@ import click
 import dask.dataframe as dd
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
+from tabulate import tabulate
 
 from labeling import get_stats, label_scraped_data
 from scrape.spiders.broad_spider import HtmlSpider
@@ -108,14 +109,22 @@ def stats(input_file):
     ddf = dd.read_csv(input_file)
     total, total_labels, have_labels = get_stats(ddf)
 
+    # try pretty printing
     click.secho("Total sites per domain", bold=True)
-    click.echo(total)
+    click.echo(str(total))
 
     click.secho("Total labels per domain", bold=True)
-    click.echo(total_labels)
+    click.echo(tabulate(total_labels, headers='keys', tablefmt='psql'))
 
     click.secho("Pages with labels per domain", bold=True)
-    click.echo(have_labels)
+    click.echo(tabulate(have_labels, headers='keys', tablefmt='psql'))
+
+
+class UrlSelector(object):
+    """Class for the filtering of urls and selecting a subset of them
+    """
+    def __init__(self, raw_df, label_df):
+        self.df = df
 
 
 if __name__ == '__main__':

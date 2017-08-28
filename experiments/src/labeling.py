@@ -108,9 +108,10 @@ def get_stats(df):
     domain_df = sum_df.groupby('domain').count()['url']
 
     # get how many pages have each label per domain
-    dom_label_df = (sum_df > 0).groupby('domain').sum()
+    dom_label_df = (sum_df.set_index('url') > 0).reset_index()
+    dom_label_df = dom_label_df.assign(domain=dom_label_df['url'].apply(lambda x: get_domain_from_url(x), meta=('domain', str))).groupby('domain').sum()
 
-    # get how many labels per domain
+    # get how many labels per domdain
     dom_tot_labl_df = sum_df.groupby('domain').sum()
 
     return domain_df.compute(),  dom_tot_labl_df.compute(), dom_label_df.compute()

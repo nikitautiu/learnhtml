@@ -99,6 +99,15 @@ All but the last dataset will have the second variation of testing, as tere is n
 #### [A hybrid approach for content extraction with text density and visual importance of DOM nodes - Song et al. 2012](papers/song-hybrid.md)
 #### [Learning Block Importance Models for Web Pages - Song et al. 2004](papers/song.md)
 #### [pix2code: Generating Code from a Graphical User Interface Screenshot](papers/pix2code.md)
+* 2 main components:
+* **CNN** for transforming raw visual input into an intermediary learned representation
+* **RNN** to perform language modeling on textual description associated with the input image  
+* task of **generating code** from **GUI screenshots** is similar to generating English **textual descriptions** given a **scene photography**
+* 3 sub-problems:
+	* Understanding the **scene**: inferring the objects, identities, positions and poses: **buttons, labels, element containers**.
+	* Understanding the **text**: generating **syntactically** and **semantically correct** samples.
+	* Combine scene and text(code) understanding to generate code that maps to a certain scene.
+#### [OverFeat: Integrated Recognition, Localization and Detection using Convolutional Networks](papers/overfeat.md)
 
 ### Conclusion
 

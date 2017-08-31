@@ -37,6 +37,8 @@ For these datsets, we will have 5 experiments. To check the divergence between t
 
 All but the last dataset will have the second variation of testing, as tere is no more data to test on for it. The motivation of the second experiment is to see the potential of  actually **reducing the size of the training dataset**(maybe even for potential future work using online learning).
 
+**Note** Behind this motivation also stands the fact that almost all of the data is labelable and was labeled using xpaths, which means there is some sort of consistent pattern within the pages of the website.
+
 ### Results
 * R1. 1A vs 1Brand vs 2
 * R2. 1A & 2 for HDL

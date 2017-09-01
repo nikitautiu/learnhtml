@@ -109,7 +109,14 @@ All but the last dataset will have the second variation of testing, as tere is n
 	* Understanding the **scene**: inferring the objects, identities, positions and poses: **buttons, labels, element containers**.
 	* Understanding the **text**: generating **syntactically** and **semantically correct** samples.
 	* Combine scene and text(code) understanding to generate code that maps to a certain scene.
+
 #### [OverFeat: Integrated Recognition, Localization and Detection using Convolutional Networks](papers/overfeat.md)
+* **sliding window** (for object detection) can be implemented with a CNN.
+* also **multiscale**
+* model learns to predict **object boundaries**.
+* **accumulation** of predicted bounding boxes
+* shows that training a **convolutional network** to simultaneously **classify**, **locate** and **detect objects** in images can **boost** the **classification accuracy** and the **detection** and **localization** accuracy of all tasks.
+* **avoids training on backgrounds**, thus cutting down on **training time**.
 
 ### Conclusion
 

@@ -1,0 +1,406 @@
+,classification_label,experiment,f1-score,precision,recall,support,test_label,test_website,train_label,train_website
+0,detail_description_label,1.1 - decision tree,1.0,1.0,1.0,1687.0,detail_description_label,lajumate.ro,detail_description_label,lajumate.ro
+1,detail_description_label,1.1 - decision tree,1.0,1.0,1.0,3.0,detail_description_label,lajumate.ro,detail_description_label,lajumate.ro
+2,detail_description_label,1.1 - decision tree,1.0,1.0,1.0,760.0,detail_description_label,www.aliexpress.com,detail_description_label,www.aliexpress.com
+3,detail_description_label,1.1 - decision tree,1.0,1.0,1.0,1.0,detail_description_label,www.aliexpress.com,detail_description_label,www.aliexpress.com
+4,detail_description_label,1.1 - decision tree,1.0,1.0,1.0,3524.0,detail_description_label,www.emag.ro,detail_description_label,www.emag.ro
+5,detail_description_label,1.1 - decision tree,1.0,1.0,1.0,1.0,detail_description_label,www.emag.ro,detail_description_label,www.emag.ro
+6,detail_description_label,1.1 - decision tree,0.9998445998445998,0.9996892479801118,1.0,3217.0,detail_description_label,www.okazii.ro,detail_description_label,www.okazii.ro
+7,detail_description_label,1.1 - decision tree,0.6666666666666666,1.0,0.5,2.0,detail_description_label,www.okazii.ro,detail_description_label,www.okazii.ro
+8,detail_description_label,1.1 - decision tree,1.0,1.0,1.0,2010.0,detail_description_label,www.olx.ro,detail_description_label,www.olx.ro
+9,detail_description_label,1.1 - decision tree,1.0,1.0,1.0,2.0,detail_description_label,www.olx.ro,detail_description_label,www.olx.ro
+10,detail_image_label,1.1 - decision tree,1.0,1.0,1.0,1710.0,detail_image_label,lajumate.ro,detail_image_label,lajumate.ro
+11,detail_image_label,1.1 - decision tree,1.0,1.0,1.0,14.0,detail_image_label,lajumate.ro,detail_image_label,lajumate.ro
+12,detail_image_label,1.1 - decision tree,1.0,1.0,1.0,760.0,detail_image_label,www.aliexpress.com,detail_image_label,www.aliexpress.com
+13,detail_image_label,1.1 - decision tree,1.0,1.0,1.0,1.0,detail_image_label,www.aliexpress.com,detail_image_label,www.aliexpress.com
+14,detail_image_label,1.1 - decision tree,1.0,1.0,1.0,7558.0,detail_image_label,www.amazon.com,detail_image_label,www.amazon.com
+15,detail_image_label,1.1 - decision tree,1.0,1.0,1.0,2.0,detail_image_label,www.amazon.com,detail_image_label,www.amazon.com
+16,detail_image_label,1.1 - decision tree,1.0,1.0,1.0,4796.0,detail_image_label,www.emag.ro,detail_image_label,www.emag.ro
+17,detail_image_label,1.1 - decision tree,1.0,1.0,1.0,4.0,detail_image_label,www.emag.ro,detail_image_label,www.emag.ro
+18,detail_image_label,1.1 - decision tree,0.9998445515311675,1.0,0.9996891513832763,3217.0,detail_image_label,www.okazii.ro,detail_image_label,www.okazii.ro
+19,detail_image_label,1.1 - decision tree,0.8,0.6666666666666666,1.0,2.0,detail_image_label,www.okazii.ro,detail_image_label,www.okazii.ro
+20,detail_image_label,1.1 - decision tree,1.0,1.0,1.0,2123.0,detail_image_label,www.olx.ro,detail_image_label,www.olx.ro
+21,detail_image_label,1.1 - decision tree,1.0,1.0,1.0,6.0,detail_image_label,www.olx.ro,detail_image_label,www.olx.ro
+22,detail_price_label,1.1 - decision tree,0.9996957712199573,0.9993917274939172,1.0,1643.0,detail_price_label,lajumate.ro,detail_price_label,lajumate.ro
+23,detail_price_label,1.1 - decision tree,0.6666666666666666,1.0,0.5,2.0,detail_price_label,lajumate.ro,detail_price_label,lajumate.ro
+24,detail_price_label,1.1 - decision tree,1.0,1.0,1.0,7558.0,detail_price_label,www.amazon.com,detail_price_label,www.amazon.com
+25,detail_price_label,1.1 - decision tree,1.0,1.0,1.0,2.0,detail_price_label,www.amazon.com,detail_price_label,www.amazon.com
+26,detail_price_label,1.1 - decision tree,1.0,1.0,1.0,4351.0,detail_price_label,www.emag.ro,detail_price_label,www.emag.ro
+27,detail_price_label,1.1 - decision tree,1.0,1.0,1.0,2.0,detail_price_label,www.emag.ro,detail_price_label,www.emag.ro
+28,detail_price_label,1.1 - decision tree,1.0,1.0,1.0,3313.0,detail_price_label,www.okazii.ro,detail_price_label,www.okazii.ro
+29,detail_price_label,1.1 - decision tree,1.0,1.0,1.0,2.0,detail_price_label,www.okazii.ro,detail_price_label,www.okazii.ro
+30,detail_price_label,1.1 - decision tree,1.0,1.0,1.0,2010.0,detail_price_label,www.olx.ro,detail_price_label,www.olx.ro
+31,detail_price_label,1.1 - decision tree,1.0,1.0,1.0,2.0,detail_price_label,www.olx.ro,detail_price_label,www.olx.ro
+32,detail_title_label,1.1 - decision tree,1.0,1.0,1.0,1688.0,detail_title_label,lajumate.ro,detail_title_label,lajumate.ro
+33,detail_title_label,1.1 - decision tree,1.0,1.0,1.0,2.0,detail_title_label,lajumate.ro,detail_title_label,lajumate.ro
+34,detail_title_label,1.1 - decision tree,1.0,1.0,1.0,760.0,detail_title_label,www.aliexpress.com,detail_title_label,www.aliexpress.com
+35,detail_title_label,1.1 - decision tree,1.0,1.0,1.0,1.0,detail_title_label,www.aliexpress.com,detail_title_label,www.aliexpress.com
+36,detail_title_label,1.1 - decision tree,1.0,1.0,1.0,7558.0,detail_title_label,www.amazon.com,detail_title_label,www.amazon.com
+37,detail_title_label,1.1 - decision tree,1.0,1.0,1.0,2.0,detail_title_label,www.amazon.com,detail_title_label,www.amazon.com
+38,detail_title_label,1.1 - decision tree,1.0,1.0,1.0,4798.0,detail_title_label,www.emag.ro,detail_title_label,www.emag.ro
+39,detail_title_label,1.1 - decision tree,1.0,1.0,1.0,2.0,detail_title_label,www.emag.ro,detail_title_label,www.emag.ro
+40,detail_title_label,1.1 - decision tree,1.0,1.0,1.0,3216.0,detail_title_label,www.okazii.ro,detail_title_label,www.okazii.ro
+41,detail_title_label,1.1 - decision tree,1.0,1.0,1.0,3.0,detail_title_label,www.okazii.ro,detail_title_label,www.okazii.ro
+42,detail_title_label,1.1 - decision tree,1.0,1.0,1.0,2012.0,detail_title_label,www.olx.ro,detail_title_label,www.olx.ro
+43,list_image_label,1.1 - decision tree,0.9990186457311089,1.0,0.9980392156862745,510.0,list_image_label,www.aliexpress.com,list_image_label,www.aliexpress.com
+44,list_image_label,1.1 - decision tree,0.9473684210526316,0.9,1.0,9.0,list_image_label,www.aliexpress.com,list_image_label,www.aliexpress.com
+45,list_image_label,1.1 - decision tree,1.0,1.0,1.0,7745.0,list_image_label,www.amazon.com,list_image_label,www.amazon.com
+46,list_image_label,1.1 - decision tree,1.0,1.0,1.0,61.0,list_image_label,www.amazon.com,list_image_label,www.amazon.com
+47,list_image_label,1.1 - decision tree,1.0,1.0,1.0,4501.0,list_image_label,www.emag.ro,list_image_label,www.emag.ro
+48,list_image_label,1.1 - decision tree,1.0,1.0,1.0,59.0,list_image_label,www.emag.ro,list_image_label,www.emag.ro
+49,list_image_label,1.1 - decision tree,1.0,1.0,1.0,25024.0,list_image_label,www.okazii.ro,list_image_label,www.okazii.ro
+50,list_image_label,1.1 - decision tree,1.0,1.0,1.0,240.0,list_image_label,www.okazii.ro,list_image_label,www.okazii.ro
+51,list_image_label,1.1 - decision tree,1.0,1.0,1.0,14658.0,list_image_label,www.olx.ro,list_image_label,www.olx.ro
+52,list_image_label,1.1 - decision tree,1.0,1.0,1.0,205.0,list_image_label,www.olx.ro,list_image_label,www.olx.ro
+53,list_price_label,1.1 - decision tree,1.0,1.0,1.0,6958.0,list_price_label,lajumate.ro,list_price_label,lajumate.ro
+54,list_price_label,1.1 - decision tree,1.0,1.0,1.0,156.0,list_price_label,lajumate.ro,list_price_label,lajumate.ro
+55,list_price_label,1.1 - decision tree,1.0,1.0,1.0,510.0,list_price_label,www.aliexpress.com,list_price_label,www.aliexpress.com
+56,list_price_label,1.1 - decision tree,1.0,1.0,1.0,9.0,list_price_label,www.aliexpress.com,list_price_label,www.aliexpress.com
+57,list_price_label,1.1 - decision tree,1.0,1.0,1.0,7759.0,list_price_label,www.amazon.com,list_price_label,www.amazon.com
+58,list_price_label,1.1 - decision tree,1.0,1.0,1.0,47.0,list_price_label,www.amazon.com,list_price_label,www.amazon.com
+59,list_price_label,1.1 - decision tree,1.0,1.0,1.0,4470.0,list_price_label,www.emag.ro,list_price_label,www.emag.ro
+60,list_price_label,1.1 - decision tree,1.0,1.0,1.0,94.0,list_price_label,www.emag.ro,list_price_label,www.emag.ro
+61,list_price_label,1.1 - decision tree,1.0,1.0,1.0,24401.0,list_price_label,www.okazii.ro,list_price_label,www.okazii.ro
+62,list_price_label,1.1 - decision tree,1.0,1.0,1.0,225.0,list_price_label,www.okazii.ro,list_price_label,www.okazii.ro
+63,list_price_label,1.1 - decision tree,1.0,1.0,1.0,14652.0,list_price_label,www.olx.ro,list_price_label,www.olx.ro
+64,list_price_label,1.1 - decision tree,1.0,1.0,1.0,211.0,list_price_label,www.olx.ro,list_price_label,www.olx.ro
+65,list_title_label,1.1 - decision tree,1.0,1.0,1.0,6958.0,list_title_label,lajumate.ro,list_title_label,lajumate.ro
+66,list_title_label,1.1 - decision tree,1.0,1.0,1.0,156.0,list_title_label,lajumate.ro,list_title_label,lajumate.ro
+67,list_title_label,1.1 - decision tree,1.0,1.0,1.0,510.0,list_title_label,www.aliexpress.com,list_title_label,www.aliexpress.com
+68,list_title_label,1.1 - decision tree,1.0,1.0,1.0,9.0,list_title_label,www.aliexpress.com,list_title_label,www.aliexpress.com
+69,list_title_label,1.1 - decision tree,1.0,1.0,1.0,7745.0,list_title_label,www.amazon.com,list_title_label,www.amazon.com
+70,list_title_label,1.1 - decision tree,1.0,1.0,1.0,61.0,list_title_label,www.amazon.com,list_title_label,www.amazon.com
+71,list_title_label,1.1 - decision tree,1.0,1.0,1.0,4481.0,list_title_label,www.emag.ro,list_title_label,www.emag.ro
+72,list_title_label,1.1 - decision tree,1.0,1.0,1.0,83.0,list_title_label,www.emag.ro,list_title_label,www.emag.ro
+73,list_title_label,1.1 - decision tree,1.0,1.0,1.0,25051.0,list_title_label,www.okazii.ro,list_title_label,www.okazii.ro
+74,list_title_label,1.1 - decision tree,1.0,1.0,1.0,213.0,list_title_label,www.okazii.ro,list_title_label,www.okazii.ro
+75,list_title_label,1.1 - decision tree,1.0,1.0,1.0,14652.0,list_title_label,www.olx.ro,list_title_label,www.olx.ro
+76,list_title_label,1.1 - decision tree,1.0,1.0,1.0,211.0,list_title_label,www.olx.ro,list_title_label,www.olx.ro
+77,detail_description_label,1.2 - decision tree,1.0,1.0,1.0,101664.0,all,www.emag.ro,detail_description_label,www.emag.ro
+78,detail_description_label,1.2 - decision tree,1.0,1.0,1.0,7.0,all,www.emag.ro,detail_description_label,www.emag.ro
+79,detail_image_label,1.2 - decision tree,1.0,1.0,1.0,101653.0,all,www.emag.ro,detail_image_label,www.emag.ro
+80,detail_image_label,1.2 - decision tree,1.0,1.0,1.0,18.0,all,www.emag.ro,detail_image_label,www.emag.ro
+81,detail_price_label,1.2 - decision tree,1.0,1.0,1.0,101662.0,all,www.emag.ro,detail_price_label,www.emag.ro
+82,detail_price_label,1.2 - decision tree,1.0,1.0,1.0,9.0,all,www.emag.ro,detail_price_label,www.emag.ro
+83,detail_title_label,1.2 - decision tree,0.9999360579216856,1.0,0.9998721240200273,101661.0,all,www.emag.ro,detail_title_label,www.emag.ro
+84,detail_title_label,1.2 - decision tree,0.6060606060606061,0.43478260869565216,1.0,10.0,all,www.emag.ro,detail_title_label,www.emag.ro
+85,list_image_label,1.2 - decision tree,0.9852455406298172,1.0,0.9709201388888888,101376.0,all,www.emag.ro,list_image_label,www.emag.ro
+86,list_image_label,1.2 - decision tree,0.16676088185415489,0.09096515572001233,1.0,295.0,all,www.emag.ro,list_image_label,www.emag.ro
+87,list_price_label,1.2 - decision tree,0.9999702413427106,0.9999504032218067,0.9999900802507713,100809.0,all,www.emag.ro,list_price_label,www.emag.ro
+88,list_price_label,1.2 - decision tree,0.9965116279069768,0.9988344988344988,0.994199535962877,862.0,all,www.emag.ro,list_price_label,www.emag.ro
+89,list_title_label,1.2 - decision tree,0.9992114542469883,0.9998015065651703,0.9986220979797379,100878.0,all,www.emag.ro,list_title_label,www.emag.ro
+90,list_title_label,1.2 - decision tree,0.9067448680351906,0.8475877192982456,0.9747793190416141,793.0,all,www.emag.ro,list_title_label,www.emag.ro
+91,detail_description_label,1.2 - decision tree,0.9999059316795227,1.0,0.9998118810550786,74421.0,all,lajumate.ro,detail_description_label,lajumate.ro
+92,detail_description_label,1.2 - decision tree,0.7083333333333333,0.5483870967741935,1.0,17.0,all,lajumate.ro,detail_description_label,lajumate.ro
+93,detail_image_label,1.2 - decision tree,1.0,1.0,1.0,74368.0,all,lajumate.ro,detail_image_label,lajumate.ro
+94,detail_image_label,1.2 - decision tree,1.0,1.0,1.0,70.0,all,lajumate.ro,detail_image_label,lajumate.ro
+95,detail_price_label,1.2 - decision tree,0.9783515910276475,1.0,0.9576206280316569,74423.0,all,lajumate.ro,detail_price_label,lajumate.ro
+96,detail_price_label,1.2 - decision tree,0.009422110552763817,0.004733354370463868,1.0,15.0,all,lajumate.ro,detail_price_label,lajumate.ro
+97,detail_title_label,1.2 - decision tree,0.9997715268724716,1.0,0.9995431581210362,74424.0,all,lajumate.ro,detail_title_label,lajumate.ro
+98,detail_title_label,1.2 - decision tree,0.45161290322580644,0.2916666666666667,1.0,14.0,all,lajumate.ro,detail_title_label,lajumate.ro
+99,list_price_label,1.2 - decision tree,0.9968745105783177,1.0,0.9937684976513074,73658.0,all,lajumate.ro,list_price_label,lajumate.ro
+100,list_price_label,1.2 - decision tree,0.7726597325408618,0.6295399515738499,1.0,780.0,all,lajumate.ro,list_price_label,lajumate.ro
+101,list_title_label,1.2 - decision tree,0.9960745829244357,1.0,0.9921798631476051,73656.0,all,lajumate.ro,list_title_label,lajumate.ro
+102,list_title_label,1.2 - decision tree,0.7308411214953271,0.5758468335787923,1.0,782.0,all,lajumate.ro,list_title_label,lajumate.ro
+103,detail_description_label,1.2 - decision tree,0.9990972828212921,1.0,0.9981961939692752,33263.0,all,www.aliexpress.com,detail_description_label,www.aliexpress.com
+104,detail_description_label,1.2 - decision tree,0.11764705882352941,0.0625,1.0,4.0,all,www.aliexpress.com,detail_description_label,www.aliexpress.com
+105,detail_image_label,1.2 - decision tree,0.998765878032629,1.0,0.9975347984246761,33263.0,all,www.aliexpress.com,detail_image_label,www.aliexpress.com
+106,detail_image_label,1.2 - decision tree,0.08888888888888888,0.046511627906976744,1.0,4.0,all,www.aliexpress.com,detail_image_label,www.aliexpress.com
+107,detail_title_label,1.2 - decision tree,0.9998346237690746,1.0,0.9996693022277005,33263.0,all,www.aliexpress.com,detail_title_label,www.aliexpress.com
+108,detail_title_label,1.2 - decision tree,0.4210526315789474,0.26666666666666666,1.0,4.0,all,www.aliexpress.com,detail_title_label,www.aliexpress.com
+109,list_image_label,1.2 - decision tree,0.9967234897099458,1.0,0.9934683803389218,33223.0,all,www.aliexpress.com,list_image_label,www.aliexpress.com
+110,list_image_label,1.2 - decision tree,0.2885245901639344,0.1685823754789272,1.0,44.0,all,www.aliexpress.com,list_image_label,www.aliexpress.com
+111,list_price_label,1.2 - decision tree,0.9995181738790014,1.0,0.9990368118472143,33223.0,all,www.aliexpress.com,list_price_label,www.aliexpress.com
+112,list_price_label,1.2 - decision tree,0.7333333333333334,0.5789473684210527,1.0,44.0,all,www.aliexpress.com,list_price_label,www.aliexpress.com
+113,list_title_label,1.2 - decision tree,0.9977374200555086,1.0,0.9954850555338169,33223.0,all,www.aliexpress.com,list_title_label,www.aliexpress.com
+114,list_title_label,1.2 - decision tree,0.36974789915966383,0.2268041237113402,1.0,44.0,all,www.aliexpress.com,list_title_label,www.aliexpress.com
+115,detail_image_label,1.2 - decision tree,1.0,1.0,1.0,99096.0,all,www.amazon.com,detail_image_label,www.amazon.com
+116,detail_image_label,1.2 - decision tree,1.0,1.0,1.0,10.0,all,www.amazon.com,detail_image_label,www.amazon.com
+117,detail_price_label,1.2 - decision tree,1.0,1.0,1.0,99096.0,all,www.amazon.com,detail_price_label,www.amazon.com
+118,detail_price_label,1.2 - decision tree,1.0,1.0,1.0,10.0,all,www.amazon.com,detail_price_label,www.amazon.com
+119,detail_title_label,1.2 - decision tree,0.9999747713018513,1.0,0.9999495438766449,99096.0,all,www.amazon.com,detail_title_label,www.amazon.com
+120,detail_title_label,1.2 - decision tree,0.8,0.6666666666666666,1.0,10.0,all,www.amazon.com,detail_title_label,www.amazon.com
+121,list_image_label,1.2 - decision tree,0.9992757990266333,1.0,0.998552646228277,98801.0,all,www.amazon.com,list_image_label,www.amazon.com
+122,list_image_label,1.2 - decision tree,0.8100929614873837,0.6808035714285714,1.0,305.0,all,www.amazon.com,list_image_label,www.amazon.com
+123,list_price_label,1.2 - decision tree,0.9988152498607665,1.0,0.9976333036653451,98872.0,all,www.amazon.com,list_price_label,www.amazon.com
+124,list_price_label,1.2 - decision tree,0.6666666666666666,0.5,1.0,234.0,all,www.amazon.com,list_price_label,www.amazon.com
+125,list_title_label,1.2 - decision tree,1.0,1.0,1.0,98801.0,all,www.amazon.com,list_title_label,www.amazon.com
+126,list_title_label,1.2 - decision tree,1.0,1.0,1.0,305.0,all,www.amazon.com,list_title_label,www.amazon.com
+127,detail_description_label,1.2 - decision tree,0.9999880203079738,0.9999952080887462,0.9999808326305298,208688.0,all,www.okazii.ro,detail_description_label,www.okazii.ro
+128,detail_description_label,1.2 - decision tree,0.8275862068965517,0.75,0.9230769230769231,13.0,all,www.okazii.ro,detail_description_label,www.okazii.ro
+129,detail_image_label,1.2 - decision tree,0.9971093751877225,1.0,0.9942354136318332,208688.0,all,www.okazii.ro,detail_image_label,www.okazii.ro
+130,detail_image_label,1.2 - decision tree,0.02115541090317331,0.01069078947368421,1.0,13.0,all,www.okazii.ro,detail_image_label,www.okazii.ro
+131,detail_price_label,1.2 - decision tree,0.9999616643425675,1.0,0.9999233316242675,208691.0,all,www.okazii.ro,detail_price_label,www.okazii.ro
+132,detail_price_label,1.2 - decision tree,0.5555555555555556,0.38461538461538464,1.0,10.0,all,www.okazii.ro,detail_price_label,www.okazii.ro
+133,detail_title_label,1.2 - decision tree,0.9978822614182605,1.0,0.9957734735147258,208682.0,all,www.okazii.ro,detail_title_label,www.okazii.ro
+134,detail_title_label,1.2 - decision tree,0.041304347826086954,0.021087680355160933,1.0,19.0,all,www.okazii.ro,detail_title_label,www.okazii.ro
+135,list_image_label,1.2 - decision tree,0.99992770526884,1.0,0.9998554209899807,207499.0,all,www.okazii.ro,list_image_label,www.okazii.ro
+136,list_image_label,1.2 - decision tree,0.9876746096959738,0.9756493506493507,1.0,1202.0,all,www.okazii.ro,list_image_label,www.okazii.ro
+137,list_price_label,1.2 - decision tree,0.9981099237451994,1.0,0.9962269787882,207526.0,all,www.okazii.ro,list_price_label,www.okazii.ro
+138,list_price_label,1.2 - decision tree,0.7500797957229492,0.6001021450459653,1.0,1175.0,all,www.okazii.ro,list_price_label,www.okazii.ro
+139,list_title_label,1.2 - decision tree,0.9998121360135263,1.0,0.9996243425995492,207636.0,all,www.okazii.ro,list_title_label,www.okazii.ro
+140,list_title_label,1.2 - decision tree,0.9646739130434783,0.931758530183727,1.0,1065.0,all,www.okazii.ro,list_title_label,www.okazii.ro
+141,detail_description_label,1.2 - decision tree,0.9896745671872279,1.0,0.979560184317986,133465.0,all,www.olx.ro,detail_description_label,www.olx.ro
+142,detail_description_label,1.2 - decision tree,0.013024602026049204,0.0065549890750182084,1.0,18.0,all,www.olx.ro,detail_description_label,www.olx.ro
+143,detail_image_label,1.2 - decision tree,0.9999850130012214,1.0,0.9999700264516564,133451.0,all,www.olx.ro,detail_image_label,www.olx.ro
+144,detail_image_label,1.2 - decision tree,0.9411764705882353,0.8888888888888888,1.0,32.0,all,www.olx.ro,detail_image_label,www.olx.ro
+145,detail_price_label,1.2 - decision tree,0.9998388831228198,1.0,0.9996778181545724,133465.0,all,www.olx.ro,detail_price_label,www.olx.ro
+146,detail_price_label,1.2 - decision tree,0.4556962025316456,0.29508196721311475,1.0,18.0,all,www.olx.ro,detail_price_label,www.olx.ro
+147,detail_title_label,1.2 - decision tree,1.0,1.0,1.0,133483.0,all,www.olx.ro,detail_title_label,www.olx.ro
+148,list_image_label,1.2 - decision tree,0.997733816079691,1.0,0.9954778801147516,132460.0,all,www.olx.ro,list_image_label,www.olx.ro
+149,list_image_label,1.2 - decision tree,0.7735349716446124,0.6307028360049322,1.0,1023.0,all,www.olx.ro,list_image_label,www.olx.ro
+150,list_price_label,1.2 - decision tree,1.0,1.0,1.0,132429.0,all,www.olx.ro,list_price_label,www.olx.ro
+151,list_price_label,1.2 - decision tree,1.0,1.0,1.0,1054.0,all,www.olx.ro,list_price_label,www.olx.ro
+152,list_title_label,1.2 - decision tree,1.0,1.0,1.0,132429.0,all,www.olx.ro,list_title_label,www.olx.ro
+153,list_title_label,1.2 - decision tree,1.0,1.0,1.0,1054.0,all,www.olx.ro,list_title_label,www.olx.ro
+154,detail_description_label,1.3 - decision tree,1.0,1.0,1.0,14885.0,all,lajumate.ro,all,lajumate.ro
+155,detail_description_label,1.3 - decision tree,1.0,1.0,1.0,3.0,all,lajumate.ro,all,lajumate.ro
+156,detail_image_label,1.3 - decision tree,1.0,1.0,1.0,14874.0,all,lajumate.ro,all,lajumate.ro
+157,detail_image_label,1.3 - decision tree,1.0,1.0,1.0,14.0,all,lajumate.ro,all,lajumate.ro
+158,detail_price_label,1.3 - decision tree,1.0,1.0,1.0,14885.0,all,lajumate.ro,all,lajumate.ro
+159,detail_price_label,1.3 - decision tree,1.0,1.0,1.0,3.0,all,lajumate.ro,all,lajumate.ro
+160,detail_title_label,1.3 - decision tree,1.0,1.0,1.0,14885.0,all,lajumate.ro,all,lajumate.ro
+161,detail_title_label,1.3 - decision tree,1.0,1.0,1.0,3.0,all,lajumate.ro,all,lajumate.ro
+162,list_image_label,1.3 - decision tree,1.0,1.0,1.0,14888.0,all,lajumate.ro,all,lajumate.ro
+163,list_price_label,1.3 - decision tree,1.0,1.0,1.0,14732.0,all,lajumate.ro,all,lajumate.ro
+164,list_price_label,1.3 - decision tree,1.0,1.0,1.0,156.0,all,lajumate.ro,all,lajumate.ro
+165,list_title_label,1.3 - decision tree,1.0,1.0,1.0,14732.0,all,lajumate.ro,all,lajumate.ro
+166,list_title_label,1.3 - decision tree,1.0,1.0,1.0,156.0,all,lajumate.ro,all,lajumate.ro
+167,detail_description_label,1.3 - decision tree,1.0,1.0,1.0,6653.0,all,www.aliexpress.com,all,www.aliexpress.com
+168,detail_description_label,1.3 - decision tree,1.0,1.0,1.0,1.0,all,www.aliexpress.com,all,www.aliexpress.com
+169,detail_image_label,1.3 - decision tree,1.0,1.0,1.0,6653.0,all,www.aliexpress.com,all,www.aliexpress.com
+170,detail_image_label,1.3 - decision tree,1.0,1.0,1.0,1.0,all,www.aliexpress.com,all,www.aliexpress.com
+171,detail_price_label,1.3 - decision tree,1.0,1.0,1.0,6654.0,all,www.aliexpress.com,all,www.aliexpress.com
+172,detail_title_label,1.3 - decision tree,0.9999248402856069,1.0,0.9998496918683301,6653.0,all,www.aliexpress.com,all,www.aliexpress.com
+173,detail_title_label,1.3 - decision tree,0.6666666666666666,0.5,1.0,1.0,all,www.aliexpress.com,all,www.aliexpress.com
+174,list_image_label,1.3 - decision tree,1.0,1.0,1.0,6645.0,all,www.aliexpress.com,all,www.aliexpress.com
+175,list_image_label,1.3 - decision tree,1.0,1.0,1.0,9.0,all,www.aliexpress.com,all,www.aliexpress.com
+176,list_price_label,1.3 - decision tree,1.0,1.0,1.0,6645.0,all,www.aliexpress.com,all,www.aliexpress.com
+177,list_price_label,1.3 - decision tree,1.0,1.0,1.0,9.0,all,www.aliexpress.com,all,www.aliexpress.com
+178,list_title_label,1.3 - decision tree,1.0,1.0,1.0,6645.0,all,www.aliexpress.com,all,www.aliexpress.com
+179,list_title_label,1.3 - decision tree,1.0,1.0,1.0,9.0,all,www.aliexpress.com,all,www.aliexpress.com
+180,detail_description_label,1.3 - decision tree,1.0,1.0,1.0,19822.0,all,www.amazon.com,all,www.amazon.com
+181,detail_image_label,1.3 - decision tree,1.0,1.0,1.0,19820.0,all,www.amazon.com,all,www.amazon.com
+182,detail_image_label,1.3 - decision tree,1.0,1.0,1.0,2.0,all,www.amazon.com,all,www.amazon.com
+183,detail_price_label,1.3 - decision tree,1.0,1.0,1.0,19820.0,all,www.amazon.com,all,www.amazon.com
+184,detail_price_label,1.3 - decision tree,1.0,1.0,1.0,2.0,all,www.amazon.com,all,www.amazon.com
+185,detail_title_label,1.3 - decision tree,1.0,1.0,1.0,19820.0,all,www.amazon.com,all,www.amazon.com
+186,detail_title_label,1.3 - decision tree,1.0,1.0,1.0,2.0,all,www.amazon.com,all,www.amazon.com
+187,list_image_label,1.3 - decision tree,1.0,1.0,1.0,19761.0,all,www.amazon.com,all,www.amazon.com
+188,list_image_label,1.3 - decision tree,1.0,1.0,1.0,61.0,all,www.amazon.com,all,www.amazon.com
+189,list_price_label,1.3 - decision tree,1.0,1.0,1.0,19775.0,all,www.amazon.com,all,www.amazon.com
+190,list_price_label,1.3 - decision tree,1.0,1.0,1.0,47.0,all,www.amazon.com,all,www.amazon.com
+191,list_title_label,1.3 - decision tree,1.0,1.0,1.0,19761.0,all,www.amazon.com,all,www.amazon.com
+192,list_title_label,1.3 - decision tree,1.0,1.0,1.0,61.0,all,www.amazon.com,all,www.amazon.com
+193,detail_description_label,1.3 - decision tree,0.999950818865883,1.0,0.9999016425690961,20334.0,all,www.emag.ro,all,www.emag.ro
+194,detail_description_label,1.3 - decision tree,0.5,0.3333333333333333,1.0,1.0,all,www.emag.ro,all,www.emag.ro
+195,detail_image_label,1.3 - decision tree,1.0,1.0,1.0,20331.0,all,www.emag.ro,all,www.emag.ro
+196,detail_image_label,1.3 - decision tree,1.0,1.0,1.0,4.0,all,www.emag.ro,all,www.emag.ro
+197,detail_price_label,1.3 - decision tree,1.0,1.0,1.0,20333.0,all,www.emag.ro,all,www.emag.ro
+198,detail_price_label,1.3 - decision tree,1.0,1.0,1.0,2.0,all,www.emag.ro,all,www.emag.ro
+199,detail_title_label,1.3 - decision tree,1.0,1.0,1.0,20333.0,all,www.emag.ro,all,www.emag.ro
+200,detail_title_label,1.3 - decision tree,1.0,1.0,1.0,2.0,all,www.emag.ro,all,www.emag.ro
+201,list_image_label,1.3 - decision tree,1.0,1.0,1.0,20276.0,all,www.emag.ro,all,www.emag.ro
+202,list_image_label,1.3 - decision tree,1.0,1.0,1.0,59.0,all,www.emag.ro,all,www.emag.ro
+203,list_price_label,1.3 - decision tree,1.0,1.0,1.0,20163.0,all,www.emag.ro,all,www.emag.ro
+204,list_price_label,1.3 - decision tree,1.0,1.0,1.0,172.0,all,www.emag.ro,all,www.emag.ro
+205,list_title_label,1.3 - decision tree,1.0,1.0,1.0,20176.0,all,www.emag.ro,all,www.emag.ro
+206,list_title_label,1.3 - decision tree,1.0,1.0,1.0,159.0,all,www.emag.ro,all,www.emag.ro
+207,detail_description_label,1.3 - decision tree,0.9999880206523952,0.9999760415917966,1.0,41738.0,all,www.okazii.ro,all,www.okazii.ro
+208,detail_description_label,1.3 - decision tree,0.8,1.0,0.6666666666666666,3.0,all,www.okazii.ro,all,www.okazii.ro
+209,detail_image_label,1.3 - decision tree,1.0,1.0,1.0,41738.0,all,www.okazii.ro,all,www.okazii.ro
+210,detail_image_label,1.3 - decision tree,1.0,1.0,1.0,3.0,all,www.okazii.ro,all,www.okazii.ro
+211,detail_price_label,1.3 - decision tree,0.9999880206523952,1.0,0.9999760415917966,41739.0,all,www.okazii.ro,all,www.okazii.ro
+212,detail_price_label,1.3 - decision tree,0.8,0.6666666666666666,1.0,2.0,all,www.okazii.ro,all,www.okazii.ro
+213,detail_title_label,1.3 - decision tree,1.0,1.0,1.0,41737.0,all,www.okazii.ro,all,www.okazii.ro
+214,detail_title_label,1.3 - decision tree,1.0,1.0,1.0,4.0,all,www.okazii.ro,all,www.okazii.ro
+215,list_image_label,1.3 - decision tree,1.0,1.0,1.0,41501.0,all,www.okazii.ro,all,www.okazii.ro
+216,list_image_label,1.3 - decision tree,1.0,1.0,1.0,240.0,all,www.okazii.ro,all,www.okazii.ro
+217,list_price_label,1.3 - decision tree,1.0,1.0,1.0,41506.0,all,www.okazii.ro,all,www.okazii.ro
+218,list_price_label,1.3 - decision tree,1.0,1.0,1.0,235.0,all,www.okazii.ro,all,www.okazii.ro
+219,list_title_label,1.3 - decision tree,1.0,1.0,1.0,41528.0,all,www.okazii.ro,all,www.okazii.ro
+220,list_title_label,1.3 - decision tree,1.0,1.0,1.0,213.0,all,www.okazii.ro,all,www.okazii.ro
+221,detail_description_label,1.3 - decision tree,1.0,1.0,1.0,26693.0,all,www.olx.ro,all,www.olx.ro
+222,detail_description_label,1.3 - decision tree,1.0,1.0,1.0,4.0,all,www.olx.ro,all,www.olx.ro
+223,detail_image_label,1.3 - decision tree,1.0,1.0,1.0,26691.0,all,www.olx.ro,all,www.olx.ro
+224,detail_image_label,1.3 - decision tree,1.0,1.0,1.0,6.0,all,www.olx.ro,all,www.olx.ro
+225,detail_price_label,1.3 - decision tree,1.0,1.0,1.0,26693.0,all,www.olx.ro,all,www.olx.ro
+226,detail_price_label,1.3 - decision tree,1.0,1.0,1.0,4.0,all,www.olx.ro,all,www.olx.ro
+227,detail_title_label,1.3 - decision tree,1.0,1.0,1.0,26697.0,all,www.olx.ro,all,www.olx.ro
+228,list_image_label,1.3 - decision tree,1.0,1.0,1.0,26492.0,all,www.olx.ro,all,www.olx.ro
+229,list_image_label,1.3 - decision tree,1.0,1.0,1.0,205.0,all,www.olx.ro,all,www.olx.ro
+230,list_price_label,1.3 - decision tree,1.0,1.0,1.0,26486.0,all,www.olx.ro,all,www.olx.ro
+231,list_price_label,1.3 - decision tree,1.0,1.0,1.0,211.0,all,www.olx.ro,all,www.olx.ro
+232,list_title_label,1.3 - decision tree,1.0,1.0,1.0,26486.0,all,www.olx.ro,all,www.olx.ro
+233,list_title_label,1.3 - decision tree,1.0,1.0,1.0,211.0,all,www.olx.ro,all,www.olx.ro
+234,detail_description_label,1.3 - decision tree,1.0,1.0,1.0,6663.0,all,www.piata-az.ro,all,www.piata-az.ro
+235,detail_image_label,1.3 - decision tree,1.0,1.0,1.0,6663.0,all,www.piata-az.ro,all,www.piata-az.ro
+236,detail_price_label,1.3 - decision tree,1.0,1.0,1.0,6663.0,all,www.piata-az.ro,all,www.piata-az.ro
+237,detail_title_label,1.3 - decision tree,1.0,1.0,1.0,6663.0,all,www.piata-az.ro,all,www.piata-az.ro
+238,list_image_label,1.3 - decision tree,1.0,1.0,1.0,6663.0,all,www.piata-az.ro,all,www.piata-az.ro
+239,list_price_label,1.3 - decision tree,1.0,1.0,1.0,6663.0,all,www.piata-az.ro,all,www.piata-az.ro
+240,list_title_label,1.3 - decision tree,1.0,1.0,1.0,6663.0,all,www.piata-az.ro,all,www.piata-az.ro
+241,detail_description_label,1.4 - mlp,0.999980326965828,1.0,0.9999606547056972,101664.0,all,www.emag.ro,detail_description_label,www.emag.ro
+242,detail_description_label,1.4 - mlp,0.7777777777777778,0.6363636363636364,1.0,7.0,all,www.emag.ro,detail_description_label,www.emag.ro
+243,detail_image_label,1.4 - mlp,1.0,1.0,1.0,101653.0,all,www.emag.ro,detail_image_label,www.emag.ro
+244,detail_image_label,1.4 - mlp,1.0,1.0,1.0,18.0,all,www.emag.ro,detail_image_label,www.emag.ro
+245,detail_price_label,1.4 - mlp,1.0,1.0,1.0,101662.0,all,www.emag.ro,detail_price_label,www.emag.ro
+246,detail_price_label,1.4 - mlp,1.0,1.0,1.0,9.0,all,www.emag.ro,detail_price_label,www.emag.ro
+247,detail_title_label,1.4 - mlp,1.0,1.0,1.0,101661.0,all,www.emag.ro,detail_title_label,www.emag.ro
+248,detail_title_label,1.4 - mlp,1.0,1.0,1.0,10.0,all,www.emag.ro,detail_title_label,www.emag.ro
+249,list_image_label,1.4 - mlp,0.9990422496272672,1.0,0.9980863320707071,101376.0,all,www.emag.ro,list_image_label,www.emag.ro
+250,list_image_label,1.4 - mlp,0.7525510204081634,0.6032719836400818,1.0,295.0,all,www.emag.ro,list_image_label,www.emag.ro
+251,list_price_label,1.4 - mlp,0.9999206357079791,1.0,0.9998412840123402,100809.0,all,www.emag.ro,list_price_label,www.emag.ro
+252,list_price_label,1.4 - mlp,0.9908045977011495,0.9817767653758542,1.0,862.0,all,www.emag.ro,list_price_label,www.emag.ro
+253,list_title_label,1.4 - mlp,0.9944530000149515,0.9999699311423159,0.9889966097662523,100878.0,all,www.emag.ro,list_title_label,www.emag.ro
+254,list_title_label,1.4 - mlp,0.5867062755291496,0.41578947368421054,0.9962168978562421,793.0,all,www.emag.ro,list_title_label,www.emag.ro
+255,detail_description_label,1.4 - mlp,1.0,1.0,1.0,74421.0,all,lajumate.ro,detail_description_label,lajumate.ro
+256,detail_description_label,1.4 - mlp,1.0,1.0,1.0,17.0,all,lajumate.ro,detail_description_label,lajumate.ro
+257,detail_image_label,1.4 - mlp,1.0,1.0,1.0,74368.0,all,lajumate.ro,detail_image_label,lajumate.ro
+258,detail_image_label,1.4 - mlp,1.0,1.0,1.0,70.0,all,lajumate.ro,detail_image_label,lajumate.ro
+259,detail_price_label,1.4 - mlp,0.9998992158996997,0.9999865609461094,0.9998118861104766,74423.0,all,lajumate.ro,detail_price_label,lajumate.ro
+260,detail_price_label,1.4 - mlp,0.6511627906976745,0.5,0.9333333333333333,15.0,all,lajumate.ro,detail_price_label,lajumate.ro
+261,detail_title_label,1.4 - mlp,1.0,1.0,1.0,74424.0,all,lajumate.ro,detail_title_label,lajumate.ro
+262,detail_title_label,1.4 - mlp,1.0,1.0,1.0,14.0,all,lajumate.ro,detail_title_label,lajumate.ro
+263,list_price_label,1.4 - mlp,0.9993683052240478,1.0,0.9987374080208531,73658.0,all,lajumate.ro,list_price_label,lajumate.ro
+264,list_price_label,1.4 - mlp,0.9437386569872959,0.8934707903780069,1.0,780.0,all,lajumate.ro,list_price_label,lajumate.ro
+265,list_title_label,1.4 - mlp,0.9967992808596996,1.0,0.9936189855544695,73656.0,all,lajumate.ro,list_title_label,lajumate.ro
+266,list_title_label,1.4 - mlp,0.7689282202556539,0.6246006389776357,1.0,782.0,all,lajumate.ro,list_title_label,lajumate.ro
+267,detail_description_label,1.4 - mlp,0.9999549068827128,0.9999098178320207,1.0,33263.0,all,www.aliexpress.com,detail_description_label,www.aliexpress.com
+268,detail_description_label,1.4 - mlp,0.4,1.0,0.25,4.0,all,www.aliexpress.com,detail_description_label,www.aliexpress.com
+269,detail_image_label,1.4 - mlp,1.0,1.0,1.0,33263.0,all,www.aliexpress.com,detail_image_label,www.aliexpress.com
+270,detail_image_label,1.4 - mlp,1.0,1.0,1.0,4.0,all,www.aliexpress.com,detail_image_label,www.aliexpress.com
+271,detail_title_label,1.4 - mlp,1.0,1.0,1.0,33263.0,all,www.aliexpress.com,detail_title_label,www.aliexpress.com
+272,detail_title_label,1.4 - mlp,1.0,1.0,1.0,4.0,all,www.aliexpress.com,detail_title_label,www.aliexpress.com
+273,list_image_label,1.4 - mlp,1.0,1.0,1.0,33223.0,all,www.aliexpress.com,list_image_label,www.aliexpress.com
+274,list_image_label,1.4 - mlp,1.0,1.0,1.0,44.0,all,www.aliexpress.com,list_image_label,www.aliexpress.com
+275,list_price_label,1.4 - mlp,1.0,1.0,1.0,33223.0,all,www.aliexpress.com,list_price_label,www.aliexpress.com
+276,list_price_label,1.4 - mlp,1.0,1.0,1.0,44.0,all,www.aliexpress.com,list_price_label,www.aliexpress.com
+277,list_title_label,1.4 - mlp,0.9999698994642106,1.0,0.9999398007404509,33223.0,all,www.aliexpress.com,list_title_label,www.aliexpress.com
+278,list_title_label,1.4 - mlp,0.9777777777777777,0.9565217391304348,1.0,44.0,all,www.aliexpress.com,list_title_label,www.aliexpress.com
+279,detail_image_label,1.4 - mlp,1.0,1.0,1.0,99096.0,all,www.amazon.com,detail_image_label,www.amazon.com
+280,detail_image_label,1.4 - mlp,1.0,1.0,1.0,10.0,all,www.amazon.com,detail_image_label,www.amazon.com
+281,detail_price_label,1.4 - mlp,0.9999949544131225,0.9999899088771608,1.0,99096.0,all,www.amazon.com,detail_price_label,www.amazon.com
+282,detail_price_label,1.4 - mlp,0.9473684210526316,1.0,0.9,10.0,all,www.amazon.com,detail_price_label,www.amazon.com
+283,detail_title_label,1.4 - mlp,0.9999949544131225,0.9999899088771608,1.0,99096.0,all,www.amazon.com,detail_title_label,www.amazon.com
+284,detail_title_label,1.4 - mlp,0.9473684210526316,1.0,0.9,10.0,all,www.amazon.com,detail_title_label,www.amazon.com
+285,list_image_label,1.4 - mlp,0.9992605947654162,1.0,0.998522282163136,98801.0,all,www.amazon.com,list_image_label,www.amazon.com
+286,list_image_label,1.4 - mlp,0.8068783068783069,0.6762749445676275,1.0,305.0,all,www.amazon.com,list_image_label,www.amazon.com
+287,list_price_label,1.4 - mlp,0.9999797714170122,1.0,0.999959543652399,98872.0,all,www.amazon.com,list_price_label,www.amazon.com
+288,list_price_label,1.4 - mlp,0.9915254237288135,0.9831932773109243,1.0,234.0,all,www.amazon.com,list_price_label,www.amazon.com
+289,list_title_label,1.4 - mlp,1.0,1.0,1.0,98801.0,all,www.amazon.com,list_title_label,www.amazon.com
+290,list_title_label,1.4 - mlp,1.0,1.0,1.0,305.0,all,www.amazon.com,list_title_label,www.amazon.com
+291,detail_description_label,1.4 - mlp,0.9999976040845566,0.9999952081805941,1.0,208688.0,all,www.okazii.ro,detail_description_label,www.okazii.ro
+292,detail_description_label,1.4 - mlp,0.9600000000000001,1.0,0.9230769230769231,13.0,all,www.okazii.ro,detail_description_label,www.okazii.ro
+293,detail_image_label,1.4 - mlp,0.9999976040730758,1.0,0.9999952081576324,208688.0,all,www.okazii.ro,detail_image_label,www.okazii.ro
+294,detail_image_label,1.4 - mlp,0.962962962962963,0.9285714285714286,1.0,13.0,all,www.okazii.ro,detail_image_label,www.okazii.ro
+295,detail_price_label,1.4 - mlp,0.9999760417065972,0.9999520845611665,1.0,208691.0,all,www.okazii.ro,detail_price_label,www.okazii.ro
+296,detail_price_label,1.4 - mlp,0.0,0.0,0.0,10.0,all,www.okazii.ro,detail_price_label,www.okazii.ro
+297,detail_title_label,1.4 - mlp,0.9999832282704273,0.9999712488080235,0.999995208019858,208682.0,all,www.okazii.ro,detail_title_label,www.okazii.ro
+298,detail_title_label,1.4 - mlp,0.7878787878787878,0.9285714285714286,0.6842105263157895,19.0,all,www.okazii.ro,detail_title_label,www.okazii.ro
+299,list_image_label,1.4 - mlp,0.9986149450804007,1.0,0.9972337216082969,207499.0,all,www.okazii.ro,list_image_label,www.okazii.ro
+300,list_image_label,1.4 - mlp,0.8072531900604433,0.6768018018018018,1.0,1202.0,all,www.okazii.ro,list_image_label,www.okazii.ro
+301,list_price_label,1.4 - mlp,0.999956630059224,1.0,0.9999132638801885,207526.0,all,www.okazii.ro,list_price_label,www.okazii.ro
+302,list_price_label,1.4 - mlp,0.9923986486486486,0.9849119865884325,1.0,1175.0,all,www.okazii.ro,list_price_label,www.okazii.ro
+303,list_title_label,1.4 - mlp,0.9999470198675496,1.0,0.9998940453485908,207636.0,all,www.okazii.ro,list_title_label,www.okazii.ro
+304,list_title_label,1.4 - mlp,0.9897769516728625,0.9797608095676172,1.0,1065.0,all,www.okazii.ro,list_title_label,www.okazii.ro
+305,detail_description_label,1.4 - mlp,1.0,1.0,1.0,133465.0,all,www.olx.ro,detail_description_label,www.olx.ro
+306,detail_description_label,1.4 - mlp,1.0,1.0,1.0,18.0,all,www.olx.ro,detail_description_label,www.olx.ro
+307,detail_image_label,1.4 - mlp,0.9960655392392875,1.0,0.992161917108152,133451.0,all,www.olx.ro,detail_image_label,www.olx.ro
+308,detail_image_label,1.4 - mlp,0.05765765765765765,0.029684601113172542,1.0,32.0,all,www.olx.ro,detail_image_label,www.olx.ro
+309,detail_price_label,1.4 - mlp,1.0,1.0,1.0,133465.0,all,www.olx.ro,detail_price_label,www.olx.ro
+310,detail_price_label,1.4 - mlp,1.0,1.0,1.0,18.0,all,www.olx.ro,detail_price_label,www.olx.ro
+311,detail_title_label,1.4 - mlp,1.0,1.0,1.0,133483.0,all,www.olx.ro,detail_title_label,www.olx.ro
+312,list_image_label,1.4 - mlp,0.9998112281496583,1.0,0.9996225275554884,132460.0,all,www.olx.ro,list_image_label,www.olx.ro
+313,list_image_label,1.4 - mlp,0.976145038167939,0.9534016775396086,1.0,1023.0,all,www.olx.ro,list_image_label,www.olx.ro
+314,list_price_label,1.4 - mlp,1.0,1.0,1.0,132429.0,all,www.olx.ro,list_price_label,www.olx.ro
+315,list_price_label,1.4 - mlp,1.0,1.0,1.0,1054.0,all,www.olx.ro,list_price_label,www.olx.ro
+316,list_title_label,1.4 - mlp,0.999879165942921,1.0,0.9997583610840526,132429.0,all,www.olx.ro,list_title_label,www.olx.ro
+317,list_title_label,1.4 - mlp,0.9850467289719625,0.9705340699815838,1.0,1054.0,all,www.olx.ro,list_title_label,www.olx.ro
+318,detail_description_label,1.5 - mlp,1.0,1.0,1.0,14885.0,all,lajumate.ro,all,lajumate.ro
+319,detail_description_label,1.5 - mlp,1.0,1.0,1.0,3.0,all,lajumate.ro,all,lajumate.ro
+320,detail_image_label,1.5 - mlp,1.0,1.0,1.0,14874.0,all,lajumate.ro,all,lajumate.ro
+321,detail_image_label,1.5 - mlp,1.0,1.0,1.0,14.0,all,lajumate.ro,all,lajumate.ro
+322,detail_price_label,1.5 - mlp,0.9999664102650231,0.9999328227865109,1.0,14885.0,all,lajumate.ro,all,lajumate.ro
+323,detail_price_label,1.5 - mlp,0.8,1.0,0.6666666666666666,3.0,all,lajumate.ro,all,lajumate.ro
+324,detail_title_label,1.5 - mlp,1.0,1.0,1.0,14885.0,all,lajumate.ro,all,lajumate.ro
+325,detail_title_label,1.5 - mlp,1.0,1.0,1.0,3.0,all,lajumate.ro,all,lajumate.ro
+326,list_image_label,1.5 - mlp,1.0,1.0,1.0,14888.0,all,lajumate.ro,all,lajumate.ro
+327,list_price_label,1.5 - mlp,0.9991167878252599,1.0,0.9982351344013033,14732.0,all,lajumate.ro,all,lajumate.ro
+328,list_price_label,1.5 - mlp,0.923076923076923,0.8571428571428571,1.0,156.0,all,lajumate.ro,all,lajumate.ro
+329,list_title_label,1.5 - mlp,0.9994906448436279,1.0,0.9989818083084442,14732.0,all,lajumate.ro,all,lajumate.ro
+330,list_title_label,1.5 - mlp,0.9541284403669724,0.9122807017543859,1.0,156.0,all,lajumate.ro,all,lajumate.ro
+331,detail_description_label,1.5 - mlp,1.0,1.0,1.0,6653.0,all,www.aliexpress.com,all,www.aliexpress.com
+332,detail_description_label,1.5 - mlp,1.0,1.0,1.0,1.0,all,www.aliexpress.com,all,www.aliexpress.com
+333,detail_image_label,1.5 - mlp,0.9999248515818742,0.9998497144574692,1.0,6653.0,all,www.aliexpress.com,all,www.aliexpress.com
+334,detail_image_label,1.5 - mlp,0.0,0.0,0.0,1.0,all,www.aliexpress.com,all,www.aliexpress.com
+335,detail_price_label,1.5 - mlp,1.0,1.0,1.0,6654.0,all,www.aliexpress.com,all,www.aliexpress.com
+336,detail_title_label,1.5 - mlp,0.9999248515818742,0.9998497144574692,1.0,6653.0,all,www.aliexpress.com,all,www.aliexpress.com
+337,detail_title_label,1.5 - mlp,0.0,0.0,0.0,1.0,all,www.aliexpress.com,all,www.aliexpress.com
+338,list_image_label,1.5 - mlp,1.0,1.0,1.0,6645.0,all,www.aliexpress.com,all,www.aliexpress.com
+339,list_image_label,1.5 - mlp,1.0,1.0,1.0,9.0,all,www.aliexpress.com,all,www.aliexpress.com
+340,list_price_label,1.5 - mlp,1.0,1.0,1.0,6645.0,all,www.aliexpress.com,all,www.aliexpress.com
+341,list_price_label,1.5 - mlp,1.0,1.0,1.0,9.0,all,www.aliexpress.com,all,www.aliexpress.com
+342,list_title_label,1.5 - mlp,1.0,1.0,1.0,6645.0,all,www.aliexpress.com,all,www.aliexpress.com
+343,list_title_label,1.5 - mlp,1.0,1.0,1.0,9.0,all,www.aliexpress.com,all,www.aliexpress.com
+344,detail_description_label,1.5 - mlp,1.0,1.0,1.0,19822.0,all,www.amazon.com,all,www.amazon.com
+345,detail_image_label,1.5 - mlp,1.0,1.0,1.0,19820.0,all,www.amazon.com,all,www.amazon.com
+346,detail_image_label,1.5 - mlp,1.0,1.0,1.0,2.0,all,www.amazon.com,all,www.amazon.com
+347,detail_price_label,1.5 - mlp,0.9999747735929971,0.9999495484587054,1.0,19820.0,all,www.amazon.com,all,www.amazon.com
+348,detail_price_label,1.5 - mlp,0.6666666666666666,1.0,0.5,2.0,all,www.amazon.com,all,www.amazon.com
+349,detail_title_label,1.5 - mlp,0.9999747735929971,0.9999495484587054,1.0,19820.0,all,www.amazon.com,all,www.amazon.com
+350,detail_title_label,1.5 - mlp,0.6666666666666666,1.0,0.5,2.0,all,www.amazon.com,all,www.amazon.com
+351,list_image_label,1.5 - mlp,1.0,1.0,1.0,19761.0,all,www.amazon.com,all,www.amazon.com
+352,list_image_label,1.5 - mlp,1.0,1.0,1.0,61.0,all,www.amazon.com,all,www.amazon.com
+353,list_price_label,1.5 - mlp,1.0,1.0,1.0,19775.0,all,www.amazon.com,all,www.amazon.com
+354,list_price_label,1.5 - mlp,1.0,1.0,1.0,47.0,all,www.amazon.com,all,www.amazon.com
+355,list_title_label,1.5 - mlp,1.0,1.0,1.0,19761.0,all,www.amazon.com,all,www.amazon.com
+356,list_title_label,1.5 - mlp,1.0,1.0,1.0,61.0,all,www.amazon.com,all,www.amazon.com
+357,detail_description_label,1.5 - mlp,0.9999754112468956,0.9999508237029752,1.0,20334.0,all,www.emag.ro,all,www.emag.ro
+358,detail_description_label,1.5 - mlp,0.0,0.0,0.0,1.0,all,www.emag.ro,all,www.emag.ro
+359,detail_image_label,1.5 - mlp,1.0,1.0,1.0,20331.0,all,www.emag.ro,all,www.emag.ro
+360,detail_image_label,1.5 - mlp,1.0,1.0,1.0,4.0,all,www.emag.ro,all,www.emag.ro
+361,detail_price_label,1.5 - mlp,1.0,1.0,1.0,20333.0,all,www.emag.ro,all,www.emag.ro
+362,detail_price_label,1.5 - mlp,1.0,1.0,1.0,2.0,all,www.emag.ro,all,www.emag.ro
+363,detail_title_label,1.5 - mlp,1.0,1.0,1.0,20333.0,all,www.emag.ro,all,www.emag.ro
+364,detail_title_label,1.5 - mlp,1.0,1.0,1.0,2.0,all,www.emag.ro,all,www.emag.ro
+365,list_image_label,1.5 - mlp,1.0,1.0,1.0,20276.0,all,www.emag.ro,all,www.emag.ro
+366,list_image_label,1.5 - mlp,1.0,1.0,1.0,59.0,all,www.emag.ro,all,www.emag.ro
+367,list_price_label,1.5 - mlp,1.0,1.0,1.0,20163.0,all,www.emag.ro,all,www.emag.ro
+368,list_price_label,1.5 - mlp,1.0,1.0,1.0,172.0,all,www.emag.ro,all,www.emag.ro
+369,list_title_label,1.5 - mlp,0.9999752186950165,0.9999504386182286,1.0,20176.0,all,www.emag.ro,all,www.emag.ro
+370,list_title_label,1.5 - mlp,0.9968454258675079,1.0,0.9937106918238994,159.0,all,www.emag.ro,all,www.emag.ro
+371,detail_description_label,1.5 - mlp,1.0,1.0,1.0,41738.0,all,www.okazii.ro,all,www.okazii.ro
+372,detail_description_label,1.5 - mlp,1.0,1.0,1.0,3.0,all,www.okazii.ro,all,www.okazii.ro
+373,detail_image_label,1.5 - mlp,1.0,1.0,1.0,41738.0,all,www.okazii.ro,all,www.okazii.ro
+374,detail_image_label,1.5 - mlp,1.0,1.0,1.0,3.0,all,www.okazii.ro,all,www.okazii.ro
+375,detail_price_label,1.5 - mlp,0.9999760421657882,0.9999520854795045,1.0,41739.0,all,www.okazii.ro,all,www.okazii.ro
+376,detail_price_label,1.5 - mlp,0.0,0.0,0.0,2.0,all,www.okazii.ro,all,www.okazii.ro
+377,detail_title_label,1.5 - mlp,0.9999880200783487,1.0,0.999976040443731,41737.0,all,www.okazii.ro,all,www.okazii.ro
+378,detail_title_label,1.5 - mlp,0.888888888888889,0.8,1.0,4.0,all,www.okazii.ro,all,www.okazii.ro
+379,list_image_label,1.5 - mlp,1.0,1.0,1.0,41501.0,all,www.okazii.ro,all,www.okazii.ro
+380,list_image_label,1.5 - mlp,1.0,1.0,1.0,240.0,all,www.okazii.ro,all,www.okazii.ro
+381,list_price_label,1.5 - mlp,1.0,1.0,1.0,41506.0,all,www.okazii.ro,all,www.okazii.ro
+382,list_price_label,1.5 - mlp,1.0,1.0,1.0,235.0,all,www.okazii.ro,all,www.okazii.ro
+383,list_title_label,1.5 - mlp,1.0,1.0,1.0,41528.0,all,www.okazii.ro,all,www.okazii.ro
+384,list_title_label,1.5 - mlp,1.0,1.0,1.0,213.0,all,www.okazii.ro,all,www.okazii.ro
+385,detail_description_label,1.5 - mlp,1.0,1.0,1.0,26693.0,all,www.olx.ro,all,www.olx.ro
+386,detail_description_label,1.5 - mlp,1.0,1.0,1.0,4.0,all,www.olx.ro,all,www.olx.ro
+387,detail_image_label,1.5 - mlp,1.0,1.0,1.0,26691.0,all,www.olx.ro,all,www.olx.ro
+388,detail_image_label,1.5 - mlp,1.0,1.0,1.0,6.0,all,www.olx.ro,all,www.olx.ro
+389,detail_price_label,1.5 - mlp,1.0,1.0,1.0,26693.0,all,www.olx.ro,all,www.olx.ro
+390,detail_price_label,1.5 - mlp,1.0,1.0,1.0,4.0,all,www.olx.ro,all,www.olx.ro
+391,detail_title_label,1.5 - mlp,1.0,1.0,1.0,26697.0,all,www.olx.ro,all,www.olx.ro
+392,list_image_label,1.5 - mlp,1.0,1.0,1.0,26492.0,all,www.olx.ro,all,www.olx.ro
+393,list_image_label,1.5 - mlp,1.0,1.0,1.0,205.0,all,www.olx.ro,all,www.olx.ro
+394,list_price_label,1.5 - mlp,1.0,1.0,1.0,26486.0,all,www.olx.ro,all,www.olx.ro
+395,list_price_label,1.5 - mlp,1.0,1.0,1.0,211.0,all,www.olx.ro,all,www.olx.ro
+396,list_title_label,1.5 - mlp,1.0,1.0,1.0,26486.0,all,www.olx.ro,all,www.olx.ro
+397,list_title_label,1.5 - mlp,1.0,1.0,1.0,211.0,all,www.olx.ro,all,www.olx.ro
+398,detail_description_label,1.5 - mlp,1.0,1.0,1.0,6663.0,all,www.piata-az.ro,all,www.piata-az.ro
+399,detail_image_label,1.5 - mlp,1.0,1.0,1.0,6663.0,all,www.piata-az.ro,all,www.piata-az.ro
+400,detail_price_label,1.5 - mlp,1.0,1.0,1.0,6663.0,all,www.piata-az.ro,all,www.piata-az.ro
+401,detail_title_label,1.5 - mlp,1.0,1.0,1.0,6663.0,all,www.piata-az.ro,all,www.piata-az.ro
+402,list_image_label,1.5 - mlp,1.0,1.0,1.0,6663.0,all,www.piata-az.ro,all,www.piata-az.ro
+403,list_price_label,1.5 - mlp,1.0,1.0,1.0,6663.0,all,www.piata-az.ro,all,www.piata-az.ro
+404,list_title_label,1.5 - mlp,1.0,1.0,1.0,6663.0,all,www.piata-az.ro,all,www.piata-az.ro

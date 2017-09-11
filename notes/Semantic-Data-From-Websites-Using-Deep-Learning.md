@@ -105,6 +105,13 @@ All but the last dataset will have the second variation of testing, as tere is n
 
 #### [Extracting Content Structure for Web Pages Based on Visual Representation - Cai et al. 2003](papers/cai.md)
 #### [A hybrid approach for content extraction with text density and visual importance of DOM nodes - Song et al. 2012](papers/song-hybrid.md)
+* uses a **densitometric** approach to detect what nodes are noise and which are not
+* based on text density, link density and visual importance
+* **text density** is defined in terms of text per tag in a subtree(number of characters) -> we should actually define the count as well
+* **link density** is  similar, but for hyperlinks based on the assumption that text corpora contain a lot of text with a yperlinks in it
+* **visual importance** is described as a measure of relative size in terms of horizontal placement
+* the text and link density could be *discovered* by a sufficiently capable deep model coupled with the dom neighbourhood 
+* we can also use the positioning with our models
 #### [Learning Block Importance Models for Web Pages - Song et al. 2004](papers/song.md)
 #### [pix2code: Generating Code from a Graphical User Interface Screenshot](papers/pix2code.md)
 * 2 main components:

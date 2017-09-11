@@ -70,11 +70,10 @@ All but the last dataset will have the second variation of testing, as tere is n
 * basically does **three level segementation** => granularity = 3 (data region - data record - data item)
 * **idea for future work** => arbitrary granularity visual block segmentation
 
+#### [A quantitative comparison of semantic web page segmentation algorithms - Kreuzer 2013](papers/reuzer.md)
 * some sort of fuzzy matching metric could be defined, maybe based on the above definition of semantic blocks and the use of grouping to relax the constraints
 * mentions good performance of **depth, positioning and area** in the WebTerrain segmentation algorithm
 * there are **no well-established datasets** avaialble to compare perfomance against => free to use whatever
-
-#### [A quantitative comparison of semantic web page segmentation algorithms - Kreuzer 2013](papers/reuzer.md)
 * many papers describe **two-step process** of segentation and classification => both our steps will be ML, and the first is not a segmentation per-se but a visual classification step, as the segmentation is not general purpose, but domain-specific
 * defines a **semantic block** as continuuous HTML fragment rendered as a graphically consistent block
 * defines **granularity** as the nesting level of blocks. in this case we are basically doing flat segmentation or a basic 2 level one
@@ -97,6 +96,13 @@ All but the last dataset will have the second variation of testing, as tere is n
 * might be useful if used with textual data from classes and ids to learn features to feed to the model
 
 #### [A Survey on Region Extractors - Sleiman et al. 2013](papers/sleiman.md)
+* makes the distinction between **information extractors** and **region extractors** and focuses on the latter
+* most of the make **strong** assumptions on the structure of the data
+* some of them, namely MDR, TCP, U-REST etc. use similarity within the same html document of DOM nodes to infer regions. we are doing somethings imilar with the the **neighbourhood**
+* other hypotheses are made based on the **structure of the dom tree**(depth, number of children, etc) - ex. STAVIES, TPC, MDR, OMINI
+* VIPS, and VIPS-based algorithms(ViDRE, ViNTS, VSDR, RIPB) use **visual features** such as font, color, visual separators, etc. to identify relevant regions. Our method, using visual features for the regions selection. Our use of a CNN or computer vision model for classification can be seen as an extension on this process with less heuristic assumptions
+* mentions **region extractors** as a sort fo preprocessing method to select relevant data. A pretrained model can be used to classify pages as containing data or not in our case, and feed the pre-readout of the page to each of its individual nodes to give it more context.
+
 #### [Extracting Content Structure for Web Pages Based on Visual Representation - Cai et al. 2003](papers/cai.md)
 #### [A hybrid approach for content extraction with text density and visual importance of DOM nodes - Song et al. 2012](papers/song-hybrid.md)
 #### [Learning Block Importance Models for Web Pages - Song et al. 2004](papers/song.md)

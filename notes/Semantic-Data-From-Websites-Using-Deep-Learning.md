@@ -112,6 +112,7 @@ All but the last dataset will have the second variation of testing, as tere is n
 * **visual importance** is described as a measure of relative size in terms of horizontal placement
 * the text and link density could be *discovered* by a sufficiently capable deep model coupled with the dom neighbourhood 
 * we can also use the positioning with our models
+* a ML model is not constrained by a **threshold** and should be able to learn what value ranges are relevant for the metrics without the need for such sofisticated normalization as in the paper
 #### [Learning Block Importance Models for Web Pages - Song et al. 2004](papers/song.md)
 #### [pix2code: Generating Code from a Graphical User Interface Screenshot](papers/pix2code.md)
 * 2 main components:

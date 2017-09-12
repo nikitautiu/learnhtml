@@ -113,6 +113,15 @@ All but the last dataset will have the second variation of testing, as tere is n
 * the text and link density could be *discovered* by a sufficiently capable deep model coupled with the dom neighbourhood 
 * we can also use the positioning with our models
 * a ML model is not constrained by a **threshold** and should be able to learn what value ranges are relevant for the metrics without the need for such sofisticated normalization as in the paper
+
+#### [Content Extraction Using Diverse Feature Sets - Peters et al. 2012](papers/peters.md)
+* like Song, uses **tag and text density**(but inspired from Kohklschutter's work) as features - we can actually include less pre-processed features and leverage the power of deep models to discover them
+* uses **regularized logistic regression** for classficiation
+* uses an **EXISTING DATASET** and updates it -> we can use this
+* extracts most frequent **tokens from `id` and `class` attributes** for semantics - what we are trying to do
+* the code is **FULLY PUBLIC** - man I love this guy
+* is basically a `noise/no-noise` classifier, aka a **region extractor**
+
 #### [Learning Block Importance Models for Web Pages - Song et al. 2004](papers/song.md)
 #### [pix2code: Generating Code from a Graphical User Interface Screenshot](papers/pix2code.md)
 * 2 main components:

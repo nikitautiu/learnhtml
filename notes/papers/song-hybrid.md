@@ -13,8 +13,8 @@ It references works suck as Denbath et al.'s FeatureExtractor algorithm which an
 ## Method
 Extracts from the dom tree for each node the **text density**. Text density is the ration of character to tags in a subtree. It is large for nodes containing simply formated text and low for highly formatted nodes.
 
-**Composite text density** is described as in terms of link char numbers and link tag numbers. It also has some bakancing terms to normalize too extreme values in case of long texts and  highly formated series of links. 
+**Composite text density** is described as in terms of link char numbers and link tag numbers. It also has some bakancing terms to normalize too extreme values in case of long texts and  highly formated series of links.
 
-**Visual importance** is defined in term of horizontal alignment and relative size of a node. 
+**Visual importance** is defined in term of horizontal alignment and relative size of a node.
 
 It then uses a metric ocmposed of all the above metrics to determine a threshold of importance for which nodes become content.

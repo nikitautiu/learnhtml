@@ -4,12 +4,15 @@
 The goal of this document is to explore the posibility of extracting manually-labeled structured data records from websites, using deep learning models. Such a model would be able, given a set of websites with the tags containing the desired information labeled accordingly, to both extract data from the same websites and potentially generalize to other similarly-structered sites.
 
 ### Introduction(what do we do?)
-We tackle the following tasks:
-1. Classification based on **DOM**-tree features. We are extracting features strictly related to the dom, for each tag. Fo each tag, we are also adding features based on its predecessors and descendants. (See notebook [`1-html-features`](../experiments/1-html-features.ipynb).)
-2. Classification based on **redender boxes** and other visual features.
+Whereas a lot of the papers explored make use of heuristics to classify content even when using ML models(**TODO** reference them), for the purpose of this experiment we will explore the ability of a deep learning model to discover features. We will be making the conscious decision of not making any algorithmic design decision based on heuristics and keeping heuristicaly significatnt features to a minimum, possibly using none at all. This way we will not make any assumptions on the structure of the data, and hope any signal that arises will be picked up by the model.(a similar approach is taken by *Peters* in his paper) 
+
+We will be using th efollowing set of features:
+1.  **DOM**-tree features. We are extracting features strictly related to the dom, for each tag. For each tag, we are also adding features based on its predecessors and descendants. (See notebook [`1-html-features`](../experiments/1-html-features.ipynb).) Thsi subset does not make any assumption on the textual content of the tag
+2. **Visual features**
     * possibly use both `border-` and `content-` boxes
     * use both absolute and relative positioning
     * **CANNOT** be directly mapped between *human visually sepaprable blocks* to tags, so the classification must be done more relaxed or grouped somehow. **TODO** decide on a criterion of grouping, either learnable(preferable) or heuristic
+3. **Textual features**
 
 ### Experiments(how we aproach the problem?)
 For the the first set of features, we will be trying to classify both on the HLD(hand labeled data) and on some syntheticly generated labels.
@@ -119,8 +122,17 @@ All but the last dataset will have the second variation of testing, as tere is n
 * uses **regularized logistic regression** for classficiation
 * uses an **EXISTING DATASET** and updates it -> we can use this
 * extracts most frequent **tokens from `id` and `class` attributes** for semantics - what we are trying to do
-* the code is **FULLY PUBLIC** - man I love this guy
+* the code is **FULLY PUBLIC** - man I love this guy!
 * is basically a `noise/no-noise` classifier, aka a **region extractor**
+
+#### [Boilerplate Detection using Shallow Text Features - Kohlschutter et al. 2010](papers/kohlschutter.md)
+* uses **densitometric features** such as **link density** and **text density**  and also average word length, sentence etc.
+* imporves upon **number of words** and **link density** with a lot of heuristic features - we would like to avoid this
+* uses the **quantitative linguistic** features for the **content text**,, notes this might lead to overfitting to the domain of the websites
+* bechmarks agains its own **GoogleNews** dataset and the **CleanEval** dataset - we could expore those, both are free for downlaod
+* due to the fear of overfitting, avoids using all HTML tags, but rather, only a subset of them
+* in our case, we could add thse quantitativ efeatures in the textual feature subset
+* mostly focuses on a lingustic data analysys in the latter part of the paper - not really relevant to us.
 
 #### [Learning Block Importance Models for Web Pages - Song et al. 2004](papers/song.md)
 #### [pix2code: Generating Code from a Graphical User Interface Screenshot](papers/pix2code.md)

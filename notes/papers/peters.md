@@ -3,12 +3,12 @@
 ## Introduction
 Aims to separate main content fr om navigation and eye-candy via a diverse feature set. Also extracts semantic information uvia `id` and `class` attributes. It describes its elf as a content extraction algorithm. In terms of ontology, this algorithm is used for `noise/content` classficiation and would rather be a **region extractor**.
 
-References the works of  Kohlschutter and the CETR algorithm as application of machine learning in of region extraction. It elaborates on those two and adds **semantic information from the id and class attributes**. 
+References the works of  Kohlschutter and the CETR algorithm as application of machine learning in of region extraction. It elaborates on those two and adds **semantic information from the id and class attributes**.
 
 ## Approach
 It only takes into account tags containing text. It then searches in the dataset for the text using fuzzy text matching to determine what tags are to be labeled as content. The code can be found at http://github.com/seomoz/dragnet AS for the model, it uses regularized logistic regression.
 
-The dataset used to benchmark is taken from the CETR algorithmm.(this could be very useful for using with our own approach, relieves us of having to build a dataset). The data is from 2012 
+The dataset used to benchmark is taken from the CETR algorithmm.(this could be very useful for using with our own approach, relieves us of having to build a dataset). The data is from 2012
 
 ### Model features
 It uses text and link density inspirde by Kohlschutter's work. **Tag ratio** is also used(text length to number of tags). It also uses the output of CETR as a feature of the model.

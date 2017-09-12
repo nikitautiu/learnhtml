@@ -17,14 +17,16 @@ Notes that n-gram models tend to grow to very large sizes. The paper avoids toke
 * rendered document image
 * entire website
 
-Notes that the latter two require CSS. Notes that it may bebeneficial to add data from the two external levels, but it's also computationally expensive. 
+Notes that the latter two require CSS. Notes that it may bebeneficial to add data from the two external levels, but it's also computationally expensive.
 
-Notes that tag becomes less relevant as CSS becomes more prevalent. To avoid overfitting to one particular site, they use only take into consideration a very small subset of tags. 
+Notes that tag becomes less relevant as CSS becomes more prevalent. To avoid overfitting to one particular site, they use only take into consideration a very small subset of tags.
 
 ### Shallow text features
 Uses **quantitative linguistics** features such as average word length, average sentence length and absolute number of words. Build upon this with a few heuristics. It argues that a word/token oriented approach would overfit to a particular domain of websites. Adds a few feuristics such as number of words starting with an uppercase, number of vertical bars, etc.
 
-Other features include densitometric features such as the **link density**(which is the ration of  links tokens to text tokens). IT also adds **text density**(which is the number of words for every line of a block, assuming a particular text warp).
+Other features include densitometric features such as the **link density**(which is the number of tokens within an `a` tag). IT also adds **text density**(which is the number of words for every line of a block, assuming a particular text warp).
+
+Includes **relative and absolute positioning features** to the mix(in terms of text structure). It also includes features from the previous and following text blocks with noted improvement in performance.
 
 ## Classification
 The web page is segmented into blocks of text annotated with the above features. It uses two sets of labels as described above. The domain specific tags in this case are:
@@ -37,7 +39,9 @@ The web page is segmented into blocks of text annotated with the above features.
 The data is classified using **decision trees** and **SVMs**.
 
 ## Evaluation
-The dataset is **available for download** for research purposes. It also tests against the **CleanEval** dataset. The algorithm achieves 90%+ f1-scores on the GoogleNews dataset. IT achieves higher than baseline perfrmance on the CleanEval dataset, but lower than on the other. 
+The dataset is **available for download** for research purposes. It also tests against the **CleanEval** dataset. The algorithm achieves 90%+ f1-scores on the GoogleNews dataset. IT achieves higher than baseline perfrmance on the CleanEval dataset, but lower than on the other.
+
+The features with the **highest impact** are number of words, text density, link density, start uppercase ratio with an information gain of over 0.45. This is for the 2-class problem. For the 4-class one, relative position also has a bit of a gain.
 
 ## Exploratory analysis
 The paper proposes a quantitative liguistic motivation to the text density vs number of words performance.

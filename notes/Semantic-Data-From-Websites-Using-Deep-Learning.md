@@ -133,6 +133,8 @@ All but the last dataset will have the second variation of testing, as tere is n
 * due to the fear of overfitting, avoids using all HTML tags, but rather, only a subset of them
 * in our case, we could add thse quantitativ efeatures in the textual feature subset
 * mostly focuses on a lingustic data analysys in the latter part of the paper - not really relevant to us.
+* uses **decision trees** and derives heuristics based on the learned rules
+* includes features from **previous and following nodes** with notable performance improvement, when more context is known -- the sanme as our neighbourhood
 
 #### [Learning Block Importance Models for Web Pages - Song et al. 2004](papers/song.md)
 #### [pix2code: Generating Code from a Graphical User Interface Screenshot](papers/pix2code.md)

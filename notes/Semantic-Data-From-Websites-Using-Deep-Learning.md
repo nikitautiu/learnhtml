@@ -4,7 +4,7 @@
 The goal of this document is to explore the posibility of extracting manually-labeled structured data records from websites, using deep learning models. Such a model would be able, given a set of websites with the tags containing the desired information labeled accordingly, to both extract data from the same websites and potentially generalize to other similarly-structered sites.
 
 ### Introduction(what do we do?)
-Whereas a lot of the papers explored make use of heuristics to classify content even when using ML models(**TODO** reference them), for the purpose of this experiment we will explore the ability of a deep learning model to discover features. We will be making the conscious decision of not making any algorithmic design decision based on heuristics and keeping heuristicaly significatnt features to a minimum, possibly using none at all. This way we will not make any assumptions on the structure of the data, and hope any signal that arises will be picked up by the model.(a similar approach is taken by *Peters* in his paper) 
+Whereas a lot of the papers explored make use of heuristics to classify content even when using ML models(**TODO** reference them), for the purpose of this experiment we will explore the ability of a deep learning model to discover features. We will be making the conscious decision of not making any algorithmic design decision based on heuristics and keeping heuristicaly significatnt features to a minimum, possibly using none at all. This way we will not make any assumptions on the structure of the data, and hope any signal that arises will be picked up by the model.(a similar approach is taken by *Peters* in his paper)
 
 We will be using th efollowing set of features:
 1.  **DOM**-tree features. We are extracting features strictly related to the dom, for each tag. For each tag, we are also adding features based on its predecessors and descendants. (See notebook [`1-html-features`](../experiments/1-html-features.ipynb).) Thsi subset does not make any assumption on the textual content of the tag
@@ -15,11 +15,11 @@ We will be using th efollowing set of features:
 3. **Textual features**
 
 ### Experiments(how we aproach the problem?)
-For the the first set of features, we will be trying to classify both on the HLD(hand labeled data) and on some syntheticly generated labels.
+For the the first set of features, we will be trying to classify om ur dataset and the benchmark ones, each time using subsets of the following sets of features
 
-* 1A. Classifying using only DOM  fetures on HDL
-* 1B. Classifying on randomly generated XPath labels(generating labels for tags extracted with the same random Xpath) to see how does the ML model compare.(**note** this is not useful for semantic segmentation, jsut to see the overall capablities of the model)
-* 2. Classifying HDL based on visual features.
+* 1. DOM features(**DOM**)
+* 2. Visual features(**VIS**)
+* 3. Textual features(**TEX**)
 
 #### Experimental design
 As for how we will be doing dataset splitting for experiments, we will be iterating on the the 3 datasets proposed in [5-data-preparation](5-data-preparation.ipynb) and on the datasets proposed by [Burget et al.](../notes/papers/burget.md). We we also justify this decision through a mathematical assumption.
@@ -135,6 +135,14 @@ All but the last dataset will have the second variation of testing, as tere is n
 * mostly focuses on a lingustic data analysys in the latter part of the paper - not really relevant to us.
 * uses **decision trees** and derives heuristics based on the learned rules
 * includes features from **previous and following nodes** with notable performance improvement, when more context is known -- the sanme as our neighbourhood
+
+#### [CETR - Content Extraction via Tag Ratios - Weninger et al.  2010](papers/weiniger.md)
+* uses **tag ratio** as a feature(the text to tag ratio) - we can include the length of the text as a feature as well
+* cites that **tag types** are NOT agood measure as the vast majority are 
+`div` and `span`
+* does **clustering** based n the tag ratio measure
+* uses **CleanEval** and Pasternack's **MSS dataset** - we cna use both as they are modernized and available in he **Dragnet**
+* makes a **tag ratio histogram** and also uses the derivatives of the smoothed version as features - states that increases from previous lines' ratios is information worth to be kept - again tags can not be analyzed self contained - *neighborhood*
 
 #### [Learning Block Importance Models for Web Pages - Song et al. 2004](papers/song.md)
 #### [pix2code: Generating Code from a Graphical User Interface Screenshot](papers/pix2code.md)

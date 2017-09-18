@@ -39,7 +39,7 @@ The web page is segmented into blocks of text annotated with the above features.
 The data is classified using **decision trees** and **SVMs**.
 
 ## Evaluation
-The dataset is **available for download** for research purposes. It also tests against the **CleanEval** dataset. The algorithm achieves 90%+ f1-scores on the GoogleNews dataset. IT achieves higher than baseline perfrmance on the CleanEval dataset, but lower than on the other.
+The **GoogleNews**/**L3S-GN1** dataset is **available for download** for research purposes. It also tests against the **CleanEval** dataset. The algorithm achieves 90%+ f1-scores on the GoogleNews dataset. IT achieves higher than baseline perfrmance on the CleanEval dataset, but lower than on the other.
 
 The features with the **highest impact** are number of words, text density, link density, start uppercase ratio with an information gain of over 0.45. This is for the 2-class problem. For the 4-class one, relative position also has a bit of a gain.
 

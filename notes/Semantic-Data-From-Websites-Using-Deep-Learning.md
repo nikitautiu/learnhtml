@@ -14,6 +14,54 @@ We will be using th efollowing set of features:
     * **CANNOT** be directly mapped between *human visually sepaprable blocks* to tags, so the classification must be done more relaxed or grouped somehow. **TODO** decide on a criterion of grouping, either learnable(preferable) or heuristic
 3. **Textual features**
 
+## Datasets
+There are a lot of datasets used to benchmark content extraction(CE) in literature, however, those that are used for more than one paper, let alone publicly available are few and far between. This section serves to  iterate a few of them as a reference and to choose a good one for our experiments.
+
+### CleanEval
+* released in 2007 for the CleanEval competition
+* 741 english pages, 713 chinese pages
+* **2-class** - content/no-content
+* used alongside a benchmark which is based on Levenshtein editing distance - not necessary
+* available in two flavour **CleanEval-EN** and **CleanEval-ZH** which have respectively, english and chinese pages
+* contains a wide variety of pages
+
+### MSS
+* made in 2009 by Pasternack and Roth for their paper
+* contains pages from 45 websites - split into **Big5** and **Myriad40** - 450 in total
+* **2-class**
+* contains news sites
+
+### L3S-GN1
+* used by Kohlschutter in 2010
+* both **2-class** and **4-class**, the latter being domain specificto news websites
+* 621 pages from 408 websites
+* named **GoogleNews** in the paper
+
+
+### CETR
+* a combination of **CleanEval** and **MSS**
+* MSS is sanitized and better formated 
+
+### Dragnet
+* from 2012
+* **2-class**
+* contains
+    * 999 pages from randomly selected RSS feeds
+    * 204 pages from 23 news websites 
+    * 178 pages from a blog directory
+* includes data from **CleanEval** and **CETR**
+
+### TECO
+* from 2016
+* **2-class** 
+* preserves **presentational information**(pages are downloaded with CSS and JS)
+* 50 pages, 1 from each website are labeled 
+* **per-tag labeling** as opposed to text-block as in the others - not a big issue
+* the sites are diverse in topics
+
+### Conclusion
+For example Yao uses in his paper both L3S-GN1 and Dragnet, which could probably make for the most complete dataset. Most of them use text blocks in the definition of Kohlschutter, but tags can be retrieved via text blocks as there is a 1-to-1 mapping.
+
 ### Experiments(how we aproach the problem?)
 For the the first set of features, we will be trying to classify om ur dataset and the benchmark ones, each time using subsets of the following sets of features
 
@@ -143,6 +191,15 @@ All but the last dataset will have the second variation of testing, as tere is n
 * does **clustering** based n the tag ratio measure
 * uses **CleanEval** and Pasternack's **MSS dataset** - we cna use both as they are modernized and available in he **Dragnet**
 * makes a **tag ratio histogram** and also uses the derivatives of the smoothed version as features - states that increases from previous lines' ratios is information worth to be kept - again tags can not be analyzed self contained - *neighborhood*
+
+#### [ A Machine Learning Approach to Webpage Content Extraction - Yao et al. 2013]([papers/yao.md)
+* 2-class(content/non-content) classficiation using **SVMs**
+* features 
+    * uses a couple of **textual features** taken directly from Kohlschutter
+    * discretizez the position of the text block on the page - **relative position**
+    * includes the 10 most frequent **tokens in *id* and *class* ** from non-content
+* datasets: **Dragnet** and **L3S-GN1** 
+* comparable results to Dragnet
 
 #### [Learning Block Importance Models for Web Pages - Song et al. 2004](papers/song.md)
 #### [pix2code: Generating Code from a Graphical User Interface Screenshot](papers/pix2code.md)

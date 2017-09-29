@@ -317,25 +317,31 @@ def freq_vect_series(ser):
     return freqs.rename(columns=col_renames)
 
 
-def freq_vect_dataframe(ddf):
+def freq_vect_dataframe(ddf, freq_cols=None):
     """Given a dataframe of columns with python lists compute
     the merged dataframe of the frequency vectors returned
     by freq_vect_series."""
-    ddfs = [freq_vect_series(ddf.loc[:, col_name]) for col_name in ddf.columns.tolist()]
+    # determine columns
+    if freq_cols is None:
+        freq_cols = ddf.columns.tolist()  # use all if unspecified
+
+    ddfs = [freq_vect_series(ddf.loc[:, col_name]) for col_name in freq_cols]
     # basically compute all the frequency dataframes and returned the one-by-one merge result
-    result = ddfs[0]
-    for ddf in ddfs[1:]:
-        result.assign(**{col_name: col_name for col_name in ddf.columns.tolist()})
+    result = ddf.drop(freq_cols, axis=1)  # drop all but the columns to be transformed to freqs
+    for current_ddf in ddfs:
+        result = result.assign(**{col_name: current_ddf[col_name] for col_name in current_ddf.columns.tolist()})
     return result
 
 
-def one_hot_dataframe(ddf):
+def one_hot_dataframe(ddf, one_hot_cols=None):
     """Given a dask dataframe encode its columns using one-hot. Every new column will
     be prefixed with the original name.
 
     Returns a dask dataframe."""
+
     tag_cats = ddf.categorize()  # converted to categoricals
-    one_hot = dd.get_dummies(data=tag_cats, prefix=tag_cats.columns.tolist())
+    # will be using al if None
+    one_hot = dd.get_dummies(data=tag_cats, prefix=one_hot_cols, columns=one_hot_cols)
     return one_hot
 
 
@@ -345,15 +351,16 @@ def extract_features_from_ddf(ddf, depth, height):
     feat_ddf = ddf.map_partitions(lambda df: extract_features_from_df(df, depth, height),
                                   meta=extract_features_from_df(pd.DataFrame(), depth, height)).clear_divisions()
     feat_ddf = feat_ddf.categorize(['url', 'path'])
+
     columns = feat_ddf.columns.tolist()  # used for filtering
 
     # one hot encoding
     one_hot_cols = list(filter(lambda col: re.match(r'.*tag$', col), columns))
-    one_hot_ddf = one_hot_dataframe(feat_ddf.loc[:, one_hot_cols])
+    one_hot_ddf = one_hot_dataframe(feat_ddf.loc[:, one_hot_cols + ['url', 'path']], one_hot_cols)
 
     # frequency vects
     freq_cols = list(filter(lambda col: re.match(r'descend.*tags$', col), columns))
-    freq_ddf = freq_vect_dataframe(feat_ddf.loc[:, freq_cols])
+    freq_ddf = freq_vect_dataframe(feat_ddf.loc[:, freq_cols + ['url', 'path']], freq_cols)
 
     # drop redundant cols
     classes_cols = list(filter(lambda col: re.match(r'^((descendant|ancestor)[0-9]+_)?classes$', col), columns))

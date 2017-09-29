@@ -3,11 +3,14 @@
 import json
 
 import click
+import os
+import pandas as pd
 import dask.dataframe as dd
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 from tabulate import tabulate
 
+from features import extract_features_from_ddf
 from labeling import get_stats, label_scraped_data
 from scrape.spiders.broad_spider import HtmlSpider
 
@@ -119,6 +122,28 @@ def stats(input_file):
     click.secho("Pages with labels per domain", bold=True)
     click.echo(tabulate(have_labels, headers='keys', tablefmt='psql'))
 
+
+@cli.command()
+@click.argument('input_file', type=click.Path(file_okay=True, dir_okay=False, readable=True), metavar='INPUT_FILE')
+@click.argument('output_dir', type=click.Path(file_okay=False, dir_okay=True, readable=True), metavar='OUTPUT_DIR')
+@click.option('--height', type=int, default=5, metavar='HEIGHT', help='the height of the neighbourhood')
+@click.option('--depth', type=int, default=5, metavar='DEPTH', help='the depth of the neighbourhood')
+def dom(input_file, output_dir, height, depth):
+    """Extract the dom features and output them to a directory, in a partitioned fashion"""
+    df = pd.read_csv(input_file)  # must read as pandas because dask makes a fuss about html
+    oh, freqs, feats = extract_features_from_ddf(dd.from_pandas(df, chunksize=20), depth, height)
+
+    # output all the three to csvs
+    click.echo('OUTPUTING FEATURES')
+    feats.to_csv(os.path.join(output_dir, 'feats-*.csv'), index=False)
+
+    click.echo('OUTPUTING ONE-HOT')
+    oh.to_csv(os.path.join(output_dir, 'oh-*.csv'), index=False)
+
+    click.echo('OUTPUTING FREQUENCIES')
+    freqs.to_csv(os.path.join(output_dir, 'freqs-*.csv'), index=False)
+
+    click.secho('DONE!', bold=True)
 
 
 if __name__ == '__main__':

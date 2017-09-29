@@ -40,11 +40,12 @@ There are a lot of datasets used to benchmark content extraction(CE) in literatu
 
 ### CETR
 * a combination of **CleanEval** and **MSS**
-* MSS is sanitized and better formated 
+* MSS is sanitized and better formated
 
 ### Dragnet
 * from 2012
-* **2-class**
+* **2-class** content/no-content
+* **3-class** content can be separated into main-article/comments 
 * contains
     * 999 pages from randomly selected RSS feeds
     * 204 pages from 23 news websites 

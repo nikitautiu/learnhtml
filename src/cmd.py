@@ -6,6 +6,7 @@ import click
 import os
 import pandas as pd
 import dask.dataframe as dd
+import dask
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 from tabulate import tabulate
@@ -145,6 +146,33 @@ def dom(input_file, output_dir, height, depth):
 
     click.secho('DONE!', bold=True)
 
+
+@cli.command()
+@click.option('--cache', type=click.Path(dir_okay=True, file_okay=False, exists=True),
+              metavar='CACHE_DIR', help='where to store cache for larger-than-memory merging',
+              default=None)
+@click.option('--on', type=click.STRING, metavar='MERGE_COLS', help='the columns to merge on(comma separated)')
+@click.argument('output_files', metavar='OUTPUT_FILES', nargs=1)
+@click.argument('input_files', metavar='INPUT_FILES', nargs=-1)
+def merge(cache, output_files, input_files, on):
+    """Merges the given files on the columns specified withthe --on option
+    and outputs the result to output_files."""
+    # set the cache if specified
+    if cache is not None:
+        click.echo('Using {} as cache'.format(cache))
+        dask.set_options(temporary_directory=cache)
+
+    on_columns = on.split(',')  # get the columns to merge on
+    result_ddf = dd.read_csv(input_files[0])  # the first one
+    for in_files in input_files[1:]:
+        # merge with the others
+        click.secho('MERGING {}'.format(in_files))
+        in_file_ddf = dd.read_csv(in_files)
+        result_ddf = result_ddf.merge(in_file_ddf, on=on_columns)
+
+    # output it
+    click.echo('OUTPUTTING')
+    result_ddf.to_csv(output_files, index=False)
 
 if __name__ == '__main__':
     cli()

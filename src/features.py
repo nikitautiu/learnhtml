@@ -31,17 +31,13 @@ def extract_tag_types(nodes):
     return pd.Series(data=(node.tag if type(node.tag) is str else 'html_comment' for node in nodes))
 
 
-def extract_has_text(nodes):
-    """Returns whether each one of the nodes contains text."""
-
-    def has_text(nodes):
+def extract_text_len(nodes):
+    """Returns the number of characters of text for the given node."""
+    def get_text_len(nodes):
         for node in nodes:
-            if node.text is None:
-                yield False
-            else:
-                yield bool(node.text.strip())
-
-    return pd.Series(data=has_text(nodes))
+            text = '' if node.tag is etree.Comment or node.tag is etree.PI else ''.join(node.itertext())
+            yield len(text)
+    return pd.Series(data=get_text_len(nodes))
 
 
 def extract_classes(nodes):
@@ -49,10 +45,10 @@ def extract_classes(nodes):
     return pd.Series(data=(node.attrib.get('class', '').split() for node in nodes))
 
 
-def extract_has_id(nodes):
+def extract_attr_len(nodes, attr_name='id'):
     """Extract a Series of bools telling whether the component
     has and id attribute or not."""
-    return pd.Series(data=('id' in node.attrib for node in nodes))
+    return pd.Series(data=(len(node.attrib.get(attr_name, '')) for node in nodes))
 
 
 def extract_no_classes(nodes):
@@ -114,16 +110,19 @@ def extract_node_features(nodes):
     sibling_pos_features = extract_sibling_pos(nodes)  # position among siblings
     tag_type_features = extract_tag_types(nodes)  # tag types
     no_classes_features = extract_no_classes(nodes)  # # of classes
-    has_id_features = extract_has_id(nodes)  # has id
+    id_len_features = extract_attr_len(nodes)  # id len
+    class_len_features = extract_attr_len(nodes, 'class')  # class len
     no_children_features = extract_no_children(nodes)  # # of children
-    has_text_features = extract_has_text(nodes)  # has text
-    classes_features = extract_classes(nodes)
+    text_len_features = extract_text_len(nodes)  # text length
+    classes_features = extract_classes(nodes)  # classes
 
     # series of features, and their names
-    series = [depth_features, sibling_pos_features, tag_type_features, no_classes_features,
-              has_id_features, no_children_features, has_text_features,
-              classes_features]
-    columns = ['depth', 'sibling_pos', 'tag', 'no_classes', 'has_id', 'no_children', 'has_text', 'classes']
+    series = [depth_features, sibling_pos_features,
+              tag_type_features, no_classes_features,
+              id_len_features, class_len_features, no_children_features,
+              text_len_features, classes_features]
+    columns = ['depth', 'sibling_pos', 'tag', 'no_classes', 'id_len', 'class_len',
+               'no_children', 'text_len', 'classes']
     df_items = zip(columns, series)
 
     return pd.DataFrame.from_items(df_items)
@@ -136,7 +135,7 @@ def iter_df_records(df):
 
 def get_empty_features():
     """Returns the null equivalent of empty features for a node"""
-    return np.array([0., 0., '', 0., False, 0., False, list()], dtype=object)
+    return np.array([0, 0, '', 0, 0, 0, 0, 0, list()], dtype=object)
 
 
 def aggregate_features(feat_list):
@@ -149,16 +148,17 @@ def aggregate_features(feat_list):
         # try to compute only i there are descendants
         no_nodes = len(feat_list)
         no_children_avg = np.array([feat['no_children'] for feat in feat_list]).mean()
-        has_id_avg = np.array([feat['has_id'] for feat in feat_list]).mean()
+        id_len_avg = np.array([feat['id_len'] for feat in feat_list]).mean()
         no_classes_avg = np.array([feat['no_classes'] for feat in feat_list]).mean()
-        has_text_avg = np.array([feat['has_text'] for feat in feat_list]).mean()
+        class_len_avg = np.array([feat['class_len'] for feat in feat_list]).mean()
+        text_len_avg = np.array([feat['text_len'] for feat in feat_list]).mean()
         class_list = sum((feat['classes'] for feat in feat_list), [])
         tag_list = [feat['tag'] for feat in feat_list]
 
-        return no_nodes, no_children_avg, has_id_avg, no_classes_avg, has_text_avg, class_list, tag_list
+        return no_nodes, no_children_avg, id_len_avg, no_classes_avg, class_len_avg, text_len_avg, class_list, tag_list
 
     # return an empty set of features otherwise
-    return 0, 0, 0, 0, 0, list(), list()
+    return 0, 0, 0, 0, 0, 0, list(), list()
 
 
 class NodeFeatureExtractor(object):
@@ -222,8 +222,9 @@ class NodeFeatureExtractor(object):
             # get the descendant aggregate features
             feature_rows.append(self.get_descendant_agg_feats(node, depth))
 
-        feature_names = ['no_nodes', 'no_children_avg', 'has_id_avg',
-                         'no_classes_avg', 'has_text_avg', 'classes', 'tags']
+        feature_names = ['no_nodes', 'no_children_avg', 'id_len_avg',
+                         'no_classes_avg', 'class_len_avg', 'text_len_avg',
+                         'classes', 'tags']
         column_names = []
         for i in range(1, depth + 1):
             for name in feature_names:
@@ -253,7 +254,7 @@ def extract_features_from_html(html, depth, height):
     """Given an html text, extract the node based features
     including the descendant and ancestor ones if depthe and
     height are respectively non-null."""
-    root = etree.HTML(html)  # get the nodes
+    root = etree.HTML(html.encode('utf-8'))  # get the nodes, serve bytes, unicode fails if html has meta
     features = extract_features_from_nodes(list(root.iter()), depth, height)
 
     # add the paths to the elements for identification

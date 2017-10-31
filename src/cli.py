@@ -174,5 +174,41 @@ def merge(cache, output_files, input_files, on):
     click.echo('OUTPUTTING')
     result_ddf.to_csv(output_files, index=False)
 
+
+@cli.command()
+@click.option('--cache', type=click.Path(dir_okay=True, file_okay=False, exists=True),
+              metavar='CACHE_DIR', help='where to store cache for larger-than-memory merging',
+              default=None)
+@click.option('--state', type=click.INT, metavar='RANDOM_STATE',
+              help='the random seed', default=42)
+@click.option('--on', type=click.STRING, metavar='SPLIT_COL', help='the column to split by')
+@click.argument('input_files', metavar='INPUT_FILES', nargs=1)
+@click.argument('outputs', metavar='OUTPUTS', type=click.STRING, nargs=-1)
+def split(cache, outputs, input_files, on, state):
+    """Splits the CSV by the given column. The outputs
+    are given as OUTPUT_PATTERN1 OUTPUT_PROPORTION1 OUTPUT_PATTERN2
+    OUTPUT_PROPORTION2 etc."""
+    # set the cache if specified
+
+    if cache is not None:
+        click.echo('Using {} as cache'.format(cache))
+        dask.set_options(temporary_directory=cache)
+
+    proportions = [int(prop) for prop in outputs[1::2]]
+    proportions = [prop / sum(proportions) for prop in proportions]  # scaled
+    output_csvs = outputs[::2]
+
+    click.echo('Computing split')
+
+    # split the columns unique values
+    ddf = dd.read_csv(input_files)  # the first one
+    splits = [split.compute() for split in ddf[on].unique().random_split(proportions, random_state=state)]
+
+    # iterate over splits and output
+    for split_values, out_csv in zip(splits, output_csvs):
+        click.echo('Outputting to {}'.format(out_csv))
+        ddf[ddf[on].isin(split_values)].to_csv(out_csv, index=False)
+
+
 if __name__ == '__main__':
     cli()

@@ -1,12 +1,14 @@
 import tensorflow as tf
-import dask.dataframe as dd
 import numpy as np
 import pandas as pd
+import dask.dataframe as dd
 
 
 def make_csv_decoder(input_tensor, dtypes, convert_ints=False, **kwargs):
     """Raturns a csv_decoded tensor from the input_tensor. Requires a sample
-    file to determine the types. Also automatically converts booleans"""
+    file to determine the types. Also automatically converts booleans.
+    If `convert_ints` is set to True, all values are decoded as floats(useful
+    for stacking them afterwards)."""
 
     # infer the types
     default_values = ['' if dtype.name in ['bool', 'object'] else dtype.type() for dtype in
@@ -47,13 +49,12 @@ def make_csv_col_tensors(csv_pattern=None, csv_files=None, shuffle=True, num_epo
     reader = tf.TextLineReader(skip_header_lines=1)  # intialize the reader
     key, value = reader.read(filenames_queue)
 
-    # read the metadata
-    ddf = dd.read_csv(csv_pattern if csv_pattern is not None else csv_files[0])
-    decoded_tensors = make_csv_decoder(value, ddf.dtypes, **csv_decoder_kwargs)
+    # read a couple of rows just to infer metadata
+    df = dd.read_csv(csv_pattern if csv_pattern is not None else csv_files[0])
+    decoded_tensors = make_csv_decoder(value, df.dtypes, **csv_decoder_kwargs)
 
     # return the columns as a dict
-    return {k: v for k, v in zip(ddf.columns, decoded_tensors)}
-
+    return {k: v for k, v in zip(df.columns, decoded_tensors)}
 
 
 def batch_tensors(tensors, batch_size=100, num_threads=4, shuffle=True):
@@ -90,6 +91,4 @@ def make_csv_pipeline(csv_pattern=None, csv_files=None, feature_cols=None, label
         # keep at least 10 more batches in the queue
         tensor_list = [features, labels]
         return batch_tensors(tensor_list, batch_size, num_threads, shuffle)
-
-
 

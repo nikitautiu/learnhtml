@@ -3,7 +3,7 @@ import itertools
 import tensorflow as tf
 import numpy as np
 import dask.dataframe as dd
-import tqdm
+
 
 def make_csv_decoder(input_tensor, dtypes, convert_ints=False, **kwargs):
     """Raturns a csv_decoded tensor from the input_tensor. Requires a sample
@@ -63,6 +63,7 @@ class CsvDecoder(object):
             tens_dict[col_name] = tf.where(condition, tf.constant(1.0), tf.constant(0.0))
 
         return tens_dict
+
 
 def make_csv_col_tensors(csv_pattern=None, csv_files=None, shuffle=True, num_epochs=10, csv_decoder_kwargs={}):
     """Returns a dict of column names and their corresponding tensors.
@@ -274,3 +275,206 @@ def tfrecord_dataset(tfrecords_files, label_name, tf_types, num_parallel_calls=4
     dataset = dataset.map(decode_record, num_parallel_calls=num_parallel_calls)
 
     return dataset
+
+
+def build_dataset(csv_pattern, add_weights=True, concat_features=True, normalize_data=False, num_parallel_calls=16):
+    """Given  a pattern of csv files, return the Tensorflow `Dataset`
+    :param add_weights: add a tensor called "weights" to the dictionary
+    :param concat_features: whether to concatenate the feature tensors into
+    one big tensor named "X"
+    :param normalize_data: whether to do standard- test normalization on the features
+    :param num_parallel_calls: how any threads to run the pipeline operations on
+    """
+    ddf = dd.read_csv(csv_pattern)
+
+    def add_weights_from_labels(tens_dict, label_tens):
+        # add the weight column based on proportions
+        label_proportion = ddf['content_label'].mean().compute()
+
+        # define the constants
+        positive_label_val = tf.constant(1.0)
+        positive_proportion = tf.constant(0.5 / label_proportion, shape=())
+        negative_proportion = tf.constant(0.5 / (1 - label_proportion), shape=())
+
+        # the weights are added as a conditional based on the corresponding label
+        weight_tens = tf.where(tf.equal(label_tens, positive_label_val),
+                               positive_proportion,
+                               negative_proportion)
+        tens_dict['weights'] = weight_tens
+        return tens_dict, label_tens
+
+    def drop_strings(tens_dict, label):
+        # drops the string columns
+        return {k: v for k, v in tens_dict.items() if k not in ['url', 'path']}, label
+
+    def normalize_features(tens_dict, label):
+        # normalize values for faster convergence
+        # must drop the nonnumeric cols as dask does not support numeric_only
+        means = ddf.drop(['url', 'path', 'content_label'], axis=1).mean().compute()
+        scale = ddf.drop(['url', 'path', 'content_label'], axis=1).std().compute()  # the scale
+        return {k: (tf.to_float(v) - tf.constant(means[k], dtype=tf.float32)) / tf.constant(scale[k], dtype=tf.float32)
+                for k, v in tens_dict.items()}, label
+
+    def concat_feature_tensors(tens_dict, label):
+        # concatenate everything but the weights into one big tensor
+        weights = tens_dict.pop('weights')
+        result = {'weights': weights, 'X': tf.stack([tf.to_float(tens) for tens in tens_dict.values()])}, label
+        return result
+
+    def drop_weights(tens_dict, label):
+        # just for debug, to see fi weights are not somehow considered by evaluation
+        tens_dict.pop('weights')
+        return tens_dict, label
+
+    # do the pipeline here
+    dataset = csv_dataset(csv_pattern, 'content_label', num_parallel_calls=num_parallel_calls)  # decode the csv
+    dataset = dataset.map(drop_strings, num_parallel_calls=num_parallel_calls)  # drop redundants
+    if normalize_data:
+        dataset = dataset.map(normalize_features, num_parallel_calls=num_parallel_calls)  # mean, std normalization
+    dataset = dataset.map(add_weights_from_labels, num_parallel_calls=num_parallel_calls)  # add weight col
+
+    if not add_weights:
+        # dropping the weights if neccesary
+        dataset.map(add_weights_from_labels, num_parallel_calls=num_parallel_calls)
+
+    if concat_features:
+        # concatenate only if specfified
+        # may be omitted in case further processing is desired
+        dataset = dataset.map(concat_feature_tensors, num_parallel_calls=num_parallel_calls)  # concatenate the features
+
+    return dataset
+
+
+class IteratorInitializerHook(tf.train.SessionRunHook):
+    """A hook that runs an initalization function at the beginning of the
+    session to initialize an "initializable" iterator."""
+    def __init__(self):
+        super(IteratorInitializerHook, self).__init__()
+        self.iterator_initiliser_func = None
+
+    def after_create_session(self, session, coord):
+        self.iterator_initiliser_func(session)
+
+
+def tensor_transform_dict(dictionary):
+    # transform a dictionary into a nested tensor struct
+    placeholder_dict = {k: tf.placeholder(v.dtype, v.shape) for k, v in dictionary.items()}
+    transformed_dict = {k: placeholder_dict[k] for k in dictionary.keys()}
+    feed_dict = {placeholder_dict[k]: v for k, v in dictionary.items()}
+
+    return transformed_dict, feed_dict
+
+
+def get_tensors_and_feed_from_nested(struct):
+    """Given a nested structure of in-memory np-arrays
+    return an equivalent structure with the arrays replaced with
+    `tf.Placeholder`s and a dictionary with the placeholders for
+    keys and the corresponding arrays for values."""
+
+    # TODO: Generalize it! for the moment expects (dict, array)
+    tens_dict, feed_dict = tensor_transform_dict(struct[0])
+    label_placeholder = tf.placeholder(struct[1].dtype, struct[1].shape)
+    feed_dict[label_placeholder] = struct[1]
+
+    # return the structure and feed dictionary
+    return (tens_dict, label_placeholder), feed_dict
+
+
+def np_precache_dataset(dataset, total_size, scope_name='training_data'):
+    """Given a dataset and its total size return
+    a from_tensors one iterating over the cached version
+    of the other one. Returns the dataset iterating over
+    placeholder tensors and the feed dict to initialize those placeholders"""
+
+    # classic iteration, cache entire dataset in memory
+    it = dataset.batch(total_size).make_one_shot_iterator()
+    values = it.get_next()
+
+    # add them to the list. for the moment this is
+    # redundant, but if the method will ever iterate until full
+    # consumption, this will be needed
+    elements = []
+    with tf.Session() as sess:
+        while True:
+            try:
+                elements.append(sess.run(values))
+            except tf.errors.OutOfRangeError:
+                break
+
+    # return the new dataset
+    # because the graph cannot be larger than 2GB, data must be passed via placeholders
+    # TODO: generalize to an arbitrary number of arrays(concatenate them)
+    concatenated_struct = elements[0]
+
+    # return the tensor slice dataset and the feed dict
+    return get_dataset_from_tensors(concatenated_struct, scope_name)
+
+
+def get_dataset_from_tensors(struct, scope_name='data'):
+    """Given a nested structure with leafs, np array, return a tensor slice
+    dataset with a feed_Dict to be used alongisde its initializable iterator"""
+    with tf.name_scope(scope_name):
+        placeholder_struct, feed_dict = get_tensors_and_feed_from_nested(struct)
+    dataset = tf.contrib.data.Dataset.from_tensor_slices(placeholder_struct)
+    # dataset and dict
+    return dataset, feed_dict
+
+
+def get_input_fn_from_dataset(dataset, feed_dict=None):
+    """Return an input function that iterates over the dataset.
+    If feed_dict is given, an itializable iterator generated and
+    a intialization hook returned as well alongside the function"""
+    iterator_initializer_hook = IteratorInitializerHook()
+
+    def input_fn(num_epochs=1000, batch_size=100, shuffle_buffer=1000,):
+        # because the dataset is precached, there is no need to build the graph here
+        # shuffle the input if the parameter is non-zero
+        data = dataset
+        if not feed_dict:
+            # if it's not precached at least use dataset's caching mechanism
+            data = data.cache()
+
+        if shuffle_buffer != 0:
+            data = dataset.shuffle(buffer_size=shuffle_buffer)
+
+            # batch, repeate, iterate
+        data = data.batch(batch_size)
+        data = data.repeat(num_epochs)
+
+        # return the iterator, must be returned from here
+        # so that the graph is built upon
+        if feed_dict is None:
+            iterator = data.make_one_shot_iterator()
+            elems = iterator.get_next()
+            return elems
+
+        # get an initializable iterator and setup the hook
+        iterator = data.make_initializable_iterator()
+        elems = iterator.get_next()
+        iterator_initializer_hook.iterator_initiliser_func = \
+            lambda sess: sess.run(
+                iterator.initializer,
+                feed_dict=feed_dict)
+        return elems
+
+    if feed_dict is None:
+        return input_fn  # one shot iterator
+    return input_fn, iterator_initializer_hook
+
+
+def input_fn_from_csv(csv_pattern, precache=True, **kwargs):
+    """Returns an input function and optionally an iterator
+    initialization hook(if precache is True) for the files
+    matching `csv_pattern`. The keyword arguments are passed
+    on to the dataset building function(`build_dataset`).
+
+    If not precached, caching still occurs, but does not persist
+    between subsequent calls of the input function."""
+    uncached_dataset = build_dataset(csv_pattern, **kwargs)
+
+    if precache:
+        cached_dataset, feed_dict = np_precache_dataset(uncached_dataset, len(dd.read_csv(csv_pattern)))
+        return get_input_fn_from_dataset(uncached_dataset, feed_dict)  # this should also return the hook
+
+    # else do not cache it and simply pass it tu get_input_fn_from_dataset
+    return get_input_fn_from_dataset(uncached_dataset)

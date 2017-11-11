@@ -286,7 +286,6 @@ def build_dataset(csv_pattern, add_weights=True, concat_features=True, normalize
     :param num_parallel_calls: how any threads to run the pipeline operations on
     """
     ddf = dd.read_csv(csv_pattern)
-
     
     def add_weights_from_labels(tens_dict, label_tens):
         # add the weight column based on proportions
@@ -381,11 +380,10 @@ def get_tensors_and_feed_from_nested(struct):
     return (tens_dict, label_placeholder), feed_dict
 
 
-def np_precache_dataset(dataset, total_size, scope_name='training_data'):
+def data_from_dataset(dataset, total_size):
     """Given a dataset and its total size return
-    a from_tensors one iterating over the cached version
-    of the other one. Returns the dataset iterating over
-    placeholder tensors and the feed dict to initialize those placeholders"""
+    a all it's data a a nested structured with np.arrays
+    for leafs"""
 
     # classic iteration, cache entire dataset in memory
     it = dataset.batch(total_size).make_one_shot_iterator()
@@ -408,7 +406,7 @@ def np_precache_dataset(dataset, total_size, scope_name='training_data'):
     concatenated_struct = elements[0]
 
     # return the tensor slice dataset and the feed dict
-    return get_dataset_from_tensors(concatenated_struct, scope_name)
+    return concatenated_struct
 
 
 def get_dataset_from_tensors(struct, scope_name='data'):
@@ -421,22 +419,31 @@ def get_dataset_from_tensors(struct, scope_name='data'):
     return dataset, feed_dict
 
 
-def get_input_fn_from_dataset(dataset, feed_dict=None):
-    """Return an input function that iterates over the dataset.
+def get_input_fn_from_dataset_or_structure(dataset_or_struct):
+    """Return an input function that iterates over the first argument.
     If feed_dict is given, an itializable iterator generated and
-    a intialization hook returned as well alongside the function"""
+    a intialization hook returned as well alongside the function
+
+    Whether the first argument is a dataset or a structure is infered
+    from its type.
+    """
     iterator_initializer_hook = IteratorInitializerHook()
+    is_dataset = issubclass(type(dataset_or_struct), tf.data.Dataset)  # check the types
 
-    def input_fn(num_epochs=1000, batch_size=100, shuffle_buffer=1000,):
-        # because the dataset is precached, there is no need to build the graph here
+    def input_fn(num_epochs=1000, batch_size=100, shuffle_buffer=1000):
+        # the placholders MUST be built here, because they are tensors
+        # which have to belong to the estimator's
+        feed_dict = None  # for visibility
+        if is_dataset:
+            data = dataset_or_struct  # must be a dataset
+            data = data.cache()  # if it's not precached at least use dataset's caching mechanism
+        else:
+            # it is a structure and the new dataset must be built here
+            data, feed_dict = get_dataset_from_tensors(dataset_or_struct)
+
         # shuffle the input if the parameter is non-zero
-        data = dataset
-        if feed_dict is None:
-            # if it's not precached at least use dataset's caching mechanism
-            data = data.cache()
-
         if shuffle_buffer != 0:
-            data = dataset.shuffle(buffer_size=shuffle_buffer)
+            data = data.shuffle(buffer_size=shuffle_buffer)
 
             # batch, repeate, iterate
         data = data.batch(batch_size)
@@ -444,7 +451,7 @@ def get_input_fn_from_dataset(dataset, feed_dict=None):
 
         # return the iterator, must be returned from here
         # so that the graph is built upon
-        if feed_dict is None:
+        if is_dataset:
             iterator = data.make_one_shot_iterator()
             elems = iterator.get_next()
             return elems
@@ -458,7 +465,7 @@ def get_input_fn_from_dataset(dataset, feed_dict=None):
                 feed_dict=feed_dict)
         return elems
 
-    if feed_dict is None:
+    if is_dataset:
         return input_fn  # one shot iterator
     return input_fn, iterator_initializer_hook
 
@@ -474,8 +481,10 @@ def input_fn_from_csv(csv_pattern, precache=True, **kwargs):
     uncached_dataset = build_dataset(csv_pattern, **kwargs)
 
     if precache:
-        cached_dataset, feed_dict = np_precache_dataset(uncached_dataset, len(dd.read_csv(csv_pattern)))
-        return get_input_fn_from_dataset(cached_dataset, feed_dict)  # this should also return the hook
+        # cache it as a neste structure and get_input_fn_from_dataset_or_structure will
+        # take care of the rest
+        cached_struct = data_from_dataset(uncached_dataset, len(dd.read_csv(csv_pattern)))
+        return get_input_fn_from_dataset_or_structure(cached_struct)  # this should also return the hook
 
     # else do not cache it and simply pass it tu get_input_fn_from_dataset
-    return get_input_fn_from_dataset(uncached_dataset)
+    return get_input_fn_from_dataset_or_structure(uncached_dataset)

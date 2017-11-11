@@ -287,10 +287,11 @@ def build_dataset(csv_pattern, add_weights=True, concat_features=True, normalize
     """
     ddf = dd.read_csv(csv_pattern)
 
+    
     def add_weights_from_labels(tens_dict, label_tens):
         # add the weight column based on proportions
         label_proportion = ddf['content_label'].mean().compute()
-
+        
         # define the constants
         positive_label_val = tf.constant(1.0)
         positive_proportion = tf.constant(0.5 / label_proportion, shape=())
@@ -415,7 +416,7 @@ def get_dataset_from_tensors(struct, scope_name='data'):
     dataset with a feed_Dict to be used alongisde its initializable iterator"""
     with tf.name_scope(scope_name):
         placeholder_struct, feed_dict = get_tensors_and_feed_from_nested(struct)
-    dataset = tf.contrib.data.Dataset.from_tensor_slices(placeholder_struct)
+    dataset = tf.data.Dataset.from_tensor_slices(placeholder_struct)
     # dataset and dict
     return dataset, feed_dict
 
@@ -430,7 +431,7 @@ def get_input_fn_from_dataset(dataset, feed_dict=None):
         # because the dataset is precached, there is no need to build the graph here
         # shuffle the input if the parameter is non-zero
         data = dataset
-        if not feed_dict:
+        if feed_dict is None:
             # if it's not precached at least use dataset's caching mechanism
             data = data.cache()
 
@@ -474,7 +475,7 @@ def input_fn_from_csv(csv_pattern, precache=True, **kwargs):
 
     if precache:
         cached_dataset, feed_dict = np_precache_dataset(uncached_dataset, len(dd.read_csv(csv_pattern)))
-        return get_input_fn_from_dataset(uncached_dataset, feed_dict)  # this should also return the hook
+        return get_input_fn_from_dataset(cached_dataset, feed_dict)  # this should also return the hook
 
     # else do not cache it and simply pass it tu get_input_fn_from_dataset
     return get_input_fn_from_dataset(uncached_dataset)

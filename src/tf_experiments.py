@@ -93,7 +93,7 @@ def train_eval_loop(estimator, train_input_fn_and_hook, num_epochs=1000, start_e
     return metrics
 
 
-def plot_metric(train_stats, validation_stats, test_stats, metric_name):
+def plot_metric(train_stats, validation_stats, test_stats, metric_name, smoothing=21):
     """Given the scores for the train, validation and test set and a metric name
     plot the validation curves."""
     # get the best epoch for validation
@@ -101,8 +101,8 @@ def plot_metric(train_stats, validation_stats, test_stats, metric_name):
     best_index = test_stats['epoch'] == best_epoch
 
     # do a bit of smoothing
-    smooth_train = train_stats.rolling(center=False, window=21).mean().dropna()
-    smooth_validation = validation_stats.rolling(center=False, window=21).mean().dropna()
+    smooth_train = train_stats.rolling(center=False, window=smoothing).mean().dropna()
+    smooth_validation = validation_stats.rolling(center=False, window=smoothing).mean().dropna()
 
     # do the plotting
     fig, ax = plt.subplots(figsize=(11, 7))
@@ -114,3 +114,5 @@ def plot_metric(train_stats, validation_stats, test_stats, metric_name):
     plt.title(metric_name)
     plt.legend(loc='lower right')
     sns.despine(fig=fig, ax=ax)
+    
+    return fig, ax

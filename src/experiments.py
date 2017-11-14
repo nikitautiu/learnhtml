@@ -12,9 +12,9 @@ from sklearn.tree import DecisionTreeClassifier
 
 
 def train_and_evaluate(X_train, Y_train, X_test=None, Y_test=None, model_func=None, test_size=0.3):
-    """Receives a a train dataset and optionally a test one. Does the splitting
+    """Receives a a train dataset_dragnet and optionally a test one. Does the splitting
     of the data in stratified manner so that the class proportions are preserved.
-    If no test dataset is received, splits the training one in 2."""
+    If no test dataset_dragnet is received, splits the training one in 2."""
     if X_test is None:
         X_train, X_test, Y_train, Y_test = train_test_split(X_train, Y_train, test_size=test_size, stratify=Y_train.values.argmax(1))
 
@@ -62,7 +62,7 @@ def train_and_eval_file(train_file, test_file=None, model_func=None, label_cols=
 
 
 def get_dataset_descr_from_filename(filename):
-    """Given a filename return the dataset description of it.
+    """Given a filename return the dataset_dragnet description of it.
     (website, label) meaning what website it's from and
     what labels it contains(if it contains all data from
     one website, return "all")."""

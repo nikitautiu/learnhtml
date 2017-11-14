@@ -234,7 +234,7 @@ def convert_csv_to_tfrecords(csv_pattern, tfrecords_file, progress_bar=True):
     dataset = paths.flat_map(lambda filename: (tf.data.TextLineDataset(filename).skip(1))).cache()
     dataset = dataset.map(decoder.decode_line, num_parallel_calls=4)
 
-    # that dataset no iterates over all the content of the csv returned as dictionaries
+    # that dataset_dragnet no iterates over all the content of the csv returned as dictionaries
     # get the tf types
     tf_types = csv_to_tf_types(csv_pattern)
     example_constructor_func = example_constructor_from_tf_types(tf_types)  # the example creator
@@ -260,7 +260,7 @@ def convert_csv_to_tfrecords(csv_pattern, tfrecords_file, progress_bar=True):
 
 def tfrecord_dataset(tfrecords_files, label_name, tf_types, num_parallel_calls=4):
     """Given a tfrecords file and a dictionary of
-    keys to tensorflow type mapings, return a dataset
+    keys to tensorflow type mapings, return a dataset_dragnet
     that reads from that outputs the a tuple of the feature
     tensor dict and the label tensor."""
     features = feature_dict_from_tf_types(tf_types)
@@ -381,11 +381,11 @@ def get_tensors_and_feed_from_nested(struct):
 
 
 def data_from_dataset(dataset, total_size):
-    """Given a dataset and its total size return
+    """Given a dataset_dragnet and its total size return
     a all it's data a a nested structured with np.arrays
     for leafs"""
 
-    # classic iteration, cache entire dataset in memory
+    # classic iteration, cache entire dataset_dragnet in memory
     it = dataset.batch(total_size).make_one_shot_iterator()
     values = it.get_next()
 
@@ -400,22 +400,22 @@ def data_from_dataset(dataset, total_size):
             except tf.errors.OutOfRangeError:
                 break
 
-    # return the new dataset
+    # return the new dataset_dragnet
     # because the graph cannot be larger than 2GB, data must be passed via placeholders
     # TODO: generalize to an arbitrary number of arrays(concatenate them)
     concatenated_struct = elements[0]
 
-    # return the tensor slice dataset and the feed dict
+    # return the tensor slice dataset_dragnet and the feed dict
     return concatenated_struct
 
 
 def get_dataset_from_tensors(struct, scope_name='data'):
     """Given a nested structure with leafs, np array, return a tensor slice
-    dataset with a feed_Dict to be used alongisde its initializable iterator"""
+    dataset_dragnet with a feed_Dict to be used alongisde its initializable iterator"""
     with tf.name_scope(scope_name):
         placeholder_struct, feed_dict = get_tensors_and_feed_from_nested(struct)
     dataset = tf.data.Dataset.from_tensor_slices(placeholder_struct)
-    # dataset and dict
+    # dataset_dragnet and dict
     return dataset, feed_dict
 
 
@@ -424,7 +424,7 @@ def get_input_fn_from_dataset_or_structure(dataset_or_struct):
     If feed_dict is given, an itializable iterator generated and
     a intialization hook returned as well alongside the function
 
-    Whether the first argument is a dataset or a structure is infered
+    Whether the first argument is a dataset_dragnet or a structure is infered
     from its type.
     """
     iterator_initializer_hook = IteratorInitializerHook()
@@ -435,10 +435,10 @@ def get_input_fn_from_dataset_or_structure(dataset_or_struct):
         # which have to belong to the estimator's
         feed_dict = None  # for visibility
         if is_dataset:
-            data = dataset_or_struct  # must be a dataset
-            data = data.cache()  # if it's not precached at least use dataset's caching mechanism
+            data = dataset_or_struct  # must be a dataset_dragnet
+            data = data.cache()  # if it's not precached at least use dataset_dragnet's caching mechanism
         else:
-            # it is a structure and the new dataset must be built here
+            # it is a structure and the new dataset_dragnet must be built here
             data, feed_dict = get_dataset_from_tensors(dataset_or_struct)
 
         # shuffle the input if the parameter is non-zero
@@ -474,7 +474,7 @@ def input_fn_from_csv(csv_pattern, precache=True, **kwargs):
     """Returns an input function and optionally an iterator
     initialization hook(if precache is True) for the files
     matching `csv_pattern`. The keyword arguments are passed
-    on to the dataset building function(`build_dataset`).
+    on to the dataset_dragnet building function(`build_dataset`).
 
     If not precached, caching still occurs, but does not persist
     between subsequent calls of the input function."""

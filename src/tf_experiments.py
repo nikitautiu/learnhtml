@@ -27,7 +27,7 @@ def get_exp(estimator, input_fn, hooks=[]):
     with tf.Session() as sess:
         for hook in hooks:
             hook.after_create_session(sess, None)  # must be ran
-        # get each element of the training dataset until the end is reached
+        # get each element of the training dataset_dragnet until the end is reached
         while True:
             try:
                 elem = sess.run(label_tens)

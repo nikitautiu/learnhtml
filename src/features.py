@@ -347,7 +347,7 @@ def one_hot_dataframe(ddf, one_hot_cols=None):
 
 
 def extract_features_from_ddf(ddf, depth, height):
-    """Given a dask dataframe of the raw data, return the dask dataset containing all the
+    """Given a dask dataframe of the raw data, return the dask dataset_dragnet containing all the
     extracted features and dropping the redundant ones."""
     feat_ddf = ddf.map_partitions(lambda df: extract_features_from_df(df, depth, height),
                                   meta=extract_features_from_df(pd.DataFrame(), depth, height)).clear_divisions()

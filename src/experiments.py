@@ -1,14 +1,12 @@
 import logging
-
-import glob
-import pandas as pd
-import numpy as np
-import dask.dataframe as dd
 import re
-from sklearn.cross_validation import train_test_split
+
+import dask.dataframe as dd
+import numpy as np
+import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, precision_recall_fscore_support
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import train_test_split
 
 
 def train_and_evaluate(X_train, Y_train, X_test=None, Y_test=None, model_func=None, test_size=0.3):
@@ -16,7 +14,8 @@ def train_and_evaluate(X_train, Y_train, X_test=None, Y_test=None, model_func=No
     of the data in stratified manner so that the class proportions are preserved.
     If no test dataset_dragnet is received, splits the training one in 2."""
     if X_test is None:
-        X_train, X_test, Y_train, Y_test = train_test_split(X_train, Y_train, test_size=test_size, stratify=Y_train.values.argmax(1))
+        X_train, X_test, Y_train, Y_test = train_test_split(X_train, Y_train, test_size=test_size,
+                                                            stratify=Y_train.values.argmax(1))
 
     scores = model_func(X_train, Y_train, X_test, Y_test)
 

@@ -1,0 +1,12 @@
+tensorflow-gpu
+seaborn
+matplotlib
+numpy
+lxml
+dask
+pandas
+csvkit
+scrapy
+click
+scikit-learn
+chardet

@@ -1,8 +1,6 @@
-import itertools
-
-import tensorflow as tf
-import numpy as np
 import dask.dataframe as dd
+import numpy as np
+import tensorflow as tf
 
 
 def make_csv_decoder(input_tensor, dtypes, convert_ints=False, **kwargs):
@@ -44,7 +42,7 @@ class CsvDecoder(object):
         self.col_names = ddf.columns  # get the col names
 
         self.default_values = ['' if dtype.name in ['bool', 'object'] else dtype.type() for dtype in
-                          dtypes]  # convert bools and objs to string
+                               dtypes]  # convert bools and objs to string
         self.default_values = [[x] for x in self.default_values]  # must be wrapped in a list
 
         self.bool_cols = []
@@ -123,7 +121,7 @@ def make_csv_pipeline(csv_pattern=None, csv_files=None, feature_cols=None, label
             label_tensors = [tens for key, tens in tens_dict.items() if key in label_cols]
         else:
             # load them in a pandas dataframe
-            df = dd.read_csv(csv_pattern or csv_files[0])[feature_cols+label_cols].astype(float).compute()
+            df = dd.read_csv(csv_pattern or csv_files[0])[feature_cols + label_cols].astype(float).compute()
             label_df = df[label_cols]
             feature_df = df.drop(label_cols, inplace=True)
 
@@ -161,7 +159,8 @@ def csv_dataset(csv_pattern, label_name, num_parallel_calls=4):
         return tens_dict, label
 
     paths = tf.data.Dataset.list_files(csv_pattern)  # use the pattern
-    dataset = paths.flat_map(lambda filename: (tf.data.TextLineDataset(filename).skip(1)))  # skip the first line of every file
+    dataset = paths.flat_map(
+        lambda filename: (tf.data.TextLineDataset(filename).skip(1)))  # skip the first line of every file
     dataset = dataset.map(decode_line, num_parallel_calls=num_parallel_calls)
 
     return dataset
@@ -286,11 +285,11 @@ def build_dataset(csv_pattern, add_weights=True, concat_features=True, normalize
     :param num_parallel_calls: how any threads to run the pipeline operations on
     """
     ddf = dd.read_csv(csv_pattern)
-    
+
     def add_weights_from_labels(tens_dict, label_tens):
         # add the weight column based on proportions
         label_proportion = ddf['content_label'].mean().compute()
-        
+
         # define the constants
         positive_label_val = tf.constant(1.0)
         positive_proportion = tf.constant(0.5 / label_proportion, shape=())
@@ -348,6 +347,7 @@ def build_dataset(csv_pattern, add_weights=True, concat_features=True, normalize
 class IteratorInitializerHook(tf.train.SessionRunHook):
     """A hook that runs an initalization function at the beginning of the
     session to initialize an "initializable" iterator."""
+
     def __init__(self):
         super(IteratorInitializerHook, self).__init__()
         self.iterator_initiliser_func = None

@@ -1,18 +1,19 @@
+#!/usr/bin/python3
 """This module provides a utility to easily download and label website tags."""
 
 import json
+import os
 
 import click
-import os
-import pandas as pd
-import dask.dataframe as dd
 import dask
+import dask.dataframe as dd
+import pandas as pd
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
-from tabulate import tabulate
 
+from dataset_conversion.conversion import convert_dataset
 from features import extract_features_from_ddf
-from labeling import get_stats, label_scraped_data
+from labeling import label_scraped_data
 from scrape.spiders.broad_spider import HtmlSpider
 
 
@@ -55,7 +56,7 @@ def cli():
               help='the log level')
 @click.argument('output_file', type=click.Path(file_okay=True, dir_okay=False), metavar='OUTPUT_FILE')
 @click.option('--rules', type=click.Path(file_okay=True, dir_okay=False, readable=True), metavar='RULES_FILE',
-                default='rules.json', help='the json rules file')
+              default='rules.json', help='the json rules file')
 @click.option('--start-url', type=click.STRING, default=None, help='url to start from')
 @click.option('--pages', type=click.INT, metavar='PAGES', default=100, help='the number of pages to extract per domain')
 def scrape(output_file, rules, logfile, loglevel, pages, start_url):
@@ -104,24 +105,6 @@ def label(input_file, output_file, rules):
     # extract labels
     labeled_df = label_scraped_data(input_file, rules_dict['rules'])
     labeled_df.to_csv(output_file, index=True)
-
-
-@cli.command()
-@click.argument('input_file', type=click.Path(file_okay=True, dir_okay=False, readable=True), metavar='INPUT_FILE')
-def stats(input_file):
-    """Print labelling stats"""
-    ddf = dd.read_csv(input_file)
-    total, total_labels, have_labels = get_stats(ddf)
-
-    # try pretty printing
-    click.secho("Total sites per domain", bold=True)
-    click.echo(str(total))
-
-    click.secho("Total labels per domain", bold=True)
-    click.echo(tabulate(total_labels, headers='keys', tablefmt='psql'))
-
-    click.secho("Pages with labels per domain", bold=True)
-    click.echo(tabulate(have_labels, headers='keys', tablefmt='psql'))
 
 
 @cli.command()
@@ -208,6 +191,32 @@ def split(cache, outputs, input_files, on, state):
     for split_values, out_csv in zip(splits, output_csvs):
         click.echo('Outputting to {}'.format(out_csv))
         ddf[ddf[on].isin(split_values)].to_csv(out_csv, index=False)
+
+
+@cli.command()
+@click.argument('dataset_directory', metavar='DATASET_DIRECTORY', type=click.Path(file_okay=False, dir_okay=True), nargs=1)
+@click.argument('output_directory', metavar='OUTPUT_DIRECTORY', type=click.Path(file_okay=False, dir_okay=True), nargs=1)
+@click.option('--raw/--no-raw', default=True, help='Whether to output the raw file')
+@click.option('--labels/--no-labels', default=True, help='Whether to output the label files')
+@click.option('--num-workers', metavar='NUM_WORKERS', type=click.INT,
+              default=8, help='The number of workers to parallelize to(default 8)')
+@click.option('--cleaneval/--dragnet', default=False,
+              help='Whether the dataset is cleaneval or dragnet(default dragnet)')
+def convert(dataset_directory, output_directory, raw, labels, num_workers, cleaneval):
+    """Converts the dataset from DATASET_DIRECTORY to our format and
+    outputs it to OUTPUT_DIRECTORY"""
+    html_ddf, label_ddf = convert_dataset(dataset_directory, 'dragnet-' if not cleaneval else 'cleaneval-',
+                                          cleaneval=cleaneval)
+
+    dask.set_options(get=dask.multiprocessing.get, num_workers=num_workers)  # set the number of workers
+    if raw:
+        # output the html
+        click.echo('OUTPUTTING RAW')
+        html_ddf.compute().to_csv(output_directory + '/raw.csv', index=False)
+    if labels:
+        # output the html
+        click.echo('OUTPUTTING LABELS')
+        label_ddf.compute().to_csv(output_directory + '/labels.csv', index=False)
 
 
 if __name__ == '__main__':

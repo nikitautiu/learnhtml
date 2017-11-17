@@ -119,7 +119,7 @@ def dom(input_file, output_dir, height, depth, num_workers):
     dask.set_options(get=dask.multiprocessing.get, num_workers=num_workers)  # set the number of workers
 
     df = pd.read_csv(input_file)  # must read as pandas because dask makes a fuss about html
-    oh, freqs, feats = extract_features_from_ddf(dd.from_pandas(df, chunksize=20), depth, height)
+    oh, freqs, feats = extract_features_from_ddf(dd.from_pandas(df, npartitions=num_workers), depth, height)
 
     # output all the three to csvs
     click.echo('OUTPUTING FEATURES')

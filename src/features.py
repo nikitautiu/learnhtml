@@ -2,11 +2,10 @@ import itertools
 import re
 from urllib.parse import urlparse
 
-from lxml import etree
-
-import pandas as pd
-import numpy as np
 import dask.dataframe as dd
+import numpy as np
+import pandas as pd
+from lxml import etree
 
 
 def get_depth(node):
@@ -33,10 +32,12 @@ def extract_tag_types(nodes):
 
 def extract_text_len(nodes):
     """Returns the number of characters of text for the given node."""
+
     def get_text_len(nodes):
         for node in nodes:
             text = '' if node.tag is etree.Comment or node.tag is etree.PI else ''.join(node.itertext())
             yield len(text)
+
     return pd.Series(data=get_text_len(nodes))
 
 
@@ -59,7 +60,7 @@ def extract_no_classes(nodes):
 def get_sibling_pos(node):
     if node.getparent() is None:
         return 0
-    return node.getparent().index(node) # return the position
+    return node.getparent().index(node)  # return the position
 
 
 def extract_sibling_pos(nodes):
@@ -207,7 +208,7 @@ class NodeFeatureExtractor(object):
         descendants = get_descendants(node, depth)
 
         # iterate over levels
-        for lvl in range(1, depth+1):
+        for lvl in range(1, depth + 1):
             # get the features of the descendants
             desc_feat_list = [self.feature_tree[desc] for desc in descendants[lvl]]
             per_level_tuples.append(aggregate_features(desc_feat_list))
@@ -287,7 +288,7 @@ def extract_features_from_df(df, depth, height):
         feat_dfs.append(feat_df)  # add the features to the list
 
     # concat them all
-    result_df = pd.concat(feat_dfs, axis='rows', ignore_index=True)
+    result_df = pd.concat(feat_dfs, ignore_index=True)
     return result_df
 
 

@@ -80,7 +80,7 @@ def get_block_ratios(html, gold_standard):
     # the percentage of its tokens that were in this substring
 
     # we will transform the str to bytes, otherwise, lxml complains
-    # for some edge casse when the encoding is specified in the document
+    # for some edge case when the encoding is specified in the document
     root = etree.HTML(html.encode('utf-8'))  # get the nodes
     extracted_blocks = Blockifier.blocks_from_tree(root, do_css=False)  # get blocks
     tree = extracted_blocks[0].features['block_start_element'].getroottree() if len(extracted_blocks) != 0 else None

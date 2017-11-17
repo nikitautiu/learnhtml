@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 """This module provides a utility to easily download and label website tags."""
 
 import json
@@ -110,10 +110,14 @@ def label(input_file, output_file, rules):
 @cli.command()
 @click.argument('input_file', type=click.Path(file_okay=True, dir_okay=False, readable=True), metavar='INPUT_FILE')
 @click.argument('output_dir', type=click.Path(file_okay=False, dir_okay=True, readable=True), metavar='OUTPUT_DIR')
-@click.option('--height', type=int, default=5, metavar='HEIGHT', help='the height of the neighbourhood')
-@click.option('--depth', type=int, default=5, metavar='DEPTH', help='the depth of the neighbourhood')
-def dom(input_file, output_dir, height, depth):
+@click.option('--height', type=int, default=5, metavar='HEIGHT', help='The height of the neighbourhood')
+@click.option('--depth', type=int, default=5, metavar='DEPTH', help='The depth of the neighbourhood')
+@click.option('--num-workers', metavar='NUM_WORKERS', type=click.INT,
+              default=8, help='The number of workers to parallelize to(default 8)')
+def dom(input_file, output_dir, height, depth, num_workers):
     """Extract the dom features and output them to a directory, in a partitioned fashion"""
+    dask.set_options(get=dask.multiprocessing.get, num_workers=num_workers)  # set the number of workers
+
     df = pd.read_csv(input_file)  # must read as pandas because dask makes a fuss about html
     oh, freqs, feats = extract_features_from_ddf(dd.from_pandas(df, chunksize=20), depth, height)
 
@@ -194,8 +198,10 @@ def split(cache, outputs, input_files, on, state):
 
 
 @cli.command()
-@click.argument('dataset_directory', metavar='DATASET_DIRECTORY', type=click.Path(file_okay=False, dir_okay=True), nargs=1)
-@click.argument('output_directory', metavar='OUTPUT_DIRECTORY', type=click.Path(file_okay=False, dir_okay=True), nargs=1)
+@click.argument('dataset_directory', metavar='DATASET_DIRECTORY', type=click.Path(file_okay=False, dir_okay=True),
+                nargs=1)
+@click.argument('output_directory', metavar='OUTPUT_DIRECTORY', type=click.Path(file_okay=False, dir_okay=True),
+                nargs=1)
 @click.option('--raw/--no-raw', default=True, help='Whether to output the raw file')
 @click.option('--labels/--no-labels', default=True, help='Whether to output the label files')
 @click.option('--num-workers', metavar='NUM_WORKERS', type=click.INT,

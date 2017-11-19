@@ -1,10 +1,11 @@
 #!/bin/bash
 
-# split seed
+# split seed andn umber of workers
 SPLIT_SEED=42
+NUM_WORKERS=16
 
 cd ..
-mkdir data data/{external,raw,interim,final} data/interim/{dragnet,cleaneval} data/final/{dragnet,cleaneval}
+mkdir data data/{external,raw,interim,final} data/interim/{dragnet,cleaneval} data/raw/{cleaneval,dragnet} data/final/{dragnet,cleaneval}
 mkdir ~/partd
 
 cd data/external/
@@ -53,18 +54,18 @@ rm HTML/{114,276,305,376,767,331,619,716}.html Corrected/{114,276,305,376,767,33
 echo EXTRACTING LABELS/RAW
 cd ../..
 echo CLEANEVAL
-../src/cli.py convert --cleaneval external/cleaneval/ raw/cleaneval
+../src/cli.py convert --num-workers $NUM_WORKERS --cleaneval external/cleaneval raw/cleaneval
 
 echo DRAGNET
-../src/cli.py convert --dragnet external/dragnet raw/dragnet
+../src/cli.py convert --num-workers $NUM_WORKERS --dragnet external/dragnet raw/dragnet
 
 # extract features
 echo EXTRACTING FEATURES
 echo CLEANEVAL
-../src/cli.py dom raw/cleaneval/raw.csv interim/cleaneval
+../src/cli.py dom --num-workers $NUM_WORKERS raw/cleaneval/raw.csv interim/cleaneval
 
 echo DRAGNET
-../src/cli.py dom raw/dragnet/raw.csv interim/dragnet
+../src/cli.py dom --num-workers $NUM_WORKERS raw/dragnet/raw.csv interim/dragnet
 
 
 # merge data
@@ -74,5 +75,5 @@ echo MERGING CSVS
 
 # split the data
 echo TRAIN/VALIDATON/TEST SPLIT
-../src/cli.py split --state 42 --on url interim/cleaneval/dom-full-\*.csv final/cleaneval/dom-full-train-\*.csv 75 final/cleaneval/dom-full-validation-\*.csv 15 final/cleaneval/dom-full-test-\*.csv 15
-../src/cli.py split --state 42 --on url interim/dragnet/dom-full-\*.csv final/dragnet/dom-full-train-\*.csv 75 final/dragnet/dom-full-validation-\*.csv 15 final/dragnet/dom-full-test-\*.csv 15
+../src/cli.py split --state $SPLIT_SEED --on url interim/cleaneval/dom-full-\*.csv final/cleaneval/dom-full-train-\*.csv 75 final/cleaneval/dom-full-validation-\*.csv 15 final/cleaneval/dom-full-test-\*.csv 15
+../src/cli.py split --state $SPLIT_SEED --on url interim/dragnet/dom-full-\*.csv final/dragnet/dom-full-train-\*.csv 75 final/dragnet/dom-full-validation-\*.csv 15 final/dragnet/dom-full-test-\*.csv 15

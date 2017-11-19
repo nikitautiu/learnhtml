@@ -4,15 +4,11 @@
 The goal of this document is to explore the posibility of extracting manually-labeled structured data records from websites, using deep learning models. Such a model would be able, given a set of websites with the tags containing the desired information labeled accordingly, to both extract data from the same websites and potentially generalize to other similarly-structered sites.
 
 ### Introduction(what do we do?)
-Whereas a lot of the papers explored make use of heuristics to classify content even when using ML models(**TODO** reference them), for the purpose of this experiment we will explore the ability of a deep learning model to discover features. We will be making the conscious decision of not making any algorithmic design decision based on heuristics and keeping heuristicaly significatnt features to a minimum, possibly using none at all. This way we will not make any assumptions on the structure of the data, and hope any signal that arises will be picked up by the model.(a similar approach is taken by *Peters* in his paper)
+Whereas a lot of the papers explored make use of heuristics to classify content even when using ML models(**TODO** reference them), for the purpose of this experiment we will explore the ability of a deep learning model to discover features. We will be making the conscious decision of not making any algorithmic design decision based on heuristics and keeping domain-significant features to a minimum, possibly using none at all. This way we will not make any assumptions on the structure of the data, and hope any signal that arises will be picked up by the model.(a similar approach is taken by *Peters* in his paper, however they still do extensive feature preselection).
 
-We will be using th efollowing set of features:
-1.  **DOM**-tree features. We are extracting features strictly related to the dom, for each tag. For each tag, we are also adding features based on its predecessors and descendants. (See notebook [`1-html-features`](../experiments/1-html-features.ipynb).) Thsi subset does not make any assumption on the textual content of the tag
-2. **Visual features**
-    * possibly use both `border-` and `content-` boxes
-    * use both absolute and relative positioning
-    * **CANNOT** be directly mapped between *human visually sepaprable blocks* to tags, so the classification must be done more relaxed or grouped somehow. **TODO** decide on a criterion of grouping, either learnable(preferable) or heuristic
-3. **Textual features**
+### Features
+We are extracting features strictly related to the dom, for each tag. For each tag, we are also adding features based on its predecessors and descendants. (See notebook [`1-html-features`](../experiments/1-html-features.ipynb).) Thsi subset does not make any assumption on the textual content of the tag
+
 
 ## Datasets
 There are a lot of datasets used to benchmark content extraction(CE) in literature, however, those that are used for more than one paper, let alone publicly available are few and far between. This section serves to  iterate a few of them as a reference and to choose a good one for our experiments.
@@ -63,12 +59,10 @@ There are a lot of datasets used to benchmark content extraction(CE) in literatu
 ### Conclusion
 For example Yao uses in his paper both L3S-GN1 and Dragnet, which could probably make for the most complete dataset. Most of them use text blocks in the definition of Kohlschutter, but tags can be retrieved via text blocks as there is a 1-to-1 mapping.
 
-### Experiments(how we aproach the problem?)
-For the the first set of features, we will be trying to classify om ur dataset and the benchmark ones, each time using subsets of the following sets of features
+#### Dragnet conversion
+In fact, this is exactly what we ended up doing. For consistency sake, we took Dragnet's implementation of the "blockifying" algorithm described by Kohlschutter. To map them back, we used the exact same method involving finding the longest common subsequence between the gold standard and the extracted blocks and seeing which of them from the extracted set have a percentage of tokens belonging to the golden ratio greater than the the threshold of 10% used by Dragnet as well. Unlike the others we did not attempt to classify blocks, but rather labeled the tags corresponding to these bselected blocks as content and the others as non-content.
 
-* 1. DOM features(**DOM**)
-* 2. Visual features(**VIS**)
-* 3. Textual features(**TEX**)
+This does lead to a much more skewed dataset, with very few content samples with respect to the total number, but it follows our approach of making the least ammount of assumptions with regard to the content extraction. Whereas Peters and Kohlschutter define heuristics to decide which blocks could and could not be content(ie. taking only `h1`, `p`, `div` etc. and excluding others), we do not preprocess our data according to these, considering them subjective but consistent enough that a sufficiently complex model could learn them. 
 
 #### Experimental design
 As for how we will be doing dataset splitting for experiments, we will be iterating on the the 3 datasets proposed in [5-data-preparation](5-data-preparation.ipynb) and on the datasets proposed by [Burget et al.](../notes/papers/burget.md). We we also justify this decision through a mathematical assumption.

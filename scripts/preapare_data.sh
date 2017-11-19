@@ -1,6 +1,13 @@
 #!/bin/bash
 
-cd ../data/external/
+# split seed
+SPLIT_SEED=42
+
+cd ..
+mkdir data data/{external,raw,interim,final} data/interim/{dragnet,cleaneval} data/final/{dragnet,cleaneval}
+mkdir ~/partd
+
+cd data/external/
 
 # clone and untar
 git clone https://github.com/seomoz/dragnet_data.git
@@ -43,10 +50,29 @@ cd ../cleaneval
 rm HTML/{114,276,305,376,767,331,619,716}.html Corrected/{114,276,305,376,767,331,619,716}.html.corrected.txt
 
 
-echo EXTRACTING LABELS
+echo EXTRACTING LABELS/RAW
 cd ../..
 echo CLEANEVAL
 ../src/cli.py convert --cleaneval external/cleaneval/ raw/cleaneval
 
 echo DRAGNET
 ../src/cli.py convert --dragnet external/dragnet raw/dragnet
+
+# extract features
+echo EXTRACTING FEATURES
+echo CLEANEVAL
+../src/cli.py dom raw/cleaneval/raw.csv interim/cleaneval
+
+echo DRAGNET
+../src/cli.py dom raw/dragnet/raw.csv interim/dragnet
+
+
+# merge data
+echo MERGING CSVS
+../src/cli.py merge --cache ~/partd --on "url,path" interim/cleaneval/dom-full-\*.csv interim/cleaneval/feats-\*.csv interim/cleaneval/oh-\*.csv interim/cleaneval/freqs-\*.csv raw/cleaneval/labels.csv
+../src/cli.py merge --cache ~/partd --on "url,path" interim/dragnet/dom-full-\*.csv interim/dragnet/feats-\*.csv interim/dragnet/oh-\*.csv interim/dragnet/freqs-\*.csv raw/dragnet/labels.csv
+
+# split the data
+echo TRAIN/VALIDATON/TEST SPLIT
+../src/cli.py split --state 42 --on url interim/cleaneval/dom-full-\*.csv final/cleaneval/dom-full-train-\*.csv 75 final/cleaneval/dom-full-validation-\*.csv 15 final/cleaneval/dom-full-test-\*.csv 15
+../src/cli.py split --state 42 --on url interim/dragnet/dom-full-\*.csv final/dragnet/dom-full-train-\*.csv 75 final/dragnet/dom-full-validation-\*.csv 15 final/dragnet/dom-full-test-\*.csv 15

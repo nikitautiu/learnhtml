@@ -1,13 +1,14 @@
 # numpy, matplotlib, seaborn
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import seaborn as sns
-
-# skealrn
-from sklearn.metrics import precision_recall_fscore_support, classification_report, accuracy_score
-
 # tesnsorflow
 import tensorflow as tf
+# skealrn
+from sklearn.metrics import precision_recall_fscore_support, accuracy_score
+
+from utils import zip_dicts
+
 
 def get_pred(estimator, input_fn, hooks=[]):
     """Given an input function and an estimator, return the d predicted labels"""
@@ -60,8 +61,8 @@ def get_metrics(estimator, input_fn, init_hooks=[], exp_arr=None):
     }
 
 
-def train_eval_loop(estimator, train_input_fn_and_hook, num_epochs=1000, start_epoch=0, epoch_step=1,
-                    eval_input_fns_and_hooks={}):
+def train_eval_loop_gen(estimator, train_input_fn_and_hook, num_epochs=1000, start_epoch=0, epoch_step=1,
+                        eval_input_fns_and_hooks={}):
     """Given a train input fn and hook and the same kind of pairs for the evaluation
     sets, return a dictionary of metrics for each set after every epoch."""
 
@@ -72,13 +73,13 @@ def train_eval_loop(estimator, train_input_fn_and_hook, num_epochs=1000, start_e
     }
 
     # initialize the metrics
-    metrics = {name: [] for name in eval_input_fns_and_hooks.keys()}
 
     # do the loop
     for epoch in range(1, num_epochs + 1):
         # train for one epoch
         estimator.train(train_input_fn_and_hook[0], hooks=[train_input_fn_and_hook[1]])
 
+        metrics = {}  # evaluation metrics to yield
         print('\nEVALUATION\n', '=' * 40)
         # evaluate on sets
         for eval_set_name, (eval_set_fn, eval_set_hook) in eval_input_fns_and_hooks.items():
@@ -86,11 +87,19 @@ def train_eval_loop(estimator, train_input_fn_and_hook, num_epochs=1000, start_e
                                             exp_arr=expected_arrs[eval_set_name])
             evaluated_metrics['epoch'] = start_epoch + epoch * epoch_step
 
-            print(eval_set_name, " ---- ", evaluated_metrics, )  # print for progress check
-            metrics[eval_set_name].append(evaluated_metrics)
+            print(eval_set_name, " ---- ", evaluated_metrics)  # print for progress check
+            metrics[eval_set_name] = evaluated_metrics
+
+        yield metrics
         print('=' * 40, '\n')
 
     return metrics
+
+
+def train_eval_loop(*args, **kws):
+    """Shorthand for concatenating the results of train_eval_loop_gen and
+    used for backwards compatibility"""
+    return zip_dicts(*list(train_eval_loop_gen(*args, **kws)))
 
 
 def plot_metric(train_stats, validation_stats, test_stats, metric_name, smoothing=21):
@@ -106,7 +115,7 @@ def plot_metric(train_stats, validation_stats, test_stats, metric_name, smoothin
 
     # do the plotting
     fig, ax = plt.subplots(figsize=(11, 7))
-    smooth_train.plot(x='epoch', y=metric_name, ax=ax,  alpha=0.8, label='train', linewidth=1)
+    smooth_train.plot(x='epoch', y=metric_name, ax=ax, alpha=0.8, label='train', linewidth=1)
     smooth_validation.plot(x='epoch', y=metric_name, ax=ax, alpha=0.8, label='validation', linewidth=1)
     plt.plot(best_epoch, test_stats.loc[best_index, metric_name], 'o', label='test(for best validation)', alpha=0.8)
 
@@ -114,5 +123,5 @@ def plot_metric(train_stats, validation_stats, test_stats, metric_name, smoothin
     plt.title(metric_name)
     plt.legend(loc='lower right')
     sns.despine(fig=fig, ax=ax)
-    
+
     return fig, ax

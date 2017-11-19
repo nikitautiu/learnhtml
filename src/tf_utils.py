@@ -291,9 +291,9 @@ def build_dataset(csv_pattern, add_weights=True, concat_features=True, normalize
         label_proportion = ddf['content_label'].mean().compute()
 
         # define the constants
-        positive_label_val = tf.constant(1.0)
-        positive_proportion = tf.constant(0.5 / label_proportion, shape=())
-        negative_proportion = tf.constant(0.5 / (1 - label_proportion), shape=())
+        positive_label_val = tf.constant(1.0, dtype=tf.float32)
+        positive_proportion = tf.constant(0.5 / label_proportion, shape=(), dtype=tf.float32)
+        negative_proportion = tf.constant(0.5 / (1 - label_proportion), shape=(), dtype=tf.float32f)
 
         # the weights are added as a conditional based on the corresponding label
         weight_tens = tf.where(tf.equal(label_tens, positive_label_val),
@@ -405,7 +405,7 @@ def data_from_dataset(dataset, total_size):
     # TODO: generalize to an arbitrary number of arrays(concatenate them)
     concatenated_struct = elements[0]
 
-    # return the tensor slice dataset_dragnet and the feed dict
+     # return the tensor slice dataset_dragnet and the feed dict
     return concatenated_struct
 
 

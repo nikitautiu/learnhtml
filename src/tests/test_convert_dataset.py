@@ -514,7 +514,6 @@ class TestConvertDataset(unittest.TestCase):
         self.assertSetEqual(set(dragnet_labels[dragnet_labels['content_label'] & (
             dragnet_labels['url'].str.contains('R578.html'))]['path'].compute().tolist()), expected_result)
 
-
     def test_lcs(self):
         """Test longest common subsequence"""
         seq_a = [b'a', b'b', b'c', b'd']

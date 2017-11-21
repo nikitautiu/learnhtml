@@ -293,7 +293,8 @@ def build_dataset(csv_pattern, add_weights=True, concat_features=True, normalize
         # define the constants
         positive_label_val = tf.constant(1.0, dtype=tf.float32)
         positive_proportion = tf.constant(0.5 / label_proportion, shape=(), dtype=tf.float32)
-        negative_proportion = tf.constant(0.5 / (1 - label_proportion), shape=(), dtype=tf.float32f)
+        negative_proportion = tf.constant(0.5 / (1 - label_proportion), shape=(), dtype=tf.float32
+)
 
         # the weights are added as a conditional based on the corresponding label
         weight_tens = tf.where(tf.equal(label_tens, positive_label_val),

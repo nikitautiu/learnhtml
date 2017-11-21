@@ -333,14 +333,14 @@ def build_dataset(csv_pattern, add_weights=True, concat_features=True, normalize
         dataset = dataset.map(normalize_features, num_parallel_calls=num_parallel_calls)  # mean, std normalization
     dataset = dataset.map(add_weights_from_labels, num_parallel_calls=num_parallel_calls)  # add weight col
 
-    if not add_weights:
-        # dropping the weights if neccesary
-        dataset.map(add_weights_from_labels, num_parallel_calls=num_parallel_calls)
-
     if concat_features:
         # concatenate only if specfified
         # may be omitted in case further processing is desired
         dataset = dataset.map(concat_feature_tensors, num_parallel_calls=num_parallel_calls)  # concatenate the features
+        
+    if not add_weights:
+        # dropping the weights if neccesary
+        dataset.map(drop_weights, num_parallel_calls=num_parallel_calls)
 
     return dataset
 

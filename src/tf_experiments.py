@@ -112,7 +112,7 @@ def train_eval_loop_gen(estimator, train_input_fn_and_hook, num_epochs=1000, sta
     best_metric_value = 0
 
     # do the loop
-    for epoch in range(1, num_epochs + 1):
+    for epoch in range(1, num_epochs // epoch_step + 1):
         # train for one epoch
         estimator.train(train_input_fn_and_hook[0], hooks=[train_input_fn_and_hook[1]])
 

@@ -276,12 +276,16 @@ def tfrecord_dataset(tfrecords_files, label_name, tf_types, num_parallel_calls=4
     return dataset
 
 
-def build_dataset(csv_pattern, add_weights=True, concat_features=True, normalize_data=False, num_parallel_calls=16):
+def build_dataset(csv_pattern, add_weights=True, concat_features=True, normalize_data=False, kept_columns=None,
+                  num_parallel_calls=16):
     """Given  a pattern of csv files, return the Tensorflow `Dataset`
+    :param csv_pattern: the pattern of the csv files to use for the dataset
     :param add_weights: add a tensor called "weights" to the dictionary
     :param concat_features: whether to concatenate the feature tensors into
     one big tensor named "X"
     :param normalize_data: whether to do standard- test normalization on the features
+    :param kept_columns: the columns of the data to keep. Can be either an iterable of the columns
+        or a lambda to use as a filter
     :param num_parallel_calls: how any threads to run the pipeline operations on
     """
     ddf = dd.read_csv(csv_pattern)
@@ -293,8 +297,7 @@ def build_dataset(csv_pattern, add_weights=True, concat_features=True, normalize
         # define the constants
         positive_label_val = tf.constant(1.0, dtype=tf.float32)
         positive_proportion = tf.constant(0.5 / label_proportion, shape=(), dtype=tf.float32)
-        negative_proportion = tf.constant(0.5 / (1 - label_proportion), shape=(), dtype=tf.float32
-)
+        negative_proportion = tf.constant(0.5 / (1 - label_proportion), shape=(), dtype=tf.float32)
 
         # the weights are added as a conditional based on the corresponding label
         weight_tens = tf.where(tf.equal(label_tens, positive_label_val),
@@ -326,12 +329,30 @@ def build_dataset(csv_pattern, add_weights=True, concat_features=True, normalize
         tens_dict.pop('weights')
         return tens_dict, label
 
+    def keep_columns(tens_dict, label):
+        # filter columns based on the kept_cols attr
+        filter_func = kept_columns
+        if not callable(kept_columns):
+            # build the filter function
+            filter_func = lambda x: x in kept_columns
+
+        # filter columns, also keep weights
+        columns_to_keep = set(filter(filter_func, tens_dict.values())) | {'weights'}
+        tens_dict = {tens_name: tens_dict[tens_name] for tens_name in columns_to_keep}
+
+        # return the new filtered dict
+        return tens_dict, label
+
     # do the pipeline here
     dataset = csv_dataset(csv_pattern, 'content_label', num_parallel_calls=num_parallel_calls)  # decode the csv
     dataset = dataset.map(drop_strings, num_parallel_calls=num_parallel_calls)  # drop redundants
     if normalize_data:
         dataset = dataset.map(normalize_features, num_parallel_calls=num_parallel_calls)  # mean, std normalization
     dataset = dataset.map(add_weights_from_labels, num_parallel_calls=num_parallel_calls)  # add weight col
+
+    if kept_columns is not None:
+        # do filtering on the columns
+        dataset = dataset.map(keep_columns, num_parallel_calls=num_parallel_calls)
 
     if concat_features:
         # concatenate only if specfified

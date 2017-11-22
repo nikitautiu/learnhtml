@@ -337,7 +337,7 @@ def build_dataset(csv_pattern, add_weights=True, concat_features=True, normalize
             filter_func = lambda x: x in kept_columns
 
         # filter columns, also keep weights
-        columns_to_keep = set(filter(filter_func, tens_dict.values())) | {'weights'}
+        columns_to_keep = set(filter(filter_func, tens_dict.keys())) | {'weights'}
         tens_dict = {tens_name: tens_dict[tens_name] for tens_name in columns_to_keep}
 
         # return the new filtered dict

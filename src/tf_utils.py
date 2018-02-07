@@ -1,3 +1,6 @@
+import os
+from collections import OrderedDict
+
 import dask.dataframe as dd
 import numpy as np
 import tensorflow as tf
@@ -334,11 +337,13 @@ def build_dataset(csv_pattern, add_weights=True, concat_features=True, normalize
         filter_func = kept_columns
         if not callable(kept_columns):
             # build the filter function
+            if kept_columns is None:
+                kept_columns = ddf.columns
             filter_func = lambda x: x in kept_columns
 
         # filter columns, also keep weights
         columns_to_keep = set(filter(filter_func, tens_dict.keys())) | {'weights'}
-        tens_dict = {tens_name: tens_dict[tens_name] for tens_name in columns_to_keep}
+        tens_dict = OrderedDict((tens_name, tens_dict[tens_name]) for tens_name in columns_to_keep)
 
         # return the new filtered dict
         return tens_dict, label
@@ -350,17 +355,16 @@ def build_dataset(csv_pattern, add_weights=True, concat_features=True, normalize
         dataset = dataset.map(normalize_features, num_parallel_calls=num_parallel_calls)  # mean, std normalization
     dataset = dataset.map(add_weights_from_labels, num_parallel_calls=num_parallel_calls)  # add weight col
 
-    if kept_columns is not None:
-        # do filtering on the columns
-        dataset = dataset.map(keep_columns, num_parallel_calls=num_parallel_calls)
+    # do filtering on the columns
+    dataset = dataset.map(keep_columns, num_parallel_calls=num_parallel_calls)
 
     if concat_features:
-        # concatenate only if specfified
+        # concatenate only if specified
         # may be omitted in case further processing is desired
         dataset = dataset.map(concat_feature_tensors, num_parallel_calls=num_parallel_calls)  # concatenate the features
         
     if not add_weights:
-        # dropping the weights if neccesary
+        # dropping the weights if necessary
         dataset.map(drop_weights, num_parallel_calls=num_parallel_calls)
 
     return dataset
@@ -510,3 +514,43 @@ def input_fn_from_csv(csv_pattern, precache=True, **kwargs):
 
     # else do not cache it and simply pass it tu get_input_fn_from_dataset
     return get_input_fn_from_dataset_or_structure(uncached_dataset)
+
+
+def get_numpy_dataset(csv_pattern):
+    """Given a csv pattern for a dataset, return a dict of ('id', 'X', 'y') containing the components of
+    the dataset.
+    :param csv_pattern: the pattern of the csv files
+    :return: the specified dict
+    """
+    ddf = dd.read_csv(csv_pattern)
+
+    # separate the numpy arrays
+    id_arr = ddf[['url', 'path']].values.compute()
+    X_arr = ddf.drop(['url', 'path', 'content_label'], axis=1).values.compute()
+    y_arr = ddf['content_label'].values.compute()
+
+    return {'id': id_arr, 'X': X_arr, 'y': y_arr}
+
+
+def get_numpy_datasets(directory):
+    """
+    Given a dataset directory, return the dataset as a an X and y. Also return the indices of the
+    train,  validation and test samples. Keeps the relative order of the columns. :param directory: the directory of the dataset
+    :return:
+    """
+    # get train, validation and test data
+
+    train_data = get_numpy_dataset(os.path.join(directory, 'dom-full-train-*.csv'))
+    validation_data = get_numpy_dataset(os.path.join(directory, 'dom-full-validation-*.csv'))
+    test_data = get_numpy_dataset(os.path.join(directory, 'dom-full-test-*.csv'))
+
+    # get X and y
+    train_X, train_y = train_data['X'], train_data['y']
+    validation_X, validation_y = validation_data['X'], validation_data['y']
+    test_X, test_y = test_data['X'], test_data['y']
+
+    # get the split indices - then build the slice objects
+    split_points = np.cumsum([0, train_y.size, validation_y.size, test_y.size])
+    split_slices = [slice(i, j) for i, j in zip(split_points[:-1], split_points[1:])]
+    return np.concatenate((train_X, validation_X, test_X)), np.concatenate(
+        (train_y, validation_y, test_y)), split_slices

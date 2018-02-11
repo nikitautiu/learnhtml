@@ -10,6 +10,7 @@ from sklearn.metrics import f1_score
 from sklearn.model_selection import GridSearchCV
 
 import tf_utils
+import tf_utils.tf_input
 
 
 def get_domain_from_url(url):
@@ -36,17 +37,17 @@ def get_dataset_with_splits(directory):
     """Given a dataset directory, return the dataset as a an X and y. Also return the indices of the
     train,  validation and test samples."""
     # get train, validation and test data
-    train_dataset = tf_utils.build_dataset(os.path.join(directory, 'dom-full-train-*.csv'), add_weights=False)
-    validation_dataset = tf_utils.build_dataset(os.path.join(directory, 'dom-full-validation-*.csv'), add_weights=False)
-    test_dataset = tf_utils.build_dataset(os.path.join(directory, 'dom-full-test-*.csv'), add_weights=False)
+    train_dataset = tf_utils.tf_input.build_dataset(os.path.join(directory, 'dom-full-train-*.csv'), add_weights=False)
+    validation_dataset = tf_utils.tf_input.build_dataset(os.path.join(directory, 'dom-full-validation-*.csv'), add_weights=False)
+    test_dataset = tf_utils.tf_input.build_dataset(os.path.join(directory, 'dom-full-test-*.csv'), add_weights=False)
 
     # precache in memory
-    train_data = tf_utils.data_from_dataset(train_dataset,
-                                            len(dd.read_csv(os.path.join(directory, 'dom-full-train-*.csv'))))
-    validation_data = tf_utils.data_from_dataset(validation_dataset,
-                                                 len(dd.read_csv(os.path.join(directory, 'dom-full-validation-*.csv'))))
-    test_data = tf_utils.data_from_dataset(test_dataset,
-                                           len(dd.read_csv(os.path.join(directory, 'dom-full-test-*.csv'))))
+    train_data = tf_utils.tf_input.data_from_dataset(train_dataset,
+                                                     len(dd.read_csv(os.path.join(directory, 'dom-full-train-*.csv'))))
+    validation_data = tf_utils.tf_input.data_from_dataset(validation_dataset,
+                                                          len(dd.read_csv(os.path.join(directory, 'dom-full-validation-*.csv'))))
+    test_data = tf_utils.tf_input.data_from_dataset(test_dataset,
+                                                    len(dd.read_csv(os.path.join(directory, 'dom-full-test-*.csv'))))
 
     # get X and y
     train_X, train_y = train_data[0]['X'], train_data[1]

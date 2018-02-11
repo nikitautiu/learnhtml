@@ -20,47 +20,60 @@ def get_pred(estimator, input_fn, hooks=[], checkpoint_path=None):
     if checkpoint_path is None:
         predicted_list = [pred['class_ids'] for pred in estimator.predict(input_fn, hooks=hooks)]
     else:
-        predicted_list = [pred['class_ids'] for pred in estimator.predict(input_fn, hooks=hooks, checkpoint_path=checkpoint_path)]
+        predicted_list = [pred['class_ids'] for pred in
+                          estimator.predict(input_fn, hooks=hooks, checkpoint_path=checkpoint_path)]
 
     pred_array = np.stack(predicted_list, axis=0).ravel()  # concatenate them to one
 
     return pred_array
 
 
-def get_exp(estimator, input_fn, hooks=[]):
+def get_exp(input_fn, hooks=[]):
     """Given an input function and an estimator, return the expected labels"""
     # consume label tensors
     # not necessarily the most elegant solution but works
     label_tens = input_fn()[1]
     expected_list = []
+
     with tf.Session() as sess:
         for hook in hooks:
             hook.after_create_session(sess, None)  # must be ran
         # get each element of the training dataset_dragnet until the end is reached
-        while True:
-            try:
+
+        coord = tf.train.Coordinator()
+        threads = tf.train.start_queue_runners(coord=coord)
+        try:
+            while True:
+                if coord.should_stop():
+                    break
                 elem = sess.run(label_tens)
                 expected_list.append(elem)
-            except tf.errors.OutOfRangeError:
-                break
+
+        except Exception as e:
+            # Report exceptions to the coordinator.
+            coord.request_stop(e)
+        finally:
+            # Terminate as usual. It is safe to call `coord.request_stop()` twice.
+            coord.request_stop()
+            coord.join(threads)
 
     expected_array = np.concatenate(expected_list).ravel()
     return expected_array
 
 
-def get_metrics(estimator, input_fn, init_hooks=[], exp_arr=None, checkpoint_path=None):
+def get_metrics(estimator, input_fn, exp_arr=None, checkpoint_path=None):
     """Given an estimator, an input function, some optional initialization hooks, return the metrics
     for those inputs. If checkpoint_path is unspecified, uses the latest estimator from model_dir."""
-    if exp_arr is  None:
-        exp_arr = get_exp(estimator, input_fn, init_hooks)
-    pred_arr = get_pred(estimator, input_fn, init_hooks, checkpoint_path=checkpoint_path)
+    if exp_arr is None:
+        exp_arr = get_exp(input_fn)
+    pred_arr = get_pred(estimator, input_fn, checkpoint_path=checkpoint_path)
     class_rep = precision_recall_fscore_support(exp_arr, pred_arr)  # get the class report
     acc_score = accuracy_score(exp_arr, pred_arr)
-    
+
     # build te stats and return
     return {
         'accuracy': acc_score,
-        'precision': class_rep[0][1], # only for the positive class
+        'precision': class_rep[0][1],  # only for the positive class
         'recall': class_rep[1][1],
         'f1-score': class_rep[2][1],
         'support': class_rep[3][1],
@@ -86,8 +99,8 @@ def save_latest_checkpoint(estimator, best_checkpoint_path):
     shutil.copy2(chkpt_path + '.index', best_destination_path + '.index')
 
 
-def train_eval_loop_gen(estimator, train_input_fn_and_hook, num_epochs=1000, start_epoch=0, epoch_step=1,
-                        eval_input_fns_and_hooks={}, save_on_metric=None, best_checkpoint_path=None,
+def train_eval_loop_gen(estimator, train_input_fn, num_epochs=1000, start_epoch=0, epoch_step=1,
+                        eval_input_fns={}, save_on_metric=None, best_checkpoint_path=None,
                         save_set_name=None):
     """Given a train input fn and hook and the same kind of pairs for the evaluation
     sets, return a dictionary of metrics for each set after every epoch. If the input function
@@ -95,17 +108,16 @@ def train_eval_loop_gen(estimator, train_input_fn_and_hook, num_epochs=1000, sta
 
     If save_on_metric is not None, it exports the estimator, every time the given metric
     is better then the best value until then. The result is outputted to the best_checkpoint_path."""
-
     # precache exp_arr
     expected_arrs = {
-        eval_set_name: get_exp(estimator, eval_set_fn, hooks=[eval_set_hook])
-        for eval_set_name, (eval_set_fn, eval_set_hook) in eval_input_fns_and_hooks.items()
+        eval_set_name: get_exp(eval_set_fn)
+        for eval_set_name, eval_set_fn in eval_input_fns.items()
     }
     # only the standard classification metrics can be used
     if save_on_metric not in ['f1-score', 'accuracy', 'precision' 'recall']:
         raise ValueError('Can not calculate the given metric')
     # expects one of the given sets
-    if save_set_name not in eval_input_fns_and_hooks.keys():
+    if save_set_name not in eval_input_fns.keys():
         raise ValueError('Evaluation set to save on, not in eval sets')
 
     # initialize the metric stats
@@ -114,13 +126,13 @@ def train_eval_loop_gen(estimator, train_input_fn_and_hook, num_epochs=1000, sta
     # do the loop
     for epoch in range(1, num_epochs // epoch_step + 1):
         # train for one epoch
-        estimator.train(train_input_fn_and_hook[0], hooks=[train_input_fn_and_hook[1]])
+        estimator.train(train_input_fn)
 
         metrics = {}  # evaluation metrics to yield
         print('\nEVALUATION\n', '=' * 40)
         # evaluate on sets
-        for eval_set_name, (eval_set_fn, eval_set_hook) in eval_input_fns_and_hooks.items():
-            evaluated_metrics = get_metrics(estimator, eval_set_fn, init_hooks=[eval_set_hook],
+        for eval_set_name, eval_set_fn in eval_input_fns.items():
+            evaluated_metrics = get_metrics(estimator, eval_set_fn,
                                             exp_arr=expected_arrs[eval_set_name])
             evaluated_metrics['epoch'] = start_epoch + epoch * epoch_step
 

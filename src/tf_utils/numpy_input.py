@@ -4,9 +4,10 @@ import numpy as np
 from dask import dataframe as dd
 
 
-def get_numpy_dataset(csv_pattern):
+def get_numpy_dataset(csv_pattern, data_cols=None):
     """Given a csv pattern for a dataset, return a dict of ('id', 'X', 'y') containing the components of
     the dataset.
+    :param data_cols: the columns to keep from the data(defaults to all)
     :param csv_pattern: the pattern of the csv files
     :return: the specified dict
     """
@@ -14,7 +15,11 @@ def get_numpy_dataset(csv_pattern):
 
     # separate the numpy arrays
     id_arr = ddf[['url', 'path']].values.compute()
-    X_arr = ddf.drop(['url', 'path', 'content_label'], axis=1).values.compute()
+    X_ddf = ddf.drop(['url', 'path', 'content_label'], axis=1)
+    if data_cols is not None:
+        X_ddf = ddf[data_cols]  # keep only the given cols if passed
+
+    X_arr = X_ddf.values.compute()
     y_arr = ddf['content_label'].values.compute()
 
     return {'id': id_arr, 'X': X_arr, 'y': y_arr}

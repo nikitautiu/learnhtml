@@ -88,3 +88,16 @@ def dict_combinations(*dict_list_lists):
     combinations = itertools.product(*dict_list_lists)  # cartesian product of all
     return map(lambda comb: functools.reduce(lambda a, b: dict(list(a.items()) + list(b.items())),
                                              comb, {}), combinations)  # return resulting dicts
+
+
+def get_random_split(key, proportions):
+    """Given a set of keys and the proportions to split, return the random split
+    according to those keys. Returns len(proportions) boolean masks for the split"""
+    unique_keys = np.unique(key)
+    np.random.shuffle(unique_keys)  # in place shuffle
+
+    # get proportional slices on the unique keys
+    split_points = np.floor(np.cumsum([0] + proportions) * unique_keys.size).astype(int)
+    split_slices = [slice(i, j) for i, j in zip(split_points[:-1], split_points[1:])]
+
+    return [np.isin(key, unique_keys[split_slice]) for split_slice in split_slices]

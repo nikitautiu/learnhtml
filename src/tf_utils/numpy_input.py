@@ -6,9 +6,10 @@ from dask import dataframe as dd
 from utils import get_random_split
 
 
-def get_numpy_dataset(csv_pattern, data_cols=None):
+def get_numpy_dataset(csv_pattern, data_cols=None, categorize_id=True):
     """Given a csv pattern for a dataset, return a dict of ('id', 'X', 'y') containing the components of
     the dataset.
+    :param categorize_id: if True(default), sorts the dataset by the id column, and the column is categorized
     :param data_cols: the columns to keep from the data(defaults to all)
     :param csv_pattern: the pattern of the csv files
     :return: the specified dict
@@ -24,7 +25,14 @@ def get_numpy_dataset(csv_pattern, data_cols=None):
     X_arr = X_ddf.values.compute()
     y_arr = ddf['content_label'].values.compute()
 
-    return {'id': id_arr, 'X': X_arr, 'y': y_arr}
+    if not categorize_id:
+        return {'id': id_arr, 'X': X_arr, 'y': y_arr}
+
+    id_arr = id_arr[:, 0]
+    _, categ_id_arr = np.unique(id_arr, return_inverse=True)
+    sorted_categ = np.argsort(categ_id_arr)
+    return {'id': categ_id_arr[sorted_categ], 'X': X_arr[sorted_categ],
+            'y': y_arr[sorted_categ]}
 
 
 def get_numpy_datasets(directory):

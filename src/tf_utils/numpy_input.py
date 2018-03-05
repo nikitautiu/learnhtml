@@ -1,14 +1,16 @@
 import os
 
+import sparse
 import numpy as np
 from dask import dataframe as dd
 
 from utils import get_random_split
 
 
-def get_numpy_dataset(csv_pattern, data_cols=None, categorize_id=True):
+def get_numpy_dataset(csv_pattern, data_cols=None, categorize_id=True, sparse_matrix=True):
     """Given a csv pattern for a dataset, return a dict of ('id', 'X', 'y') containing the components of
     the dataset.
+    :param sparse_matrix: whether X should be returned as a COO matrix(greatly reduces memory use)
     :param categorize_id: if True(default), sorts the dataset by the id column, and the column is categorized
     :param data_cols: the columns to keep from the data(defaults to all)
     :param csv_pattern: the pattern of the csv files
@@ -22,8 +24,15 @@ def get_numpy_dataset(csv_pattern, data_cols=None, categorize_id=True):
     if data_cols is not None:
         X_ddf = ddf[data_cols]  # keep only the given cols if passed
 
-    X_arr = X_ddf.values.compute()
     y_arr = ddf['content_label'].values.compute()
+
+    # sparsify the matrix if necessary
+    if sparse_matrix:
+        # return the scipy COO matrix corresponding to the input
+        # greatly reduces the input size
+        X_arr = X_ddf.values.map_blocks(sparse.COO).astype('float32').compute().tocsr()
+    else:
+        X_arr = X_ddf.values.compute()
 
     if not categorize_id:
         return {'id': id_arr, 'X': X_arr, 'y': y_arr}

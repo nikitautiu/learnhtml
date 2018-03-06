@@ -98,7 +98,7 @@ class KerasSparseClassifier(KerasClassifier):
 
         ############################################################
         validation_data_ = fit_args.pop('validation_data', None)
-        fit_args.pop('shuffle')
+        fit_args.pop('shuffle', None)
 
         if validation_data_ is not None:
             hist = self.model.fit_generator(

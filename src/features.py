@@ -46,6 +46,16 @@ def extract_classes(nodes):
     return pd.Series(data=(node.attrib.get('class', '').split() for node in nodes))
 
 
+def extract_class_text(nodes):
+    """Extract a Series of class lists for each node."""
+    return pd.Series(data=(node.attrib.get('class', '') for node in nodes))
+
+
+def extract_id_text(nodes):
+    """Extract a Series of class lists for each node."""
+    return pd.Series(data=(node.attrib.get('id', '') for node in nodes))
+
+
 def extract_attr_len(nodes, attr_name='id'):
     """Extract a Series of bools telling whether the component
     has and id attribute or not."""
@@ -116,14 +126,16 @@ def extract_node_features(nodes):
     no_children_features = extract_no_children(nodes)  # # of children
     text_len_features = extract_text_len(nodes)  # text length
     classes_features = extract_classes(nodes)  # classes
+    class_text_features = extract_class_text(nodes)  # class text
+    id_text_features = extract_id_text(nodes)  # class text
 
     # series of features, and their names
     series = [depth_features, sibling_pos_features,
               tag_type_features, no_classes_features,
               id_len_features, class_len_features, no_children_features,
-              text_len_features, classes_features]
+              text_len_features, classes_features, class_text_features, id_text_features]
     columns = ['depth', 'sibling_pos', 'tag', 'no_classes', 'id_len', 'class_len',
-               'no_children', 'text_len', 'classes']
+               'no_children', 'text_len', 'classes', 'class_text', 'id_text']
     df_items = zip(columns, series)
 
     return pd.DataFrame.from_items(df_items)
@@ -136,7 +148,7 @@ def iter_df_records(df):
 
 def get_empty_features():
     """Returns the null equivalent of empty features for a node"""
-    return np.array([0, 0, '', 0, 0, 0, 0, 0, list()], dtype=object)
+    return np.array([0, 0, '', 0, 0, 0, 0, 0, list(), '', ''], dtype=object)
 
 
 def aggregate_features(feat_list):

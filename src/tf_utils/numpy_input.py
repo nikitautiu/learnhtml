@@ -1,4 +1,5 @@
 import os
+import re
 
 import sparse
 import numpy as np
@@ -7,22 +8,33 @@ from dask import dataframe as dd
 from utils import get_random_split
 
 
-def get_numpy_dataset(csv_pattern, data_cols=None, categorize_id=True, sparse_matrix=True):
-    """Given a csv pattern for a dataset, return a dict of ('id', 'X', 'y') containing the components of
-    the dataset.
+def get_numpy_dataset(csv_pattern, numeric_cols=None, text_cols=None, categorize_id=True, sparse_matrix=True):
+    """Given a csv pattern for a dataset, return a dict of ('id', 'numeric', 'text', 'y', 'is_block') containing the components of
+    the dataset. `is_block` represents whether the tag corresponds to block as extrcted in the dragnet paper.
+    :param text_cols: the columns to select from the textual data
     :param sparse_matrix: whether X should be returned as a COO matrix(greatly reduces memory use)
     :param categorize_id: if True(default), sorts the dataset by the id column, and the column is categorized
-    :param data_cols: the columns to keep from the data(defaults to all)
+    :param numeric_cols: the columns to keep from the numeric data(defaults to all)
     :param csv_pattern: the pattern of the csv files
     :return: the specified dict
     """
     ddf = dd.read_csv(csv_pattern)
+    textual_cols = list(filter(lambda col: re.match(r'.*(((id|class)_text)|text)$', col), ddf.columns))
 
     # separate the numpy arrays
     id_arr = ddf[['url', 'path']].values.compute()
-    X_ddf = ddf.drop(['url', 'path', 'content_label'], axis=1)
-    if data_cols is not None:
-        X_ddf = ddf[data_cols]  # keep only the given cols if passed
+    # numerical features
+    numeric_ddf = ddf.drop(['url', 'path', 'content_label', 'is_extracted_block'] + textual_cols, axis=1)
+    # text features
+    text_ddf = ddf[textual_cols]
+    # array that keeps whether that is a block
+    extracted_arr = ddf[['is_extracted_block']].values.compute()
+
+    if numeric_cols is not None:
+        numeric_ddf = numeric_ddf[numeric_cols]  # keep only the given cols if passed
+    if text_cols is not None:
+        text_ddf = text_ddf[text_cols]  # keep only the given cols if passed
+    text_arr = text_ddf.values.compute()
 
     y_arr = ddf['content_label'].values.compute()
 
@@ -30,18 +42,16 @@ def get_numpy_dataset(csv_pattern, data_cols=None, categorize_id=True, sparse_ma
     if sparse_matrix:
         # return the scipy COO matrix corresponding to the input
         # greatly reduces the input size
-        X_arr = X_ddf.values.map_blocks(sparse.COO).astype('float32').compute().tocsr()
+        numeric_arr = numeric_ddf.values.map_blocks(sparse.COO).astype('float32').compute().tocsr()
     else:
-        X_arr = X_ddf.values.compute()
+        numeric_arr = numeric_ddf.values.compute()
 
-    if not categorize_id:
-        return {'id': id_arr, 'X': X_arr, 'y': y_arr}
+    # categorize id if necessary
+    if categorize_id:
+        _, id_arr = np.unique(id_arr, return_inverse=True)
 
-    id_arr = id_arr[:, 0]
-    _, categ_id_arr = np.unique(id_arr, return_inverse=True)
-    sorted_categ = np.argsort(categ_id_arr)
-    return {'id': categ_id_arr[sorted_categ], 'X': X_arr[sorted_categ],
-            'y': y_arr[sorted_categ]}
+    return {'id': id_arr, 'numeric': numeric_arr,
+            'text': text_arr, 'y': y_arr, 'is_block': extracted_arr}
 
 
 def get_numpy_datasets(directory):
@@ -75,7 +85,7 @@ def get_split_dataset(csv_pattern, data_cols=None, proportions=None):
         proportions = [.7, .15, .15]  # default train, validation, test, split
 
     # get the dataset
-    dataset = get_numpy_dataset(csv_pattern, data_cols=data_cols)
+    dataset = get_numpy_dataset(csv_pattern, numeric_cols=data_cols)
     masks = get_random_split(dataset['id'][:, 0], proportions=proportions)
 
     # get the split points based on sizes

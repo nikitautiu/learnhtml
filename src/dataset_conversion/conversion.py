@@ -8,6 +8,8 @@ from lxml import etree
 from . import lcs
 from .blocks import Blockifier, simple_tokenizer
 
+NON_CONTENT_BLOCK_RATIO = .00001
+
 
 def read_dir_file(file, directory):
     """Read a file from a given directory"""
@@ -122,7 +124,7 @@ def get_ratios_per_html(html, gold_standard):
     tree = root.getroottree()  # so we can extract paths
     all_paths = (tree.getpath(node) for node in root.iter())
 
-    paths, ratios = zip(*((path, ratio_dict.get(path, 0.)) for path in all_paths))
+    paths, ratios = zip(*((path, ratio_dict.get(path, NON_CONTENT_BLOCK_RATIO)) for path in all_paths))
     return pd.DataFrame(data={'path': paths, 'ratio': ratios})
 
 
@@ -145,6 +147,8 @@ def extract_ratios_from_ddf(ddf):
     # we basicaly abuse map_partition's ability to expand indexes for lack of a working
     # groupby(level) in dask
     return ddf.map_partitions(extract_ratios_from_df, meta={'path': str, 'ratio': str, 'url': str}).clear_divisions()
+
+
 #
 #
 # def split_text(elem):
@@ -174,11 +178,15 @@ def extract_ratios_from_ddf(ddf):
 
 
 def convert_dataset(directory, prefix, cleaneval=False, ratio_threshold=0.1, label_name='content',
-                    return_ratios=False):
+                    return_ratios=False, return_extracted_blocks=False):
     """Given a directory for a dragnet-style dataset, return
     the `url,html` and the label dataframe. Can specify the
     threshold for the ratios above which to consider a tag content
-    and also whether the dataset is or not CleanEval"""
+    and also whether the dataset is or not CleanEval.
+
+    An additional label with the name 'is_extracted_block' can be returned specifying
+    whether the tag is corresponding to the block in Peters definition
+    """
     html_ddf = convert_dragnet_dataset(directory, prefix)  # get the htl content
     html_ddf['gold_standard'] = html_ddf['file'].apply(get_blocks_for_file, directory=directory,
                                                        cleaneval=cleaneval, meta=('gold_standard', object))
@@ -187,8 +195,11 @@ def convert_dataset(directory, prefix, cleaneval=False, ratio_threshold=0.1, lab
     path_ratio_ddf = html_ddf.map_partitions(extract_ratios_from_df,
                                              meta={'path': str, 'ratio': float, 'url': str}).clear_divisions()
 
+    # get the blocks and overall extracted blocks
     path_ratio_ddf[label_name + '_label'] = (path_ratio_ddf['ratio'] > ratio_threshold)
+    path_ratio_ddf['is_extracted_block'] = (path_ratio_ddf['ratio'] != NON_CONTENT_BLOCK_RATIO)
 
     # return the content and the labels
     return html_ddf[['url', 'html']], \
-           path_ratio_ddf[['url', 'path', label_name + '_label'] + (['ratio'] if return_ratios else [])]
+           path_ratio_ddf[['url', 'path', label_name + '_label'] + (['ratio'] if return_ratios else []) + (
+               ['is_extracted_block'] if return_extracted_blocks else [])]

@@ -1,16 +1,11 @@
 import functools
 import itertools
-import os
 from urllib.parse import urlparse
 
-import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 from sklearn.metrics import f1_score
 from sklearn.model_selection import GridSearchCV
-
-import tf_utils
-import tf_utils.tf_input
 
 
 def get_domain_from_url(url):
@@ -31,35 +26,6 @@ def dict_combinations(*dict_list_lists):
     combinations = itertools.product(*dict_list_lists)  # cartesian product of all
     return map(lambda comb: functools.reduce(lambda a, b: dict(list(a.items()) + list(b.items())),
                                              comb, {}), combinations)  # return resulting dicts
-
-
-def get_dataset_with_splits(directory):
-    """Given a dataset directory, return the dataset as a an X and y. Also return the indices of the
-    train,  validation and test samples."""
-    # get train, validation and test data
-    train_dataset = tf_utils.tf_input.build_dataset(os.path.join(directory, 'dom-full-train-*.csv'), add_weights=False)
-    validation_dataset = tf_utils.tf_input.build_dataset(os.path.join(directory, 'dom-full-validation-*.csv'), add_weights=False)
-    test_dataset = tf_utils.tf_input.build_dataset(os.path.join(directory, 'dom-full-test-*.csv'), add_weights=False)
-
-    # precache in memory
-    train_data = tf_utils.tf_input.data_from_dataset(train_dataset,
-                                                     len(dd.read_csv(os.path.join(directory, 'dom-full-train-*.csv'))))
-    validation_data = tf_utils.tf_input.data_from_dataset(validation_dataset,
-                                                          len(dd.read_csv(os.path.join(directory, 'dom-full-validation-*.csv'))))
-    test_data = tf_utils.tf_input.data_from_dataset(test_dataset,
-                                                    len(dd.read_csv(os.path.join(directory, 'dom-full-test-*.csv'))))
-
-    # get X and y
-    train_X, train_y = train_data[0]['X'], train_data[1]
-    validation_X, validation_y = validation_data[0]['X'], validation_data[1]
-    test_X, test_y = test_data[0]['X'], test_data[1]
-
-    # get the split indices - then build the slice objects
-    split_points = np.cumsum([0, train_y.size, validation_y.size, test_y.size])
-    split_slices = [slice(i, j) for i, j in zip(split_points[:-1], split_points[1:])]
-    return (np.concatenate((train_X, validation_X, test_X)),
-            np.concatenate((train_y, validation_y, test_y)),
-            split_slices)
 
 
 def get_metrics(estimator, big_X, big_y, train_ind, validation_ind, test_ind, hyperparams={}):

@@ -119,7 +119,8 @@ def dom(input_file, output_dir, height, depth, num_workers):
     dask.set_options(get=dask.multiprocessing.get, num_workers=num_workers)  # set the number of workers
 
     df = pd.read_csv(input_file)  # must read as pandas because dask makes a fuss about html
-    oh, freqs, feats = extract_features_from_ddf(dd.from_pandas(df, npartitions=max(num_workers*2, 64)), depth, height)
+    oh, freqs, feats = extract_features_from_ddf(dd.from_pandas(df, npartitions=max(num_workers * 2, 64)), depth,
+                                                 height)
 
     # output all the three to csvs
     click.echo('OUTPUTING FEATURES')
@@ -204,15 +205,17 @@ def split(cache, outputs, input_files, on, state):
                 nargs=1)
 @click.option('--raw/--no-raw', default=True, help='Whether to output the raw file')
 @click.option('--labels/--no-labels', default=True, help='Whether to output the label files')
+@click.option('--blocks/--no-blocks', default=True,
+              help='Whether to output to the label file which tags correspond to a block')
 @click.option('--num-workers', metavar='NUM_WORKERS', type=click.INT,
               default=8, help='The number of workers to parallelize to(default 8)')
 @click.option('--cleaneval/--dragnet', default=False,
               help='Whether the dataset is cleaneval or dragnet(default dragnet)')
-def convert(dataset_directory, output_directory, raw, labels, num_workers, cleaneval):
+def convert(dataset_directory, output_directory, raw, labels, num_workers, cleaneval, blocks):
     """Converts the dataset from DATASET_DIRECTORY to our format and
     outputs it to OUTPUT_DIRECTORY"""
     html_ddf, label_ddf = convert_dataset(dataset_directory, 'dragnet-' if not cleaneval else 'cleaneval-',
-                                          cleaneval=cleaneval)
+                                          cleaneval=cleaneval, return_extracted_blocks=blocks)
 
     dask.set_options(get=dask.multiprocessing.get, num_workers=num_workers)  # set the number of workers
     if raw:

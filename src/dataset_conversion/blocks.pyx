@@ -805,6 +805,7 @@ def guess_encoding(markup, default='utf-8'):
 class Blockifier(object):
     """
     A blockifier for web-page de-chroming that loosely follows the approach in
+
     Kohlschütter et al.: http://www.l3s.de/~kohlschuetter/publications/wsdm187-kohlschuetter.pdf
 
     Implements the blockify interface.

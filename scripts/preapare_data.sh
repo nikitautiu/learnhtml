@@ -2,7 +2,7 @@
 
 # split seed andn umber of workers
 SPLIT_SEED=42
-NUM_WORKERS=16
+NUM_WORKERS=4
 
 cd ..
 mkdir data data/{external,raw,interim,final} data/interim/{dragnet,cleaneval} data/raw/{cleaneval,dragnet} data/final/{dragnet,cleaneval}
@@ -54,10 +54,10 @@ rm HTML/{114,276,305,376,767,331,619,716}.html Corrected/{114,276,305,376,767,33
 echo EXTRACTING LABELS/RAW
 cd ../..
 echo CLEANEVAL
-../src/cli.py convert --num-workers $NUM_WORKERS --cleaneval external/cleaneval raw/cleaneval
+../src/cli.py convert --blocks --num-workers $NUM_WORKERS --cleaneval external/cleaneval raw/cleaneval
 
 echo DRAGNET
-../src/cli.py convert --num-workers $NUM_WORKERS --dragnet external/dragnet raw/dragnet
+../src/cli.py convert --blocks --num-workers $NUM_WORKERS --dragnet external/dragnet raw/dragnet
 
 # extract features
 echo EXTRACTING FEATURES
@@ -68,12 +68,17 @@ echo DRAGNET
 ../src/cli.py dom --num-workers $NUM_WORKERS raw/dragnet/raw.csv interim/dragnet
 
 
-# merge data
+# merge data but do not split afterwards
 echo MERGING CSVS
-../src/cli.py merge --cache ~/partd --on "url,path" interim/cleaneval/dom-full-\*.csv interim/cleaneval/feats-\*.csv interim/cleaneval/oh-\*.csv interim/cleaneval/freqs-\*.csv raw/cleaneval/labels.csv
-../src/cli.py merge --cache ~/partd --on "url,path" interim/dragnet/dom-full-\*.csv interim/dragnet/feats-\*.csv interim/dragnet/oh-\*.csv interim/dragnet/freqs-\*.csv raw/dragnet/labels.csv
-
-# split the data
-echo TRAIN/VALIDATON/TEST SPLIT
-../src/cli.py split --state $SPLIT_SEED --on url interim/cleaneval/dom-full-\*.csv final/cleaneval/dom-full-train-\*.csv 75 final/cleaneval/dom-full-validation-\*.csv 15 final/cleaneval/dom-full-test-\*.csv 15
-../src/cli.py split --state $SPLIT_SEED --on url interim/dragnet/dom-full-\*.csv final/dragnet/dom-full-train-\*.csv 75 final/dragnet/dom-full-validation-\*.csv 15 final/dragnet/dom-full-test-\*.csv 15
+../src/cli.py merge --cache ~/partd --on "url,path" final/cleaneval/dom-full-\*.csv interim/cleaneval/feats-\*.csv interim/cleaneval/oh-\*.csv interim/cleaneval/freqs-\*.csv raw/cleaneval/labels.csv
+../src/cli.py merge --cache ~/partd --on "url,path" final/dragnet/dom-full-\*.csv interim/dragnet/feats-\*.csv interim/dragnet/oh-\*.csv interim/dragnet/freqs-\*.csv raw/dragnet/labels.csv
+#
+## merge data
+#echo MERGING CSVS
+#../src/cli.py merge --cache ~/partd --on "url,path" interim/cleaneval/dom-full-\*.csv interim/cleaneval/feats-\*.csv interim/cleaneval/oh-\*.csv interim/cleaneval/freqs-\*.csv raw/cleaneval/labels.csv
+#../src/cli.py merge --cache ~/partd --on "url,path" interim/dragnet/dom-full-\*.csv interim/dragnet/feats-\*.csv interim/dragnet/oh-\*.csv interim/dragnet/freqs-\*.csv raw/dragnet/labels.csv
+#
+## split the data
+#echo TRAIN/VALIDATON/TEST SPLIT
+#../src/cli.py split --state $SPLIT_SEED --on url interim/cleaneval/dom-full-\*.csv final/cleaneval/dom-full-train-\*.csv 75 final/cleaneval/dom-full-validation-\*.csv 15 final/cleaneval/dom-full-test-\*.csv 15
+#../src/cli.py split --state $SPLIT_SEED --on url interim/dragnet/dom-full-\*.csv final/dragnet/dom-full-train-\*.csv 75 final/dragnet/dom-full-validation-\*.csv 15 final/dragnet/dom-full-test-\*.csv 15

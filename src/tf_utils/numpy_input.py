@@ -48,7 +48,7 @@ def get_numpy_dataset(csv_pattern, numeric_cols=None, text_cols=None, categorize
 
     # categorize id if necessary
     if categorize_id:
-        _, id_arr = np.unique(id_arr, return_inverse=True)
+        _, id_arr = np.unique(id_arr[:, 0], return_inverse=True)
 
     return {'id': id_arr, 'numeric': numeric_arr,
             'text': text_arr, 'y': y_arr, 'is_block': extracted_arr}

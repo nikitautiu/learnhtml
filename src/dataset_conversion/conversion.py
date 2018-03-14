@@ -114,18 +114,38 @@ def get_block_ratios(html, gold_standard):
             for (path, _), block_incl_ratio in zip(block_tokens, block_incl_ratio)]
 
 
+def get_text_block(html):
+    """Given some html, return the" dataframe of
+    paths and their corresponding block texts
+    """
+    root = etree.HTML(html.encode('utf-8'))  # get the nodes
+    extracted_blocks = Blockifier.blocks_from_tree(root, do_css=False)  # get blocks
+    tree = extracted_blocks[0].features['block_start_element'].getroottree() if len(extracted_blocks) != 0 else None
+
+    # get all the extracted block tokens and their corresponding ids(path, tokens)
+    block_tokens = [tree.getpath(blk.features['block_start_element']) for blk in extracted_blocks]
+    block_texts = [blk.text for blk in extracted_blocks]
+
+    # return (path, text)
+    return [(path, block_text) for path, block_text in zip(block_tokens, block_texts)]
+
+
 def get_ratios_per_html(html, gold_standard):
     """Given an html text and the gold standard blocks,
     return a dataframe of (path, percentage)"""
     ratio_dict = {path: ratio for path, ratio in get_block_ratios(html, gold_standard=gold_standard)}
+    text_dict = {path: text for path, text in get_text_block(html)}
 
     # get the html tree
     root = etree.HTML(html.encode('utf-8'))  # get the nodes
     tree = root.getroottree()  # so we can extract paths
     all_paths = (tree.getpath(node) for node in root.iter())
 
-    paths, ratios = zip(*((path, ratio_dict.get(path, NON_CONTENT_BLOCK_RATIO)) for path in all_paths))
-    return pd.DataFrame(data={'path': paths, 'ratio': ratios})
+    paths, ratios, block_text = zip(*((path,
+                                       ratio_dict.get(path, NON_CONTENT_BLOCK_RATIO),
+                                       text_dict.get(path, ''))
+                                      for path in all_paths))
+    return pd.DataFrame(data={'path': paths, 'ratio': ratios, 'block_text': block_text})
 
 
 def extract_ratios_from_df(df):
@@ -193,7 +213,7 @@ def convert_dataset(directory, prefix, cleaneval=False, ratio_threshold=0.1, lab
 
     # assign the label to the tags that have their ratios greater than the threshold
     path_ratio_ddf = html_ddf.map_partitions(extract_ratios_from_df,
-                                             meta={'path': str, 'ratio': float, 'url': str}).clear_divisions()
+                                             meta={'path': str, 'ratio': float, 'url': str, 'block_text': str}).clear_divisions()
 
     # get the blocks and overall extracted blocks
     path_ratio_ddf[label_name + '_label'] = (path_ratio_ddf['ratio'] > ratio_threshold)
@@ -202,4 +222,4 @@ def convert_dataset(directory, prefix, cleaneval=False, ratio_threshold=0.1, lab
     # return the content and the labels
     return html_ddf[['url', 'html']], \
            path_ratio_ddf[['url', 'path', label_name + '_label'] + (['ratio'] if return_ratios else []) + (
-               ['is_extracted_block'] if return_extracted_blocks else [])]
+               ['is_extracted_block', 'block_text'] if return_extracted_blocks else [])]

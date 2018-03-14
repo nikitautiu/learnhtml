@@ -190,7 +190,7 @@ class NodeFeatureExtractor(object):
         feature_names = self.feats_per_node.columns  # the names of the features
         feature_dtypes = self.feats_per_node.dtypes  # the types
 
-        # add a feature placeholder to pad elemnt that are high
+        # add a feature placeholder to pad element that are high
         # enough in the tree not to have enough ancestors
         feature_rows = []
         empty_row = get_empty_features()

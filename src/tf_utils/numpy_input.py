@@ -1,8 +1,8 @@
 import os
 import re
 
-import sparse
 import numpy as np
+import sparse
 from dask import dataframe as dd
 
 from utils import get_random_split

@@ -2,7 +2,7 @@
 
 # split seed andn umber of workers
 SPLIT_SEED=42
-NUM_WORKERS=4
+NUM_WORKERS=16
 
 cd ..
 mkdir data data/{external,raw,interim,final} data/interim/{dragnet,cleaneval} data/raw/{cleaneval,dragnet} data/final/{dragnet,cleaneval}
@@ -29,7 +29,7 @@ mkdir cleaneval
 mv -t dragnet dragnet_data/{HTML,Corrected}
 mv -t cleaneval dragnet_data/cetr-dataset/cleaneval/en/{Corrected,HTML}
 
-rm -r dragnet_data
+rm -rf dragnet_data
 
 
 # recode data

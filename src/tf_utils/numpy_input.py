@@ -18,7 +18,7 @@ def get_numpy_dataset(csv_pattern, numeric_cols=None, text_cols=None, categorize
     :param csv_pattern: the pattern of the csv files
     :return: the specified dict
     """
-    ddf = dd.read_csv(csv_pattern)
+    ddf = dd.read_csv(csv_pattern, dtype={'ancestor5_class_text': 'object', 'id_text': 'object'})
     textual_cols = list(filter(lambda col: re.match(r'.*(((id|class)_text)|text)$', col), ddf.columns))
 
     # separate the numpy arrays
@@ -50,6 +50,7 @@ def get_numpy_dataset(csv_pattern, numeric_cols=None, text_cols=None, categorize
     if categorize_id:
         _, id_arr = np.unique(id_arr[:, 0], return_inverse=True)
 
+    text_arr[text_arr != text_arr] = ''  # fixes the nan problem
     return {'id': id_arr, 'numeric': numeric_arr,
             'text': text_arr, 'y': y_arr, 'is_block': extracted_arr}
 

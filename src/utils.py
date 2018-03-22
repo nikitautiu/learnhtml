@@ -2,6 +2,8 @@ import functools
 import itertools
 import tempfile
 from urllib.parse import urlparse
+from collections import UserDict
+
 
 import keras
 import numpy as np
@@ -9,6 +11,7 @@ import pandas as pd
 from keras.callbacks import Callback
 from sklearn.metrics import f1_score, precision_score, recall_score
 from sklearn.model_selection import GridSearchCV
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils import class_weight
 
 from keras_utils import sparse_generator, KerasSparseClassifier
@@ -73,6 +76,50 @@ def get_random_split(key, proportions):
     split_slices = [slice(i, j) for i, j in zip(split_points[:-1], split_points[1:])]
 
     return [np.isin(key, unique_keys[split_slice]) for split_slice in split_slices]
+
+
+class ItemSelector(BaseEstimator, TransformerMixin):
+    """For data grouped by feature, select subset of data at a provided key.
+
+    The data is expected to be stored in a 2D data structure, where the first
+    index is over features and the second is over samples.  i.e.
+
+    Parameters
+    ----------
+    key : hashable, required
+        The key corresponding to the desired value in a mappable.
+    """
+    def __init__(self, key):
+        self.key = key
+
+    def fit(self, x, y=None):
+        return self
+
+    def transform(self, data_dict):
+        return data_dict[self.key]
+
+
+class RecDict(UserDict):
+    """Dictionary containing arrays that is indexale, both by keys
+    and by slices. Used as a lightweight replacement for recarray"""
+    # TODO: add a check for lengths
+
+    def __getitem__(self, key):
+        if isinstance(key, str):
+            return super().__getitem__(key)
+        return RecDict({k: val[key] for k, val in self.data.items()})
+
+    def __len__(self):
+        """Return the length of the elements, jsut fetch the first one"""
+        item = next(iter(self.data.values()))
+        if isinstance(item, list):
+            return len(item)
+        return item.shape[0]
+
+    @property
+    def shape(self):
+        # workaround for sklearn
+        return (len(self),)
 
 
 class Metrics(Callback):

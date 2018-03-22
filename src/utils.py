@@ -1,11 +1,17 @@
 import functools
 import itertools
+import tempfile
 from urllib.parse import urlparse
 
+import keras
 import numpy as np
 import pandas as pd
-from sklearn.metrics import f1_score
+from keras.callbacks import Callback
+from sklearn.metrics import f1_score, precision_score, recall_score
 from sklearn.model_selection import GridSearchCV
+from sklearn.utils import class_weight
+
+from keras_utils import sparse_generator, KerasSparseClassifier
 
 
 def get_domain_from_url(url):
@@ -67,3 +73,72 @@ def get_random_split(key, proportions):
     split_slices = [slice(i, j) for i, j in zip(split_points[:-1], split_points[1:])]
 
     return [np.isin(key, unique_keys[split_slice]) for split_slice in split_slices]
+
+
+class Metrics(Callback):
+    def __init__(self, validation_data, batch_size, *args, prefix='', **kwargs):
+        super().__init__(*args, **kwargs)
+        self._validation_data = validation_data
+        self._batch_size = batch_size
+        self.prefix = prefix
+
+    def on_epoch_end(self, epoch, logs={}):
+        preds = self.model.predict_generator(
+            sparse_generator(self._validation_data[0], None, self._batch_size, shuffle=False),
+            steps=np.ceil(self._validation_data[0].shape[0] / self._batch_size)
+        )
+
+        predict = np.round(np.asarray(preds))
+        target = self._validation_data[1]
+        results = {
+            'precision': precision_score(target, predict),
+            'recall': recall_score(target, predict),
+            'f1': f1_score(target, predict)
+        }
+        print(' - '.join('{}{}: {}'.format(self.prefix, name, val) for name, val in results.items()))
+
+        for name, val in results.items():
+            logs['{}{}'.format(self.prefix, name)] = val
+
+
+class MyKerasClassifier(KerasSparseClassifier):
+    """Custom KerasClassifier
+    Ensures that we can use early stopping and checkpointing
+    """
+    def fit(self, X, y, **kwargs):
+        # leave a 20 % chunk out on which to do validation
+        val_point = int(X.shape[0] * .8)
+
+        # try to get the checkpoint file, otherwise use a temporary
+        checkpoint_file = self.sk_params.get('checkpoint_file', None)
+        is_tmp = False
+        if checkpoint_file is None:
+            # create a temprorary file to save the checkpoint to
+            is_tmp = True
+            tmp_file = tempfile.NamedTemporaryFile()
+            checkpoint_file = tmp_file.name
+
+        metrics = Metrics((X[val_point:, :], y[val_point:]), 1024, prefix='val_')
+        early_stopper = keras.callbacks.EarlyStopping(monitor='val_f1', min_delta=0.0001,
+                                                      patience=self.sk_params.get('patience', 10),
+                                                      verbose=1, mode='max')
+        checkpoint = keras.callbacks.ModelCheckpoint(checkpoint_file, monitor='val_f1', verbose=1, save_best_only=True,
+                                                     mode='max')
+
+        # set the calbacks per fit method, this ensures that each clone has its own callbacks
+        self.sk_params['nb_features'] = X.shape[1]
+        self.sk_params['batch_size'] = 1024
+        self.sk_params['callbacks'] = [metrics, checkpoint, early_stopper]
+
+        if self.sk_params.get('class_weight', None) == 'balanced':
+            weights = class_weight.compute_class_weight('balanced', [0, 1], y[val_point:])
+            self.sk_params['class_weight'] = dict(enumerate(weights))
+
+        super().fit(X[:val_point], y[:val_point], **kwargs)
+
+        # realod from checkpoint
+        self.model.load_weights(checkpoint_file)
+
+        if is_tmp:
+            # if it is temporary, delete it at the end
+            tmp_file.close()

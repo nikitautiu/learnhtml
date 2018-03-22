@@ -18,7 +18,7 @@ def get_numpy_dataset(csv_pattern, numeric_cols=None, text_cols=None, categorize
     :param csv_pattern: the pattern of the csv files
     :return: the specified dict
     """
-    ddf = dd.read_csv(csv_pattern)
+    ddf = dd.read_csv(csv_pattern, dtypes={''})
     textual_cols = list(filter(lambda col: re.match(r'.*(((id|class)_text)|text)$', col), ddf.columns))
 
     # separate the numpy arrays

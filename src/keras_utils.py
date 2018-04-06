@@ -138,9 +138,12 @@ class KerasSparseClassifier(KerasClassifier):
             return (proba > 0.5).astype('int32')
 
 
-def create_model(hidden_layers, nb_features, activation='relu', dropout=None, optimizer='adagrad'):
+def create_model(hidden_layers, nb_features, activation='relu', dropout=None, optimizer='adagrad', opt_params={}):
     """Crete a keras sequential model with the given hidden layer sizes,
     activation, dropout and optimizer"""
+    if type(optimizer) is not str:
+        optimizer = optimizer(**opt_params)
+        
     # create model
     model = Sequential()
     model.add(Dense(hidden_layers[0],  activation=activation, input_dim=nb_features))

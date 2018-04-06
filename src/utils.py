@@ -9,6 +9,7 @@ import keras
 import numpy as np
 import pandas as pd
 from keras.callbacks import Callback
+from keras import backend as K
 from sklearn.metrics import f1_score, precision_score, recall_score
 from sklearn.model_selection import GridSearchCV
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -152,9 +153,26 @@ class MyKerasClassifier(KerasSparseClassifier):
     """Custom KerasClassifier
     Ensures that we can use early stopping and checkpointing
     """
+    def __init__(self, *args, patience=10, checkpoint_file=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.sk_params['patience'] = patience
+        self.sk_params['checkpoint_file'] = checkpoint_file
+    
     def fit(self, X, y, **kwargs):
-        # leave a 20 % chunk out on which to do validation
-        val_point = int(X.shape[0] * .8)
+        # cleanup the memory. We can't run models in aprallel anyway, so at least, prevent
+        # the huge memory leak
+        K.clear_session()
+        
+        # declare the additional kwargs to pass doen to the classifier
+        additional_sk_params = {}
+        
+        # leave a 10% chunk out on which to do validation
+        additional_sk_params['validation_data'] = self.sk_params.get('validation_data', None)
+        if additional_sk_params['validation_data'] is None:
+            val_point = int(X.shape[0] * .9)
+            additional_sk_params['validation_data'] = (X[val_point:, :], y[val_point:])
+            X = X[:val_point, :]
+            y = y[:val_point]
 
         # try to get the checkpoint file, otherwise use a temporary
         checkpoint_file = self.sk_params.get('checkpoint_file', None)
@@ -165,7 +183,7 @@ class MyKerasClassifier(KerasSparseClassifier):
             tmp_file = tempfile.NamedTemporaryFile()
             checkpoint_file = tmp_file.name
 
-        metrics = Metrics((X[val_point:, :], y[val_point:]), 1024, prefix='val_')
+        metrics = Metrics(additional_sk_params['validation_data'], 1024, prefix='val_')
         early_stopper = keras.callbacks.EarlyStopping(monitor='val_f1', min_delta=0.0001,
                                                       patience=self.sk_params.get('patience', 10),
                                                       verbose=1, mode='max')
@@ -178,10 +196,12 @@ class MyKerasClassifier(KerasSparseClassifier):
         self.sk_params['callbacks'] = [metrics, checkpoint, early_stopper]
 
         if self.sk_params.get('class_weight', None) == 'balanced':
-            weights = class_weight.compute_class_weight('balanced', [0, 1], y[val_point:])
-            self.sk_params['class_weight'] = dict(enumerate(weights))
+            weights = class_weight.compute_class_weight('balanced', [0, 1], y)
+            additional_sk_params['class_weight'] = dict(enumerate(weights))
 
-        super().fit(X[:val_point], y[:val_point], **kwargs)
+        # update the params wih the injected ones
+        kwargs.update(additional_sk_params)
+        super().fit(X, y, **kwargs)
 
         # realod from checkpoint
         self.model.load_weights(checkpoint_file)

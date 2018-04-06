@@ -79,6 +79,24 @@ def get_random_split(key, proportions):
     return [np.isin(key, unique_keys[split_slice]) for split_slice in split_slices]
 
 
+def group_argsort(x, shuffle=True):
+    """Sortng function that preserves grouping of elements. 
+    Same kind elements stay together, but the groups may be shuffled if specified."""
+    uniq_elems = np.unique(x)
+    if shuffle:
+        np.random.shuffle(uniq_elems)
+
+    # get the indices for each unique item
+    new_indices = np.zeros(x.shape, dtype=int)
+    current_pos = 0
+    for elem in uniq_elems:
+        elem_indices = np.where(x == elem)[0]  # the positions of elem
+        new_indices[current_pos:current_pos + len(elem_indices)] = elem_indices
+        current_pos += len(elem_indices)
+    
+    return new_indices
+
+
 class ItemSelector(BaseEstimator, TransformerMixin):
     """For data grouped by feature, select subset of data at a provided key.
 

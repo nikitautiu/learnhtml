@@ -80,7 +80,7 @@ def get_random_split(key, proportions):
 
 
 def group_argsort(x, shuffle=True):
-    """Sortng function that preserves grouping of elements. 
+    """Sorting function that preserves grouping of elements.
     Same kind elements stay together, but the groups may be shuffled if specified."""
     uniq_elems = np.unique(x)
     if shuffle:

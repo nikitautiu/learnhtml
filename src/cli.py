@@ -3,17 +3,23 @@
 
 import json
 import os
+import pickle
 
+import numpy as np
+import tensorflow as tf
 import click
 import dask
 import dask.dataframe as dd
 import pandas as pd
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
+from sklearn.datasets import make_blobs
+from sklearn.linear_model import LogisticRegression
 
 from dataset_conversion.conversion import convert_dataset
 from features import extract_features_from_ddf
 from labeling import label_scraped_data
+from model_selection import nested_cv, get_param_grid, get_ordered_dataset
 from scrape.spiders.broad_spider import HtmlSpider
 
 
@@ -226,6 +232,65 @@ def convert(dataset_directory, output_directory, raw, labels, num_workers, clean
         # output the html
         click.echo('OUTPUTTING LABELS')
         label_ddf.compute().to_csv(output_directory + '/labels.csv', index=False)
+
+
+@cli.command()
+@click.argument('dataset', metavar='DATASET_FILES', nargs=1)
+@click.argument('output', metavar='OUTPUT',
+                type=click.Path(file_okay=True, dir_okay=False, writable=True, ),
+                nargs=1)
+@click.option('--estimator', metavar='ESTIMATOR',
+              type=click.Choice(['logistic', 'svm', 'tree', 'random', 'deep']),
+              help='The estimator to use')
+@click.option('--features', metavar='FEATURES',
+              type=click.Choice(['numeric', 'text', 'both']),
+              help='The types of features to use')
+@click.option('--blocks/--no-blocks', default=True,
+              help='Whether to only use blocks for training(default true)')
+@click.option('--external-folds', metavar='N_FOLDS TOTAL_FOLDS',
+              type=click.Tuple([int, int]), default=(10, 10),
+              help='The number of folds to use and the total folds for the external loop(default 10 10)')
+@click.option('--internal-folds', metavar='N_FOLDS TOTAL_FOLDS',
+              type=click.Tuple([int, int]), default=(10, 10),
+              help='The number of folds to use and the total folds for the internal loop(default 10 10)')
+@click.option('--n-iter', metavar='N_ITER', type=click.INT,
+              default=20, help='The number of iterations for the internal randomized search(default 20)')
+@click.option('--n-jobs', metavar='N_JOBS', type=click.INT,
+              default=-1, help='The number of jobs to start in parallel(default -1)')
+@click.option('--random-seed', metavar='RANDOM_SEED', type=click.INT,
+              default=42, help='The random seed to use')
+def evaluate(dataset, output, estimator, features, blocks, external_folds, internal_folds,
+             n_iter, n_jobs, random_seed):
+    """Evaluate the expected f1-score with nested CV"""
+    # unpacking the fold numbers
+    internal_n_folds, internal_total_folds = internal_folds
+    external_n_folds, external_total_folds = external_folds
+
+    # seed the random number generator
+    click.echo('SEEDING THE RANDOM NUMBER GENERATOR...')
+    np.random.seed(random_seed)
+    tf.set_random_seed(random_seed)
+
+    # load the dataset
+    click.echo('LOADING THE DATASET...')
+    param_distributions = get_param_grid(estimator, features)  # get the appropriate
+    X, y, groups = get_ordered_dataset(dataset, blocks_only=blocks, shuffle=True)
+
+    # training the model
+    click.echo('TRAINING THE MODEL...')
+    scores, cv = nested_cv(estimator, X, y, groups, param_distributions=param_distributions,
+                           n_iter=n_iter, internal_n_folds=internal_n_folds,
+                           internal_total_folds=internal_total_folds, external_n_folds=external_n_folds,
+                           external_total_folds=external_total_folds, n_jobs=n_jobs)
+
+    # outputting
+    click.echo('SAVING RESULTS...')
+    experiment_dict = {
+        'scores': scores,
+        'cv': cv
+    }
+    with open(output, 'wb') as handle:
+        pickle.dump(experiment_dict, handle)
 
 
 if __name__ == '__main__':

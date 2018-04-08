@@ -16,6 +16,17 @@ import tf_utils
 from keras_utils import create_model
 from utils import ItemSelector, MyKerasClassifier, dict_combinations, RecDict, group_argsort
 
+
+def get_percentile_distr():
+    """Get a distribution of percentiles geometrically 
+    spaced between 50-100 and 5-50. Less in the middle, more
+    at the ends."""
+    return [100]
+    second_part = (np.geomspace(5, 50, 10)).astype(int)
+    first_part = (101. - np.geomspace(1, 51, 20)).astype(int)
+    return np.hstack([first_part, second_part])
+
+
 # define the common pipeline for all the model selection
 PIPELINE_EST = Pipeline(steps=[
     ('union', FeatureUnion(transformer_list=[
@@ -64,24 +75,20 @@ DEEP_FIXED = [{
 # define all the tunable params for each of them
 
 LOGISTIC_TUNABLE = [{
-    'reduce_dim__percentile': [10, 50, 100],
     'classify__penalty': ['l1', 'l2'],  # l1 and l2 regularization, l1 introduces sparsity(lasso)
     'classify__C': stats.reciprocal(a=1e-1, b=1e4)
 }]
 
 SVM_TUNABLE = [{
-    'reduce_dim__percentile': [10, 50, 100],
-    'classify__penalty': ['l1', 'l2'],
+    'classify__penalty': ['l2'],
     'classify__C': stats.reciprocal(a=1, b=1e3),
 }]
 
 DECISION_TREE_TUNABLE = [{
-    'reduce_dim__percentile': [10, 50, 100],
     'classify__max_features': ['sqrt', 'log2']
 }]
 
 RANDOM_FOREST_TUNABLE = [{
-    'reduce_dim__percentile': [10, 50, 100],
     'classify__max_features': ['sqrt', 'log2']
 }]
 
@@ -98,10 +105,11 @@ DEEP_TUNABLE = [{
 }]
 
 MISC_TUNABLE = [{
+    'reduce_dim__percentile': [100, 100, 100, 50, 10],
     'union__class__text__use_idf': [True, False],
     'union__class__text__analyzer': ['char_wb', 'word'],
     'union__class__text__ngram_range': [(1, 1), (3, 3)],
-    'classify__class_weight': ['balanced', None]
+    'classify__class_weight': ['balanced']
 }]
 
 PARAM_COMBINATIONS = {
@@ -141,7 +149,7 @@ def get_param_grid(classifier, features):
     if pipeline_grids is None:
         raise ValueError('classifier must be "logistic", "svm", "tree", "random" or "deep"')
 
-    return PIPELINE_EST, list(dict_combinations(feature_weight_grid, *pipeline_grids))
+    return PIPELINE_EST, list(dict_combinations(feature_weight_grid, *pipeline_grids))[0]
 
 
 def generate_grouped_splits(X, y, groups, total_folds=10, n_folds=10):
@@ -218,9 +226,10 @@ def nested_cv(estimator, X, y, groups=None, param_distributions=None,
         # split the dataset
         X_train, X_test = X[split[0]], X[split[1]]
         y_train, y_test = y[split[0]], y[split[1]]
+        groups_train, groups_test = groups[split[0]], groups[split[1]]
 
-        # do the internal loop
-        best_params, cv_results = search_params(estimator, X_train, y_train,
+        # do the internal loop, pass the corresponding groups
+        best_params, cv_results = search_params(estimator, X_train, y_train, groups=groups_train,
                                                 param_distributions=param_distributions,
                                                 n_iter=n_iter, n_folds=internal_n_folds,
                                                 total_folds=internal_total_folds, n_jobs=n_jobs,

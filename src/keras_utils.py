@@ -3,6 +3,8 @@ import types
 import copy
 
 import numpy as np
+import tensorflow as tf
+from keras import backend as K
 from keras.layers import Dense, Dropout
 from keras.models import Sequential
 from keras.utils import to_categorical
@@ -155,3 +157,12 @@ def create_model(hidden_layers, nb_features, activation='relu', dropout=None, op
     # Compile model
     model.compile(loss='binary_crossentropy', optimizer=optimizer, metrics=['accuracy'])
     return model
+
+
+def constrain_memory():
+    """Make the tensorflow backend use only as much memory as it needs"""
+    if 'tensorflow' == K.backend():
+        from keras.backend.tensorflow_backend import set_session
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        set_session(tf.Session(config=config))

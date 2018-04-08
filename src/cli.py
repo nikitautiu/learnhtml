@@ -21,6 +21,7 @@ from features import extract_features_from_ddf
 from labeling import label_scraped_data
 from model_selection import nested_cv, get_param_grid, get_ordered_dataset
 from scrape.spiders.broad_spider import HtmlSpider
+from keras_utils import constrain_memory
 
 
 def run_scrape(start_urls, format, output, logfile=None, loglevel=None, use_splash=False, max_pages=100):
@@ -270,10 +271,13 @@ def evaluate(dataset, output, estimator, features, blocks, external_folds, inter
     click.echo('SEEDING THE RANDOM NUMBER GENERATOR...')
     np.random.seed(random_seed)
     tf.set_random_seed(random_seed)
+    
+    # pre-setup
+    constrain_memory()
 
     # load the dataset
     click.echo('LOADING THE DATASET...')
-    param_distributions = get_param_grid(estimator, features)  # get the appropriate
+    estimator, param_distributions = get_param_grid(estimator, features)  # get the appropriate
     X, y, groups = get_ordered_dataset(dataset, blocks_only=blocks, shuffle=True)
 
     # training the model

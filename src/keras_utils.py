@@ -4,10 +4,6 @@ import copy
 
 import numpy as np
 import tensorflow as tf
-from keras import backend as K
-from keras.layers import Dense, Dropout
-from keras.models import Sequential
-from keras.utils import to_categorical
 from keras.wrappers.scikit_learn import KerasClassifier
 from scipy.sparse import issparse
 
@@ -77,6 +73,9 @@ class KerasSparseClassifier(KerasClassifier):
 
     def fit(self, x, y, **kwargs):
         """ adds sparse matrix handling """
+        from keras.utils import to_categorical
+        from keras import Sequential
+
         if not issparse(x):
             return super().fit(x, y, **kwargs)
 
@@ -143,6 +142,10 @@ class KerasSparseClassifier(KerasClassifier):
 def create_model(hidden_layers, nb_features, activation='relu', dropout=None, optimizer='adagrad', opt_params={}):
     """Crete a keras sequential model with the given hidden layer sizes,
     activation, dropout and optimizer"""
+    from keras import Sequential
+    from keras.layers import Dense
+    from keras.layers import Dropout
+
     if type(optimizer) is not str:
         optimizer = optimizer(**opt_params)
         
@@ -161,6 +164,8 @@ def create_model(hidden_layers, nb_features, activation='relu', dropout=None, op
 
 def constrain_memory():
     """Make the tensorflow backend use only as much memory as it needs"""
+    from keras import backend as K
+
     if 'tensorflow' == K.backend():
         from keras.backend.tensorflow_backend import set_session
         config = tf.ConfigProto()

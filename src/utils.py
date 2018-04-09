@@ -5,17 +5,15 @@ from urllib.parse import urlparse
 from collections import UserDict
 
 
-import keras
 import numpy as np
 import pandas as pd
 from keras.callbacks import Callback
-from keras import backend as K
 from sklearn.metrics import f1_score, precision_score, recall_score
 from sklearn.model_selection import GridSearchCV
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils import class_weight
 
-from keras_utils import sparse_generator, KerasSparseClassifier
+from keras_utils import sparse_generator, KerasSparseClassifier, constrain_memory
 
 
 def get_domain_from_url(url):
@@ -177,9 +175,15 @@ class MyKerasClassifier(KerasSparseClassifier):
         self.sk_params['checkpoint_file'] = checkpoint_file
     
     def fit(self, X, y, **kwargs):
+        # local imports, needed for multiprocessing
+        import keras
+        from keras import backend as K
+        constrain_memory()
+
         # cleanup the memory. We can't run models in aprallel anyway, so at least, prevent
         # the huge memory leak
-        K.clear_session()
+        if 'tensorflow' == K.backend():
+            K.clear_session()
         
         # declare the additional kwargs to pass doen to the classifier
         additional_sk_params = {}

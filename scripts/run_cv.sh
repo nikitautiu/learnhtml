@@ -5,6 +5,7 @@ die () {
     exit 1
 }
 
+N_JOBS="--n-jobs 5"
 RANDOM_SEED=42
 RESULTS_PATH="../experiments/results/"
 DRAGNET_PATH="../data/final/dragnet/dom-full-\*.csv"
@@ -44,7 +45,6 @@ for ESTIMATOR in $ESTIMATORS; do
         FILENAME="${DATASET}-${ESTIMATOR}-${FEATURE}"
         RESULT_FILE="${RESULTS_PATH}${FILENAME}.pickle"
         LOG_FILE="${RESULTS_PATH}${FILENAME}.log"
-        N_JOBS="" && [[ $ESTIMATOR == "deep" ]] && N_JOBS="--n-jobs 1"
         
         # run the command
         echo "../src/cli.py evaluate --estimator ${ESTIMATOR} --features ${FEATURE} --external-folds 1 10 --internal-folds 10 10 --n-iter 60 ${N_JOBS} ${DATASET_PATH} ${RESULT_FILE} > ${LOG_FILE} &"

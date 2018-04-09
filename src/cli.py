@@ -6,7 +6,6 @@ import os
 import pickle
 
 import numpy as np
-import tensorflow as tf
 import click
 import dask
 import dask.dataframe as dd
@@ -21,7 +20,6 @@ from features import extract_features_from_ddf
 from labeling import label_scraped_data
 from model_selection import nested_cv, get_param_grid, get_ordered_dataset
 from scrape.spiders.broad_spider import HtmlSpider
-from keras_utils import constrain_memory
 
 
 def run_scrape(start_urls, format, output, logfile=None, loglevel=None, use_splash=False, max_pages=100):
@@ -270,10 +268,10 @@ def evaluate(dataset, output, estimator, features, blocks, external_folds, inter
     # seed the random number generator
     click.echo('SEEDING THE RANDOM NUMBER GENERATOR...')
     np.random.seed(random_seed)
-    tf.set_random_seed(random_seed)
+    # TODO: find a fix for this, but for the moment,
+    # there is no other solution than using tf just in the worker
+    # tf.set_random_seed(random_seed)
     
-    # pre-setup
-    constrain_memory()
 
     # load the dataset
     click.echo('LOADING THE DATASET...')

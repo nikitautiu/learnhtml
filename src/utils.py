@@ -169,10 +169,11 @@ class MyKerasClassifier(KerasSparseClassifier):
     """Custom KerasClassifier
     Ensures that we can use early stopping and checkpointing
     """
-    def __init__(self, *args, patience=10, checkpoint_file=None, **kwargs):
+    def __init__(self, *args, patience=10, expiration=-1, checkpoint_file=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.sk_params['patience'] = patience
         self.sk_params['checkpoint_file'] = checkpoint_file
+        self.sk_params['expiration'] = expiration  # number of predicts after which to delete the model
     
     def fit(self, X, y, **kwargs):
         # local imports, needed for multiprocessing
@@ -180,6 +181,10 @@ class MyKerasClassifier(KerasSparseClassifier):
         from keras import backend as K
         constrain_memory()
 
+        # delete model flag. tells the estimator to delete the model after a said number of turns
+        # after finishing the first predict after a fit. prevents memory leaks?
+        self._predict_turns = 0
+        
         # cleanup the memory. We can't run models in aprallel anyway, so at least, prevent
         # the huge memory leak
         if 'tensorflow' == K.backend():
@@ -231,3 +236,23 @@ class MyKerasClassifier(KerasSparseClassifier):
         if is_tmp:
             # if it is temporary, delete it at the end
             tmp_file.close()
+            
+
+    def predict(self, *args, **kwargs):
+        # TODO: this is just the most horrid workaround ever
+        # wrapper that deletes the model if the estimator reaches EXIPRATION
+        # the rationale is that after finishing fitting, girdsearch does 2
+        # predictions, after which the model remains in memory, causing a memory leak
+        
+        result = super().predict(*args, **kwargs)
+        self._predict_turns += 1
+        
+        if self._predict_turns == self.sk_params['expiration']:
+            from keras import backend as K
+            if 'tensorflow' == K.backend():
+                import tensorflow as tf
+                K.clear_session()  # clear the session just for good measure
+                tf.reset_default_graph()  # this is needed for the python state
+            del self.model
+            
+        return result

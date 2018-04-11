@@ -21,7 +21,6 @@ def get_percentile_distr():
     """Get a distribution of percentiles geometrically 
     spaced between 50-100 and 5-50. Less in the middle, more
     at the ends."""
-    return [100]
     second_part = (np.geomspace(5, 50, 10)).astype(int)
     first_part = (101. - np.geomspace(1, 51, 20)).astype(int)
     return np.hstack([first_part, second_part])
@@ -66,7 +65,7 @@ RANDOM_FOREST_FIXED = [{
 }]
 
 DEEP_FIXED = [{
-    'classify': [MyKerasClassifier(create_model, shuffle=True,
+    'classify': [MyKerasClassifier(create_model, shuffle=True, expiration=2,
                                    hidden_layers=[3000, 1000, 500] + [100] * 3,
                                    optimizer='adagrad', dropout=0, activation='relu',
                                    class_weight='balanced', epochs=200, patience=50)]
@@ -93,10 +92,9 @@ RANDOM_FOREST_TUNABLE = [{
 }]
 
 DEEP_TUNABLE = [{
-    'reduce_dim__percentile': [100],
     'classify__optimizer': ['adagrad', 'adam', 'rmsprop'],
     'classify__activation': ['relu', 'selu', 'sigmoid', 'tanh'],
-    'classify__dropout': stats.uniform(0., .3),
+    'classify__dropout': stats.uniform(0., .5),
     'classify__hidden_layers': [
         [1000],
         [1000, 500],
@@ -105,11 +103,11 @@ DEEP_TUNABLE = [{
 }]
 
 MISC_TUNABLE = [{
-    'reduce_dim__percentile': [100, 100, 100, 50, 10],
+    'reduce_dim__percentile': get_percentile_distr(),
     'union__class__text__use_idf': [True, False],
     'union__class__text__analyzer': ['char_wb', 'word'],
     'union__class__text__ngram_range': [(1, 1), (3, 3)],
-    'classify__class_weight': ['balanced']
+    'classify__class_weight': ['balanced', None]
 }]
 
 PARAM_COMBINATIONS = {
@@ -180,7 +178,7 @@ def search_params(estimator, X, y, groups=None, param_distributions=None,
     # which leads to a memory leak with Keras
     searcher = RandomizedSearchCV(estimator=estimator, param_distributions=param_distributions,
                                   n_iter=n_iter, refit=False, scoring=scoring, return_train_score=True,
-                                  cv=splits, verbose=2, n_jobs=n_jobs)
+                                  cv=splits, verbose=2, n_jobs=n_jobs, pre_dispatch='2+n_jobs')
     searcher.fit(X, y, groups=groups)
 
     return searcher.best_params_, pd.DataFrame(searcher.cv_results_)

@@ -4,6 +4,10 @@
 import json
 import os
 import pickle
+import multiprocessing
+
+if __name__ == '__main__':
+    multiprocessing.set_start_method('forkserver')
 
 import numpy as np
 import click
@@ -264,7 +268,7 @@ def evaluate(dataset, output, estimator, features, blocks, external_folds, inter
     # unpacking the fold numbers
     internal_n_folds, internal_total_folds = internal_folds
     external_n_folds, external_total_folds = external_folds
-
+    
     # seed the random number generator
     click.echo('SEEDING THE RANDOM NUMBER GENERATOR...')
     np.random.seed(random_seed)

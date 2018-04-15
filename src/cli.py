@@ -248,6 +248,8 @@ def convert(dataset_directory, output_directory, raw, labels, num_workers, clean
 @click.option('--features', metavar='FEATURES',
               type=click.Choice(['numeric', 'text', 'both']),
               help='The types of features to use')
+@click.option('--block-text/--no-block-text', default=False,
+              help='Whether to only use block text as a textual feature(default false)')
 @click.option('--blocks/--no-blocks', default=True,
               help='Whether to only use blocks for training(default true)')
 @click.option('--external-folds', metavar='N_FOLDS TOTAL_FOLDS',
@@ -263,7 +265,7 @@ def convert(dataset_directory, output_directory, raw, labels, num_workers, clean
 @click.option('--random-seed', metavar='RANDOM_SEED', type=click.INT,
               default=42, help='The random seed to use')
 def evaluate(dataset, output, estimator, features, blocks, external_folds, internal_folds,
-             n_iter, n_jobs, random_seed):
+             n_iter, n_jobs, random_seed, block_text):
     """Evaluate the expected f1-score with nested CV"""
     # unpacking the fold numbers
     internal_n_folds, internal_total_folds = internal_folds
@@ -280,7 +282,7 @@ def evaluate(dataset, output, estimator, features, blocks, external_folds, inter
     # load the dataset
     click.echo('LOADING THE DATASET...')
     estimator, param_distributions = get_param_grid(estimator, features)  # get the appropriate
-    X, y, groups = get_ordered_dataset(dataset, blocks_only=blocks, shuffle=True)
+    X, y, groups = get_ordered_dataset(dataset, blocks_only=blocks, shuffle=True, block_text=block_text)
 
     # training the model
     click.echo('TRAINING THE MODEL...')
@@ -291,13 +293,12 @@ def evaluate(dataset, output, estimator, features, blocks, external_folds, inter
 
     # outputting
     click.echo('SAVING RESULTS...')
-    experiment_dict = {
-        'scores': scores,
-        'cv': cv
-    }
-    with open(output, 'wb') as handle:
-        pickle.dump(experiment_dict, handle)
-
+   
+    output_scores = output.format(suffix='scores.csv')
+    output_cv = output.format(suffix='cv.csv')
+    np.savetxt(output_scores, scores)
+    cv.to_csv(output_cv, index=False)
+        
 
 if __name__ == '__main__':
     cli()

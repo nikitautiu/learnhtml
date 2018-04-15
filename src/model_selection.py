@@ -68,7 +68,8 @@ DEEP_FIXED = [{
     'classify': [MyKerasClassifier(create_model, shuffle=True, expiration=2,
                                    hidden_layers=[3000, 1000, 500] + [100] * 3,
                                    optimizer='adagrad', dropout=0, activation='relu',
-                                   class_weight='balanced', epochs=200, patience=50)]
+                                   class_weight='balanced', epochs=500, patience=100)],
+    'reduce_dim__percentile': [100]
 }]
 
 # define all the tunable params for each of them
@@ -94,11 +95,12 @@ RANDOM_FOREST_TUNABLE = [{
 DEEP_TUNABLE = [{
     'classify__optimizer': ['adagrad', 'adam', 'rmsprop'],
     'classify__activation': ['relu', 'selu', 'sigmoid', 'tanh'],
-    'classify__dropout': stats.uniform(0., .5),
+    'classify__dropout': stats.uniform(0., .4),
     'classify__hidden_layers': [
         [1000],
         [1000, 500],
-        [1000, 500, 100]
+        [1000, 500, 100],
+        [1000, 500, 100, 100],
     ]
 }]
 
@@ -115,7 +117,7 @@ PARAM_COMBINATIONS = {
     'svm': [SVM_FIXED, SVM_TUNABLE, MISC_TUNABLE],
     'tree': [DECISION_TREE_FIXED, DECISION_TREE_TUNABLE, MISC_TUNABLE],
     'random': [RANDOM_FOREST_FIXED, RANDOM_FOREST_TUNABLE, MISC_TUNABLE],
-    'deep': [DEEP_FIXED, DEEP_TUNABLE, MISC_TUNABLE]
+    'deep': [MISC_TUNABLE, DEEP_FIXED, DEEP_TUNABLE]
 }
 
 
@@ -254,10 +256,11 @@ def nested_cv(estimator, X, y, groups=None, param_distributions=None,
     return scores, pd.concat(all_cv_results, ignore_index=True)
 
 
-def get_ordered_dataset(file_pattern, blocks_only=True, shuffle=True):
+def get_ordered_dataset(file_pattern, blocks_only=True, shuffle=True, block_text=False):
     """Given a file pattern,return the dataset contained.
     If specified, shuffle the dataset group-wise."""
-    dataset = tf_utils.get_numpy_dataset(file_pattern, text_cols=['class_text'])
+    block_cols = ['block_text'] if block_text else []
+    dataset = tf_utils.get_numpy_dataset(file_pattern, text_cols=['class_text', 'id_text'] + block_cols)
 
     is_block = np.ones(dataset['y'].shape[0], dtype=bool)
     if blocks_only:

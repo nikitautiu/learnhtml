@@ -69,7 +69,6 @@ DEEP_FIXED = [{
                                    hidden_layers=[3000, 1000, 500] + [100] * 3,
                                    optimizer='adagrad', dropout=0, activation='relu',
                                    class_weight='balanced', epochs=500, patience=100)],
-    'reduce_dim__percentile': [100]
 }]
 
 # define all the tunable params for each of them
@@ -81,7 +80,7 @@ LOGISTIC_TUNABLE = [{
 
 SVM_TUNABLE = [{
     'classify__penalty': ['l2'],
-    'classify__C': stats.reciprocal(a=1, b=1e3),
+    'classify__C': stats.reciprocal(a=1e-1, b=1e4),
 }]
 
 DECISION_TREE_TUNABLE = [{

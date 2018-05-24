@@ -78,27 +78,3 @@ def get_numpy_datasets(directory):
     return np.concatenate((train_X, validation_X, test_X)), np.concatenate(
         (train_y, validation_y, test_y)), split_slices
 
-
-def get_split_dataset(csv_pattern, data_cols=None, proportions=None):
-    """Given a csv pattern, the data cols to retrieve and the proportions
-    return a big concatenated X and y and the split slices."""
-    if proportions is None:
-        proportions = [.7, .15, .15]  # default train, validation, test, split
-
-    # get the dataset
-    dataset = get_numpy_dataset(csv_pattern, numeric_cols=data_cols)
-    masks = get_random_split(dataset['id'][:, 0], proportions=proportions)
-
-    # get the split points based on sizes
-    split_points = np.cumsum([0] + [mask.sum() for mask in masks])
-    split_slices = [slice(i, j) for i, j in zip(split_points[:-1], split_points[1:])]
-
-    big_X = np.zeros((split_points[-1], dataset['X'].shape[1]))
-    big_y = np.zeros((split_points[-1],))
-
-    # set the portion of the array with the mask
-    for split_slice, mask in zip(split_slices, masks):
-        big_X[split_slice, :] = dataset['X'][mask]
-        big_y[split_slice] = dataset['y'][mask]
-
-    return big_X, big_y, split_slices

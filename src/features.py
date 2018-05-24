@@ -123,9 +123,8 @@ def extract_node_features(nodes):
     no_classes_features = extract_no_classes(nodes)  # # of classes
     id_len_features = extract_attr_len(nodes)  # id len
     class_len_features = extract_attr_len(nodes, 'class')  # class len
-    no_children_features = extract_no_children(nodes)  # # of children
+    no_children_features = extract_no_children(nodes)  # nb of children
     text_len_features = extract_text_len(nodes)  # text length
-    classes_features = extract_classes(nodes)  # classes
     class_text_features = extract_class_text(nodes)  # class text
     id_text_features = extract_id_text(nodes)  # class text
 
@@ -133,9 +132,9 @@ def extract_node_features(nodes):
     series = [depth_features, sibling_pos_features,
               tag_type_features, no_classes_features,
               id_len_features, class_len_features, no_children_features,
-              text_len_features, classes_features, class_text_features, id_text_features]
+              text_len_features, class_text_features, id_text_features]
     columns = ['depth', 'sibling_pos', 'tag', 'no_classes', 'id_len', 'class_len',
-               'no_children', 'text_len', 'classes', 'class_text', 'id_text']
+               'no_children', 'text_len', 'class_text', 'id_text']
     df_items = zip(columns, series)
 
     return pd.DataFrame.from_items(df_items)
@@ -159,19 +158,24 @@ def aggregate_features(feat_list):
     which have an id. Also, the total number of nodes."""
     if len(feat_list) != 0:
         # try to compute only i there are descendants
+        # start with averaged attributes
         no_nodes = len(feat_list)
         no_children_avg = np.array([feat['no_children'] for feat in feat_list]).mean()
         id_len_avg = np.array([feat['id_len'] for feat in feat_list]).mean()
         no_classes_avg = np.array([feat['no_classes'] for feat in feat_list]).mean()
         class_len_avg = np.array([feat['class_len'] for feat in feat_list]).mean()
         text_len_avg = np.array([feat['text_len'] for feat in feat_list]).mean()
-        class_list = sum((feat['classes'] for feat in feat_list), [])
-        tag_list = [feat['tag'] for feat in feat_list]
 
-        return no_nodes, no_children_avg, id_len_avg, no_classes_avg, class_len_avg, text_len_avg, class_list, tag_list
+        # the list of classes as comma separated list of class attrs
+        classes = ','.join((' '.join(feat['classes']) for feat in feat_list))
+        # same for ids and tags
+        ids = ','.join((feat['id'] for feat in feat_list))
+        tags = ','.join((feat['tag'] for feat in feat_list))
+
+        return no_nodes, no_children_avg, id_len_avg, no_classes_avg, class_len_avg, text_len_avg, classes, ids, tags
 
     # return an empty set of features otherwise
-    return 0, 0, 0, 0, 0, 0, list(), list()
+    return 0, 0, 0, 0, 0, 0, '', '', ''
 
 
 class NodeFeatureExtractor(object):
@@ -237,7 +241,7 @@ class NodeFeatureExtractor(object):
 
         feature_names = ['no_nodes', 'no_children_avg', 'id_len_avg',
                          'no_classes_avg', 'class_len_avg', 'text_len_avg',
-                         'classes', 'tags']
+                         'classes', 'ids', 'tags']
         column_names = []
         for i in range(1, depth + 1):
             for name in feature_names:

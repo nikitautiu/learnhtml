@@ -1,118 +1,27 @@
 import logging
+import os
 import unittest
 
 import pandas as pd
 
 from dataset_conversion import lcs
 from dataset_conversion.conversion import convert_dataset, get_block_ratios, get_blocks_for_file, get_ratios_per_html, \
-    extract_ratios_from_df
+    extract_ratios_from_df, NON_CONTENT_BLOCK_RATIO
 
 
 class TestConvertDataset(unittest.TestCase):
-    @unittest.skip('not yet')
-    def convert_dragnet(self):
-        # suppress all those annotinh warnings
-        logging.getLogger().setLevel(logging.ERROR)
-
-        # try to convert the dataset_dragnet
-        htmls, labels = convert_dataset(directory='src/tests/dataset_dragnet',
-                                        prefix='dragnet-', cleaneval=False, return_ratios=True)
-
-        labels_578 = labels[labels.url.str.contains('R578.html') & labels.content_label].compute()
-        labels_9 = labels[labels.url.str.contains('9.html') & labels.content_label].compute()
-
-        expected_paths578 = {
-            '/html/body/div[1]/div/div[7]/div/div[2]/h1',
-            '/html/body/div[1]/div/div[7]/div/div[2]/div[1]/p[1]',
-            '/html/body/div[1]/div/div[7]/div/div[2]/div[1]/p[2]',
-            '/html/body/div[1]/div/div[7]/div/div[2]/div[1]/p[3]',
-            '/html/body/div[1]/div/div[7]/div/div[2]/div[1]/p[4]',
-            '/html/body/div[1]/div/div[7]/div/div[2]/div[1]/p[5]',
-            '/html/body/div[1]/div/div[7]/div/div[2]/div[1]/p[6]',
-        }
-
-        expected_paths9 = {
-            '/html/body/div[3]/div[1]/div[1]/div/div/div/h1',
-            '/html/body/div[3]/div[1]/div[3]/div[1]',
-            '/html/body/div[3]/div[1]/div[3]/div[2]',
-            '/html/body/div[3]/div[1]/div[3]/div[3]',
-            '/html/body/div[3]/div[1]/div[3]/div[4]/span',
-            '/html/body/div[3]/div[1]/p[1]',
-            '/html/body/div[3]/div[1]/p[2]',
-            '/html/body/div[3]/div[1]/p[3]',
-            '/html/body/div[3]/div[1]/p[4]',
-            '/html/body/div[3]/div[1]/p[5]',
-            '/html/body/div[3]/div[1]/p[6]',
-            '/html/body/div[3]/div[1]/p[7]',
-            '/html/body/div[3]/div[1]/p[8]',
-            '/html/body/div[3]/div[1]/p[9]',
-            '/html/body/div[3]/div[1]/p[10]',
-            '/html/body/div[3]/div[1]/p[11]',
-        }
-        self.assertSetEqual(set(labels_578.path), expected_paths578)
-        self.assertSetEqual(set(labels_9.path), expected_paths9)
-
-        # try to convert the dataset_dragnet
-        htmls, labels = convert_dataset(directory='src/tests/dataset_cleaneval',
-                                        prefix='cleaneval-', cleaneval=True)
-
-        labels_1 = labels[labels.url.str.contains('1.html') & labels.content_label].compute()
-        labels_2 = labels[labels.url.str.contains('2.html') & labels.content_label].compute()
-
-        expected_paths1 = {
-            '/html/body/text/div/center/table/tr/td[2]/table/tr[3]/td/p[1]',
-            '/html/body/text/div/center/table/tr/td[2]/table/tr[3]/td/p[1]/b',
-            '/html/body/text/div/center/table/tr/td[2]/table/tr[3]/td/ul/li[1]',
-            '/html/body/text/div/center/table/tr/td[2]/table/tr[3]/td/ul/li[1]/u',
-            '/html/body/text/div/center/table/tr/td[2]/table/tr[3]/td/ul/li[1]/u/font',
-            '/html/body/text/div/center/table/tr/td[2]/table/tr[3]/td/ul/li[2]',
-            '/html/body/text/div/center/table/tr/td[2]/table/tr[3]/td/ul/li[2]/font',
-            '/html/body/text/div/center/table/tr/td[2]/table/tr[3]/td/div/center/table/tr[1]',
-            '/html/body/text/div/center/table/tr/td[2]/table/tr[3]/td/div/center/table/tr[1]/td',
-            '/html/body/text/div/center/table/tr/td[2]/table/tr[3]/td/div/center/table/tr[1]/td/p[1]',
-            '/html/body/text/div/center/table/tr/td[2]/table/tr[3]/td/div/center/table/tr[1]/td/p[1]/b',
-            '/html/body/text/div/center/table/tr/td[2]/table/tr[3]/td/div/center/table/tr[1]/td/p[2]',
-            '/html/body/text/div/center/table/tr/td[2]/table/tr[3]/td/div/center/table/tr[1]/td/p[2]/b',
-            '/html/body/text/div/center/table/tr/td[2]/table/tr[3]/td/div/center/table/tr[1]/td/p[3]',
-            '/html/body/text/div/center/table/tr/td[2]/table/tr[3]/td/div/center/table/tr[1]/td/p[3]/b',
-            '/html/body/text/div/center/table/tr/td[2]/table/tr[3]/td/div/center/table/tr[3]/td/p[2]',
-            '/html/body/text/div/center/table/tr/td[2]/table/tr[3]/td/div/center/table/tr[3]/td/p[3]'
-        }
-        expected_paths2 = {
-            '/html/body/text/table[3]/tr/td/h3[1]',
-            '/html/body/text/table[3]/tr/td/h3[1]/font',
-            '/html/body/text/table[3]/tr/td/h3[2]',
-            '/html/body/text/table[3]/tr/td/h3[2]/font',
-            '/html/body/text/table[3]/tr/td/p[9]',
-            '/html/body/text/table[3]/tr/td/p[9]/font',
-            '/html/body/text/table[3]/tr/td/p[9]/font/b',
-            '/html/body/text/table[3]/tr/td/p[12]',
-            '/html/body/text/table[3]/tr/td/p[12]/font',
-            '/html/body/text/table[3]/tr/td/p[12]/font/b',
-            '/html/body/text/table[3]/tr/td/p[14]',
-            '/html/body/text/table[3]/tr/td/p[14]/font',
-            '/html/body/text/table[3]/tr/td/p[14]/font/b',
-            '/html/body/text/table[3]/tr/td/p[16]',
-            '/html/body/text/table[3]/tr/td/p[16]/font',
-            '/html/body/text/table[3]/tr/td/p[16]/font/b',
-            '/html/body/text/table[3]/tr/td/p[18]',
-            '/html/body/text/table[3]/tr/td/p[18]/font',
-            '/html/body/text/table[3]/tr/td/p[18]/font/b',
-            '/html/body/text/table[3]/tr/td/h4[2]',
-            '/html/body/text/table[3]/tr/td/h4[2]/font[2]',
-            '/html/body/text/table[3]/tr/td/h4[3]',
-            '/html/body/text/table[3]/tr/td/h4[3]/font',
-        }
-        self.assertSetEqual(set(labels_1.path), expected_paths1)
-        self.assertSetEqual(set(labels_2.path), expected_paths2)
+    def setUp(self):
+        my_path = os.path.abspath(os.path.dirname(__file__))
+        self.dragnet_directory = os.path.join(my_path, './dataset_dragnet')
+        self.cleaneval_directory = os.path.join(my_path, './dataset_cleaneval')
 
     def test_get_block_ratios(self):
         """Tests the function that returns the percentage of
         tokens from all extracted blocks which are from the gold standard"""
 
         # ger golden standard blocks
-        gold_blocks = get_blocks_for_file('R578.html', 'src/tests/dataset_dragnet', cleaneval=False)
-        with open('src/tests/dataset_dragnet/HTML/R578.html') as f:
+        gold_blocks = get_blocks_for_file('R578.html', self.dragnet_directory, cleaneval=False)
+        with open(os.path.join(self.dragnet_directory, 'HTML/R578.html')) as f:
             html = f.read()
 
         ratios = get_block_ratios(html, gold_blocks)
@@ -242,8 +151,8 @@ class TestConvertDataset(unittest.TestCase):
         self.assertListEqual(expected_ratios, ratios)
 
         # do for cleaneval
-        gold_blocks = get_blocks_for_file('2.html', 'src/tests/dataset_cleaneval', cleaneval=False)
-        with open('src/tests/dataset_cleaneval/HTML/2.html') as f:
+        gold_blocks = get_blocks_for_file('2.html', self.cleaneval_directory, cleaneval=False)
+        with open(os.path.join(self.cleaneval_directory, 'HTML/2.html')) as f:
             html = f.read()
 
         ratios = get_block_ratios(html, gold_blocks)
@@ -280,7 +189,7 @@ class TestConvertDataset(unittest.TestCase):
         """Test golden standard block extraction"""
 
         # dragnet
-        extracted_blocks = get_blocks_for_file('R578.html', 'src/tests/dataset_dragnet', cleaneval=False)
+        extracted_blocks = get_blocks_for_file('R578.html', self.dragnet_directory, cleaneval=False)
         expected_blocks = [
             '2013 Ford Escape Video Road Test',
             'The Ford Escape is new for 2013, and this time, it\'s no carryover crossover SUV. It\'s '
@@ -327,7 +236,7 @@ class TestConvertDataset(unittest.TestCase):
         self.assertListEqual(expected_blocks, extracted_blocks)
 
         # cleaneval
-        extracted_blocks = get_blocks_for_file('1.html', 'src/tests/dataset_cleaneval', cleaneval=True)
+        extracted_blocks = get_blocks_for_file('1.html', self.cleaneval_directory, cleaneval=True)
         expected_blocks = [
             'If you feel it\'s time to start taking action and get your property sold FAST and for TOP DOLLAR; '
             'here\'s a good place to start.',
@@ -350,12 +259,12 @@ class TestConvertDataset(unittest.TestCase):
 
     def test_get_ratios_per_html(self):
         """Test to see if the dataframe is properly returned"""
-        gold_blocks = get_blocks_for_file('R578.html', 'src/tests/dataset_dragnet', cleaneval=False)
-        with open('src/tests/dataset_dragnet/HTML/R578.html') as f:
+        gold_blocks = get_blocks_for_file('R578.html', self.dragnet_directory, cleaneval=False)
+        with open(os.path.join(self.dragnet_directory, 'HTML/R578.html')) as f:
             html = f.read()
 
         df = get_ratios_per_html(html, gold_blocks)
-        non_zero_paths = df[df['ratio'] != 0]['path'].tolist()
+        non_zero_paths = df[df['ratio'] > NON_CONTENT_BLOCK_RATIO]['path'].tolist()
         expected_result = [
             '/html/body/div[1]/div/div[7]/div/div[2]/h1',
             '/html/body/div[1]/div/div[7]/div/div[2]/div[1]/div[1]/div[1]/div/div/div[1]/div',
@@ -372,12 +281,12 @@ class TestConvertDataset(unittest.TestCase):
         self.assertListEqual(non_zero_paths, expected_result)
 
         # same for cleaneval
-        gold_blocks = get_blocks_for_file('2.html', 'src/tests/dataset_cleaneval', cleaneval=True)
-        with open('src/tests/dataset_cleaneval/HTML/2.html') as f:
+        gold_blocks = get_blocks_for_file('2.html', self.cleaneval_directory, cleaneval=True)
+        with open(os.path.join(self.cleaneval_directory, 'HTML/2.html')) as f:
             html = f.read()
 
         df = get_ratios_per_html(html, gold_blocks)
-        non_zero_paths = df[df['ratio'] != 0]['path'].tolist()
+        non_zero_paths = df[df['ratio'] > NON_CONTENT_BLOCK_RATIO]['path'].tolist()
         expected_result = [
             '/html/body/text/table[3]/tr/td/h3[1]',
             '/html/body/text/table[3]/tr/td/h3[2]',
@@ -417,13 +326,13 @@ class TestConvertDataset(unittest.TestCase):
 
     def test_extract_ratios_from_df(self):
         # cleaneval
-        gold_blocks1 = get_blocks_for_file('2.html', 'src/tests/dataset_cleaneval', cleaneval=True)
-        with open('src/tests/dataset_cleaneval/HTML/2.html') as f:
+        gold_blocks1 = get_blocks_for_file('2.html', self.cleaneval_directory, cleaneval=True)
+        with open(os.path.join(self.cleaneval_directory, 'HTML/2.html')) as f:
             html1 = f.read()
 
         # dragnet
-        gold_blocks2 = get_blocks_for_file('R578.html', 'src/tests/dataset_dragnet', cleaneval=False)
-        with open('src/tests/dataset_dragnet/HTML/R578.html') as f:
+        gold_blocks2 = get_blocks_for_file('R578.html', self.dragnet_directory, cleaneval=False)
+        with open(os.path.join(self.dragnet_directory, 'HTML/R578.html')) as f:
             html2 = f.read()
 
         html_df = pd.DataFrame(data={'url': ['2.html', 'R578.html'],
@@ -443,12 +352,12 @@ class TestConvertDataset(unittest.TestCase):
             '/html/body/div[1]/div/div[7]/div/div[2]/div[1]/p[5]',
             '/html/body/div[1]/div/div[7]/div/div[2]/div[1]/p[6]'
         ]
-        self.assertListEqual(result[(result['url'] == 'R578.html') & (result['ratio'] != 0)]['path'].tolist(),
+        self.assertListEqual(result[(result['url'] == 'R578.html') & (result['ratio'] > NON_CONTENT_BLOCK_RATIO)]['path'].tolist(),
                              expected_result)
 
     def test_convert_dataset(self):
         """Test the parallellized version of the ratio extractor"""
-        cleaneval_html, cleaneval_labels = convert_dataset('src/tests/dataset_cleaneval', 'cleaneval-', cleaneval=True,
+        cleaneval_html, cleaneval_labels = convert_dataset(self.cleaneval_directory, 'cleaneval-', cleaneval=True,
                                                            return_ratios=True)
 
         # check urls
@@ -493,7 +402,7 @@ class TestConvertDataset(unittest.TestCase):
             cleaneval_labels['url'].str.contains('2.html'))]['path'].compute().tolist(), expected_result)
 
         # now dragnet
-        dragnet_html, dragnet_labels = convert_dataset('src/tests/dataset_dragnet', 'dragnet-', cleaneval=False)
+        dragnet_html, dragnet_labels = convert_dataset(self.dragnet_directory, 'dragnet-', cleaneval=False)
 
         # check urls
         self.assertSetEqual(set(dragnet_html['url'].unique().compute()),

@@ -147,7 +147,7 @@ def iter_df_records(df):
 
 def get_empty_features():
     """Returns the null equivalent of empty features for a node"""
-    return np.array([0, 0, '', 0, 0, 0, 0, 0, list(), '', ''], dtype=object)
+    return np.array([0, 0, '', 0, 0, 0, 0, 0, '', ''], dtype=object)
 
 
 def aggregate_features(feat_list):
@@ -155,7 +155,13 @@ def aggregate_features(feat_list):
     Returns a list of tags, the average number of classes,
     the average number of children, the ratio of nodes with
     text and a list of all classes, and the ratio of features
-    which have an id. Also, the total number of nodes."""
+    which have an id.
+
+    :arg feat_list: Series of features to aggregate
+    :returns either a tuple of all the aggregated feature or a tuple of default
+    values if the `feat_list` is empty
+    """
+
     if len(feat_list) != 0:
         # try to compute only i there are descendants
         # start with averaged attributes
@@ -167,9 +173,9 @@ def aggregate_features(feat_list):
         text_len_avg = np.array([feat['text_len'] for feat in feat_list]).mean()
 
         # the list of classes as comma separated list of class attrs
-        classes = ','.join((' '.join(feat['classes']) for feat in feat_list))
+        classes = ','.join((' '.join(feat['class_text']) for feat in feat_list))
         # same for ids and tags
-        ids = ','.join((feat['id'] for feat in feat_list))
+        ids = ','.join((feat['id_text'] for feat in feat_list))
         tags = ','.join((feat['tag'] for feat in feat_list))
 
         return no_nodes, no_children_avg, id_len_avg, no_classes_avg, class_len_avg, text_len_avg, classes, ids, tags
@@ -217,27 +223,13 @@ class NodeFeatureExtractor(object):
         return pd.DataFrame(data=np.vstack(feature_rows),
                             columns=column_names).astype(column_dtypes)
 
-    def get_descendant_agg_feats(self, node, depth):
-        """Returns the aggregate features for each level of the subtree
-        as the concatenation of the features for each level"""
-        per_level_tuples = []  # list of agg feats on each level
-        descendants = get_descendants(node, depth)
-
-        # iterate over levels
-        for lvl in range(1, depth + 1):
-            # get the features of the descendants
-            desc_feat_list = [self.feature_tree[desc] for desc in descendants[lvl]]
-            per_level_tuples.append(aggregate_features(desc_feat_list))
-
-        return sum(per_level_tuples, ())  # needed for concatenation
-
     def extract_descendant_features(self, depth):
         """Extracts for all the nodes the descendant features"""
 
         feature_rows = []
         for node in self.nodes:
             # get the descendant aggregate features
-            feature_rows.append(self.get_descendant_agg_feats(node, depth))
+            feature_rows.append(self.get_node_descendant_features(node, depth))
 
         feature_names = ['no_nodes', 'no_children_avg', 'id_len_avg',
                          'no_classes_avg', 'class_len_avg', 'text_len_avg',
@@ -249,6 +241,21 @@ class NodeFeatureExtractor(object):
 
         # just feed the tuples and specify the column names
         return pd.DataFrame(data=feature_rows, columns=column_names)
+
+    def get_node_descendant_features(self, node, depth):
+        """Returns the aggregate descendant features for a particular node in the tree.
+        Does not handle renaming of the columns. The return result"""
+
+        per_level_tuples = []  # list of agg feats on each level
+        descendants = get_descendants(node, depth)
+
+        # iterate over levels
+        for lvl in range(1, depth + 1):
+            # get the features of the descendants
+            desc_feat_list = [self.feature_tree[desc] for desc in descendants[lvl]]
+            per_level_tuples.append(aggregate_features(desc_feat_list))
+
+        return sum(per_level_tuples, ())  # needed for concatenation
 
 
 def extract_features_from_nodes(nodes, depth, height):

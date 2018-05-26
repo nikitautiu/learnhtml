@@ -8,7 +8,7 @@ from lxml import etree
 from . import lcs
 from .blocks import Blockifier, simple_tokenizer
 
-NON_CONTENT_BLOCK_RATIO = .00001
+NON_CONTENT_BLOCK_RATIO = 1e-10
 
 
 def read_dir_file(file, directory):
@@ -151,6 +151,8 @@ def get_ratios_per_html(html, gold_standard):
 def extract_ratios_from_df(df):
     """Given a dataframe of htmls, urls, and blocks return
     a dataframe of nodes and their match percentages with corresponding blocks
+
+    :returns a lazy dataframe with the columns in this order(path, ratio, block_text, url)
     """
     grouped = df.groupby(level=0)[['html', 'url', 'gold_standard']]  # group by unique default index
 
@@ -158,7 +160,7 @@ def extract_ratios_from_df(df):
     # or as a Dataframe in this case(with a single row - that's why we use `iat[0]`)
     result = grouped.apply(lambda x: get_ratios_per_html(x['html'].iat[0],
                                                          x['gold_standard'].iat[0]).assign(url=x['url'].iat[0]))
-    return result.reset_index(drop=True)  # drop the multiindex
+    return result[['path', 'ratio', 'block_text', 'url']].reset_index(drop=True)  # drop the multiindex
 
 
 def extract_ratios_from_ddf(ddf):
@@ -167,34 +169,6 @@ def extract_ratios_from_ddf(ddf):
     # we basicaly abuse map_partition's ability to expand indexes for lack of a working
     # groupby(level) in dask
     return ddf.map_partitions(extract_ratios_from_df, meta={'path': str, 'ratio': str, 'url': str}).clear_divisions()
-
-
-#
-#
-# def split_text(elem):
-#     return [tok for tok in re.split('[\n\t ]*\n[\n\t ]*', elem) if tok != '']
-#
-
-# def get_node_type(path):
-#     """Return the node type for a given xpath"""
-#     slash_pos = path.rfind('/')
-#     end_pos = path.find('[', slash_pos)
-#     if end_pos != -1:
-#         return path[slash_pos+1:end_pos]  # return the last
-#     return path[slash_pos+1:]
-#
-#
-# def block_max_ratio(ser):
-#     """Receives a text and a series indexed by url
-#     in which to check for it.It returns the maximum fuzzy
-#     match ratio"""
-#     if get_node_type(ser['path']) in BLACKLIST:
-#         ser['ratio'] = 0.  # do not extract blacklisted frames or from head
-#     else:
-#         # get the mean of all the blocks of the current tag
-#         ratios = [(fuzzprocess.extractOne(text, ser['blocks'], processor=None) or (0, 0))[1] / 100 for text in ser['text']]
-#         ser['ratio'] = sum(ratios) / len(ratios) if len(ratios) != 0 else 0.  # return the maximum
-#     return ser
 
 
 def convert_dataset(directory, prefix, cleaneval=False, ratio_threshold=0.1, label_name='content',
@@ -213,7 +187,8 @@ def convert_dataset(directory, prefix, cleaneval=False, ratio_threshold=0.1, lab
 
     # assign the label to the tags that have their ratios greater than the threshold
     path_ratio_ddf = html_ddf.map_partitions(extract_ratios_from_df,
-                                             meta={'path': str, 'ratio': float, 'url': str, 'block_text': str}).clear_divisions()
+                                             meta=[('path', str), ('ratio', float),
+                                                   ('block_text', str), ('url', str)]).clear_divisions()
 
     # get the blocks and overall extracted blocks
     path_ratio_ddf[label_name + '_label'] = (path_ratio_ddf['ratio'] > ratio_threshold)

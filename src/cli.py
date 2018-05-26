@@ -153,7 +153,6 @@ def evaluate(dataset, output, estimator, features, blocks, external_folds, inter
     # TODO: find a fix for this, but for the moment,
     # there is no other solution than using tf just in the worker
     # tf.set_random_seed(random_seed)
-    
 
     # load the dataset
     click.echo('LOADING THE DATASET...')

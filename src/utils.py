@@ -117,8 +117,8 @@ class ItemSelector(BaseEstimator, TransformerMixin):
 
 
 class RecDict(UserDict):
-    """Dictionary containing arrays that is indexale, both by keys
-    and by slices. Used as a lightweight replacement for recarray"""
+    """Dictionary containing arrays that is indexable, both by keys
+    and by slices. Used as a lightweight replacement for `recarray`"""
     # TODO: add a check for lengths
 
     def __getitem__(self, key):
@@ -127,7 +127,7 @@ class RecDict(UserDict):
         return RecDict({k: val[key] for k, val in self.data.items()})
 
     def __len__(self):
-        """Return the length of the elements, jsut fetch the first one"""
+        """Return the length of the elements, just fetch the first one"""
         item = next(iter(self.data.values()))
         if isinstance(item, list):
             return len(item)
@@ -185,12 +185,12 @@ class MyKerasClassifier(KerasSparseClassifier):
         # after finishing the first predict after a fit. prevents memory leaks?
         self._predict_turns = 0
         
-        # cleanup the memory. We can't run models in aprallel anyway, so at least, prevent
+        # cleanup the memory. We can't run models in a parallel anyway, so at least, prevent
         # the huge memory leak
         if 'tensorflow' == K.backend():
             K.clear_session()
         
-        # declare the additional kwargs to pass doen to the classifier
+        # declare the additional kwargs to pass done to the classifier
         additional_sk_params = {}
         
         # leave a 10% chunk out on which to do validation
@@ -236,11 +236,10 @@ class MyKerasClassifier(KerasSparseClassifier):
         if is_tmp:
             # if it is temporary, delete it at the end
             tmp_file.close()
-            
 
     def predict(self, *args, **kwargs):
         # TODO: this is just the most horrid workaround ever
-        # wrapper that deletes the model if the estimator reaches EXIPRATION
+        # wrapper that deletes the model if the estimator reaches EXPIRATION
         # the rationale is that after finishing fitting, girdsearch does 2
         # predictions, after which the model remains in memory, causing a memory leak
         

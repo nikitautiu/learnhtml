@@ -1,11 +1,13 @@
-tensorflow-gpu
+tensorflow
 seaborn
 matplotlib
 numpy
 lxml
-dask
+dask[complete]
+sparse
 pandas
 csvkit
 click
 scikit-learn
 chardet
+keras

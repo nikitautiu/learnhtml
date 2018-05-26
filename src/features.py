@@ -1,8 +1,6 @@
 import itertools
-import re
 from urllib.parse import urlparse
 
-import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 from lxml import etree
@@ -267,7 +265,7 @@ def extract_features_from_nodes(nodes, depth, height):
     if depth > 0:
         feat_dfs.append(extractor.extract_descendant_features(depth))
     if height > 0:
-        feat_dfs.append(extractor.extract_ancestor_features((height)))
+        feat_dfs.append(extractor.extract_ancestor_features(height))
 
     # either concatenate or not
     features = feat_dfs[0] if len(feat_dfs) == 1 else pd.concat(feat_dfs, axis='columns')
@@ -276,8 +274,8 @@ def extract_features_from_nodes(nodes, depth, height):
 
 def extract_features_from_html(html, depth, height):
     """Given an html text, extract the node based features
-    including the descendant and ancestor ones if depthe and
-    height are respectively non-null."""
+    including the descendant and ancestor ones if depth and
+    height are respectively nonzero."""
     root = etree.HTML(html.encode('utf-8'))  # get the nodes, serve bytes, unicode fails if html has meta
     features = extract_features_from_nodes(list(root.iter()), depth, height)
 
@@ -297,11 +295,17 @@ def extract_features_from_df(df, depth, height):
     """Given a dataframe of htmls and urls, return
     a dataframe of node features, return a dataframe
     with the node features extracted also, for each node,
-    add the url and path respectively"""
+    add the url and path respectively
+
+    :param df: the `DataFrame` containing `url` and `html` columns or `None`
+    :param depth: the depth of the tree to add descendant features from
+    :param height: the height of the tree to add ancestor features from
+    :returns the feature `DataFrame` or a default set if the dataframe is empty
+    """
     feat_dfs = []
     rows = df.iterrows()
-    if len(df) == 0:
-        # return dummy data in non inputed(for dask)
+    if df is None or len(df) == 0:
+        # return dummy data in non inputted(for dask)
         rows = [(0, {'html': '<html><head></head><body></body></html>', 'url': 'aaa'})]
 
     for index, row in rows:
@@ -315,79 +319,14 @@ def extract_features_from_df(df, depth, height):
     return result_df
 
 
-def count_values(lst, values):
-    """Given an iterable of values and one of keys, return the count of
-    the keys in the list(with 0 as default)"""
-    count_dict = {val: 0 for val in values}  # for overwriting with values
-    for elem in lst:
-        count_dict[elem] += 1
-    return count_dict
-
-
-def freq_vect_series(ser):
-    """Given a series whose elements are python lists, return
-    a dataframe where each record is the frequency vector for a certain
-    element in the list. The columns will be prefixed with the series name
-
-    Returns a dask datagrame."""
-    # reduce all to a single set of tags
-    avail_tags = ser.to_bag().fold(lambda a, b: a | set(b), set.union, initial=set()).compute()
-    # compute the frequencies of the given tags, pass the index as an argument to concat it to the dict
-    # to preserv it
-    freqcol_names = {tag_name: int for tag_name in avail_tags}
-    freqs = ser.apply(lambda x: pd.Series(count_values(x, avail_tags)), meta=freqcol_names)
-
-    # rename the columns to be prefixed with the name of the series
-    col_renames = {col_name: ser.name + '_' + col_name for col_name in avail_tags}
-    return freqs.rename(columns=col_renames)
-
-
-def freq_vect_dataframe(ddf, freq_cols=None):
-    """Given a dataframe of columns with python lists compute
-    the merged dataframe of the frequency vectors returned
-    by freq_vect_series."""
-    # determine columns
-    if freq_cols is None:
-        freq_cols = ddf.columns.tolist()  # use all if unspecified
-
-    ddfs = [freq_vect_series(ddf.loc[:, col_name]) for col_name in freq_cols]
-    # basically compute all the frequency dataframes and returned the one-by-one merge result
-    result = ddf.drop(freq_cols, axis=1)  # drop all but the columns to be transformed to freqs
-    for current_ddf in ddfs:
-        result = result.assign(**{col_name: current_ddf[col_name] for col_name in current_ddf.columns.tolist()})
-    return result
-
-
-def one_hot_dataframe(ddf, one_hot_cols=None):
-    """Given a dask dataframe encode its columns using one-hot. Every new column will
-    be prefixed with the original name.
-
-    Returns a dask dataframe."""
-
-    tag_cats = ddf.categorize()  # converted to categoricals
-    # will be using al if None
-    one_hot = dd.get_dummies(data=tag_cats, prefix=one_hot_cols, columns=one_hot_cols)
-    return one_hot
-
-
 def extract_features_from_ddf(ddf, depth, height):
-    """Given a dask dataframe of the raw data, return the dask dataset_dragnet containing all the
-    extracted features and dropping the redundant ones."""
+    """Given a dask dataframe of the raw data, return the dask DataFrame containing all the
+    extracted features, both numeric and textual.
+
+    :returns the dask dataframe containing all the features
+    :rtype dask.DataFrame
+    """
     feat_ddf = ddf.map_partitions(lambda df: extract_features_from_df(df, depth, height),
                                   meta=extract_features_from_df(pd.DataFrame(), depth, height)).clear_divisions()
-    feat_ddf = feat_ddf.categorize(['url', 'path'])
 
-    columns = feat_ddf.columns.tolist()  # used for filtering
-
-    # one hot encoding
-    one_hot_cols = list(filter(lambda col: re.match(r'.*tag$', col), columns))
-    one_hot_ddf = one_hot_dataframe(feat_ddf.loc[:, one_hot_cols + ['url', 'path']], one_hot_cols)
-
-    # frequency vects
-    freq_cols = list(filter(lambda col: re.match(r'descend.*tags$', col), columns))
-    freq_ddf = freq_vect_dataframe(feat_ddf.loc[:, freq_cols + ['url', 'path']], freq_cols)
-
-    # drop redundant cols
-    classes_cols = list(filter(lambda col: re.match(r'^((descendant|ancestor)[0-9]+_)?classes$', col), columns))
-    feat_ddf = feat_ddf.drop(one_hot_cols + freq_cols + classes_cols, axis='columns')
-    return one_hot_ddf, freq_ddf, feat_ddf
+    return feat_ddf

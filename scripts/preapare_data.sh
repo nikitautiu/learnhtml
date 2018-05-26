@@ -70,8 +70,8 @@ echo DRAGNET
 
 # merge data but do not split afterwards
 echo MERGING CSVS
-../src/cli.py merge --cache ~/partd --on "url,path" final/cleaneval/dom-full-\*.csv interim/cleaneval/feats-\*.csv interim/cleaneval/oh-\*.csv interim/cleaneval/freqs-\*.csv raw/cleaneval/labels.csv
-../src/cli.py merge --cache ~/partd --on "url,path" final/dragnet/dom-full-\*.csv interim/dragnet/feats-\*.csv interim/dragnet/oh-\*.csv interim/dragnet/freqs-\*.csv raw/dragnet/labels.csv
+../src/cli.py merge --cache ~/partd --on "url,path" final/cleaneval/dom-full-\*.csv interim/cleaneval/feats-\*.csv raw/cleaneval/labels.csv
+../src/cli.py merge --cache ~/partd --on "url,path" final/dragnet/dom-full-\*.csv interim/dragnet/feats-\*.csv raw/dragnet/labels.csv
 #
 ## merge data
 #echo MERGING CSVS

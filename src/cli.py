@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 """This module provides a utility to easily download and label website tags."""
 
-import json
-import os
-import pickle
 import multiprocessing
+import os
 
 if __name__ == '__main__':
     multiprocessing.set_start_method('forkserver')
@@ -14,8 +12,6 @@ import click
 import dask
 import dask.dataframe as dd
 import pandas as pd
-from sklearn.datasets import make_blobs
-from sklearn.linear_model import LogisticRegression
 
 from dataset_conversion.conversion import convert_dataset
 from features import extract_features_from_ddf
@@ -26,6 +22,7 @@ from model_selection import nested_cv, get_param_grid, get_ordered_dataset
 def cli():
     """Dataset creation tool"""
     pass
+
 
 @cli.command()
 @click.argument('input_file', type=click.Path(file_okay=True, dir_okay=False, readable=True), metavar='INPUT_FILE')
@@ -39,18 +36,11 @@ def dom(input_file, output_dir, height, depth, num_workers):
     dask.set_options(get=dask.multiprocessing.get, num_workers=num_workers)  # set the number of workers
 
     df = pd.read_csv(input_file)  # must read as pandas because dask makes a fuss about html
-    oh, freqs, feats = extract_features_from_ddf(dd.from_pandas(df, npartitions=max(num_workers * 2, 64)), depth,
-                                                 height)
+    feats = extract_features_from_ddf(dd.from_pandas(df, npartitions=max(num_workers * 2, 64)), depth, height)
 
     # output all the three to csvs
     click.echo('OUTPUTING FEATURES')
     feats.to_csv(os.path.join(output_dir, 'feats-*.csv'), index=False)
-
-    click.echo('OUTPUTING ONE-HOT')
-    oh.to_csv(os.path.join(output_dir, 'oh-*.csv'), index=False)
-
-    click.echo('OUTPUTING FREQUENCIES')
-    freqs.to_csv(os.path.join(output_dir, 'freqs-*.csv'), index=False)
 
     click.secho('DONE!', bold=True)
 
@@ -146,7 +136,7 @@ def evaluate(dataset, output, estimator, features, blocks, external_folds, inter
     # unpacking the fold numbers
     internal_n_folds, internal_total_folds = internal_folds
     external_n_folds, external_total_folds = external_folds
-    
+
     # seed the random number generator
     click.echo('SEEDING THE RANDOM NUMBER GENERATOR...')
     np.random.seed(random_seed)
@@ -168,12 +158,12 @@ def evaluate(dataset, output, estimator, features, blocks, external_folds, inter
 
     # outputting
     click.echo('SAVING RESULTS...')
-   
+
     output_scores = output.format(suffix='scores.csv')
     output_cv = output.format(suffix='cv.csv')
     np.savetxt(output_scores, scores)
     cv.to_csv(output_cv, index=False)
-        
+
 
 if __name__ == '__main__':
     cli()

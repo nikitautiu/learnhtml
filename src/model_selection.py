@@ -8,13 +8,13 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import get_scorer
 from sklearn.model_selection import GroupKFold, RandomizedSearchCV
 from sklearn.pipeline import Pipeline, FeatureUnion
-from sklearn.preprocessing import MaxAbsScaler
+from sklearn.preprocessing import MaxAbsScaler, LabelBinarizer
 from sklearn.svm import LinearSVC
 from sklearn.tree import DecisionTreeClassifier
 
 import tf_utils
 from keras_utils import create_model
-from utils import ItemSelector, MyKerasClassifier, dict_combinations, RecDict, group_argsort
+from utils import ItemSelector, MyKerasClassifier, RecDict, group_argsort, dict_combinations
 
 
 def get_percentile_distr():
@@ -105,9 +105,6 @@ DEEP_TUNABLE = [{
 
 MISC_TUNABLE = [{
     'reduce_dim__percentile': get_percentile_distr(),
-    'union__class__text__use_idf': [True, False],
-    'union__class__text__analyzer': ['char_wb', 'word'],
-    'union__class__text__ngram_range': [(1, 1), (3, 3)],
     'classify__class_weight': ['balanced', None]
 }]
 
@@ -120,35 +117,133 @@ PARAM_COMBINATIONS = {
 }
 
 
-def get_param_grid(classifier, features):
-    """Given a classifier name and the feature set name,
-    return its corresponding estimator and param search grid"""
+def create_pipeline(**parameters):
+    """Creates a Pipeline, to use as classifier, based on the
+    parameters passed. These have the same meaning as the special
+    parameters passed to `get_param_grid`.
 
-    # compute the feature weights
-    text_weight = 0.
-    numeric_weight = 0.
-    if features == 'numeric':
-        numeric_weight = 1.
-    elif features == 'text':
-        text_weight = 1.
-    elif features == 'both':
-        numeric_weight = 1.
-        text_weight = 1.
-    else:
-        raise ValueError('features must be "text", "numeric" or "both')
+    Mainly concerned with the feature ones.
+    """
 
-    feature_weight_grid = [{
-        'union__transformer_weights': [
-            {'numeric': numeric_weight, 'class': text_weight}
-        ]
-    }]
+    # feature subset
+    use_numeric = parameters.get('use_numeric', False)
+    use_classes = parameters.get('use_classes', False)
+    use_ids = parameters.get('use_ids', False)
+    use_tags = parameters.get('use_tags', False)
 
+    # height and depth
+    height = parameters.get('height', 0)
+    depth = parameters.get('depth', 0)
+
+    # create a selector for ancestor and descendants
+    # ancestor
+    ancestor_regex = ''
+    if height != 0:
+        ancestor_regex = r'(ancestor({}).+)'.format(
+            r'|'.join(str(x) for x in range(1, height + 1)))
+
+    # descendant
+    depth_regex = ''
+    if depth != 0:
+        depth_regex = r'(descendant({}).+)'.format(
+            r'|'.join(str(x) for x in range(1, depth + 1)))
+
+    regexes = [r'((?!ancestor|descendant).+)', ancestor_regex, depth_regex]  # generic one and the ancestor and depth
+    hd_regex = r'^' + r'|'.join(regexes) + r'$'
+    height_depth_selector = ItemSelector(regex=hd_regex)
+
+    # feature_union_creation
+    transformer_list = []  # number of transformers
+
+    if use_tags:
+        # transform the tags, label binarizer for categorical tags
+        # ancestor and normal
+        transformer_list.append(
+            ('categorical_tags', Pipeline(steps=[
+                ('select', ItemSelector(regex=r'^.*tag$')),
+                ('vectorize', LabelBinarizer(sparse_output=True))
+            ]))
+        )
+
+        # descendant tags
+        transformer_list.append(
+            ('frequency_tags', Pipeline(steps=[
+                ('select', ItemSelector(regex=r'^.*tags$')),
+                ('vectorize', TfidfVectorizer(analyzer='word', ngram_range=(1, 1), use_idf=False))
+            ]))
+        )
+
+    if use_classes:
+        # classes, use with td-idf
+        transformer_list.append(
+            ('classes', Pipeline(steps=[
+                ('select', ItemSelector(regex=r'^(.*class_text)|.+([0-9]_classes)$')),
+                ('vectorize', TfidfVectorizer(analyzer='char_wb', ngram_range=(3, 3), use_idf=False))
+            ]))
+        )
+
+    if use_ids:
+        # ids, use tf-idf
+        transformer_list.append(
+            ('ids', Pipeline(steps=[
+                ('select', ItemSelector(regex=r'^(.*id_text)|(.*ids)$$')),
+                ('vectorize', TfidfVectorizer(analyzer='char_wb', ngram_range=(3, 3), use_idf=False))
+            ]))
+        )
+
+    if use_numeric:
+        # get the numeric features
+        transformer_list.append(
+            ('numeric', Pipeline(steps=[
+                ('select', ItemSelector(predicate=lambda x: str(x[1]) != 'object')),
+            ]))
+        )
+
+    estimator = Pipeline(steps=[
+        ('verbosity', height_depth_selector),
+        ('union', FeatureUnion(transformer_list=transformer_list)),
+        ('normalizer', MaxAbsScaler()),
+        ('reduce_dim', SelectPercentile(chi2)),
+        ('classify', None)
+    ])
+
+    return estimator
+
+
+def get_param_grid(**parameters):
+    """Given a set of parameters return a n estimator
+    and a grid of search parameters.
+
+    The majority of values are used for customizing the tunable parameters.
+    These have the same meaning as key-values pair passed to RandomSearchCV.
+    A few pairs have special meanings:
+    * `classify`: Can be one of "logistic", "svm", "tree", "random" or "deep" and specifies the classifier
+    * `use_numeric`: Whether to use the numeric features extracted.
+    * `use_classes`: Whether to use text information from classes.
+    * `use_ids`: Whether to use the id information
+    * `use_tags`: Whether to use tag information.
+    * `height`: How many ancestors to use.
+    * `depth`: How many levels of descendants to use.
+
+    :param parameters:
+        The set of of parameters to use for initialization. Contains at least a key for
+        'classify' which specifies what classifier to use.
+    :type parameters: dict, contains
+    """
+
+    classifier = parameters.get('classify')  # get the classifier
     # get the other params
     pipeline_grids = PARAM_COMBINATIONS.get(classifier, None)
     if pipeline_grids is None:
         raise ValueError('classifier must be "logistic", "svm", "tree", "random" or "deep"')
 
-    return PIPELINE_EST, list(dict_combinations(feature_weight_grid, *pipeline_grids))[0]
+    # create the estimator and parameter combinations
+    estimator = create_pipeline(**parameters)
+
+    # pop the other params
+    for param in ['classify', 'use_numeric', 'use_classes', 'use_ids', 'use_tags', 'height', 'depth']:
+        parameters.pop(param, None)
+    return estimator, list(dict_combinations([parameters], *pipeline_grids))
 
 
 def generate_grouped_splits(X, y, groups, total_folds=10, n_folds=10):

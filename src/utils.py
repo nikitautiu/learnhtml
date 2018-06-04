@@ -30,8 +30,12 @@ def zip_dicts(*dicts):
 def dict_combinations(*dict_list_lists):
     """Given a list of lists of dictionaries return the list of
     all possible dictionaries resulting from the unions of sampling
-    a dictionary from each list."""
-    combinations = itertools.product(*dict_list_lists)  # cartesian product of all
+    a dictionary from each list.
+
+    Basically given a list of lists of dictionaries, returns all the
+    dictionaries that are a ersult of sampling items from each of the lists
+    """
+    combinations = itertools.product(*dict_list_lists)  # cartesian product of all the lists
     return map(lambda comb: functools.reduce(lambda a, b: dict(list(a.items()) + list(b.items())),
                                              comb, {}), combinations)  # return resulting dicts
 
@@ -53,15 +57,6 @@ def get_metrics(estimator, big_X, big_y, train_ind, validation_ind, test_ind, hy
         {'f1-score': f1_score(big_y[test_ind], grid_search.predict(big_X[test_ind, :])), 'set': 'test'}
     ])
     return result_df, grid_search
-
-
-def dict_combinations(*dict_list_lists):
-    """Given a list of lists of ditionaries return the list of
-    all posible dictionarie resulting from the unions of sampling
-    a dictionary from each list."""
-    combinations = itertools.product(*dict_list_lists)  # cartesian product of all
-    return map(lambda comb: functools.reduce(lambda a, b: dict(list(a.items()) + list(b.items())),
-                                             comb, {}), combinations)  # return resulting dicts
 
 
 def get_random_split(key, proportions):
@@ -105,15 +100,46 @@ class ItemSelector(BaseEstimator, TransformerMixin):
     ----------
     key : hashable, required
         The key corresponding to the desired value in a mappable.
+    filter_kws:
+        Arguments to pass to the filter method of a DataFrame
     """
-    def __init__(self, key):
+    def __init__(self, key=None, **filter_kws):
+        # do some param checks
+        if sum([len(filter_kws), key is not None]) > 1:
+            raise ValueError('filters are mutually exclusive')
+
         self.key = key
+        self.filters = filter_kws
+
+    def __repr__(self):
+        """Returns the representation of the object"""
+        if self.key is not None:
+            return 'ItemSelector(key={key})'.format(key=repr(self.key))
+        name, key = list(self.filters.items())[0]
+        return 'ItemSelector({name}={key})'.format(key=repr(key), name=name)
 
     def fit(self, x, y=None):
         return self
 
     def transform(self, data_dict):
-        return data_dict[self.key]
+        if self.key is not None:
+            # regardless of type, if key is specified, it should do
+            # regular indexing
+            return data_dict[self.key]
+
+        if not isinstance(data_dict, (pd.DataFrame, pd.SparseDataFrame)):
+            raise ValueError('Only DataFrames can be indexed with filter')
+
+        if self.filters.get('predicate', None) is not None:
+            predicate = self.filters.get('predicate')  # use the predicate
+            # the predicate receives the column name and dtype
+
+            cols = filter(predicate, zip(data_dict.columns, data_dict.dtypes))
+            cols = list(map(lambda x: x[00], cols))
+            return data_dict[cols]
+
+        # default to filtering
+        return data_dict.filter(**self.filters)
 
 
 class RecDict(UserDict):
@@ -230,7 +256,7 @@ class MyKerasClassifier(KerasSparseClassifier):
         kwargs.update(additional_sk_params)
         super().fit(X, y, **kwargs)
 
-        # realod from checkpoint
+        # reaload from checkpoint
         self.model.load_weights(checkpoint_file)
 
         if is_tmp:

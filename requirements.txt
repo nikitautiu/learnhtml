@@ -10,4 +10,4 @@ csvkit
 click
 scikit-learn
 chardet
-keras
+Cython

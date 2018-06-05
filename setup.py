@@ -1,8 +1,10 @@
-from distutils.core import setup
+#!/usr/bin/env python
+
+import os
+from setuptools import setup
 
 import lxml
 import numpy as np
-import os
 from Cython.Distutils import Extension
 from Cython.Distutils import build_ext
 
@@ -13,7 +15,6 @@ def find_libxml2_include():
         if os.path.exists(os.path.join(d, 'libxml/tree.h')):
             include_dirs.append(d)
     return include_dirs
-
 
 
 setup(

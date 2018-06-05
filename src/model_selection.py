@@ -26,51 +26,6 @@ def get_percentile_distr():
     return np.hstack([first_part, second_part])
 
 
-# define the common pipeline for all the model selection
-PIPELINE_EST = Pipeline(steps=[
-    ('union', FeatureUnion(transformer_list=[
-        ('numeric', Pipeline(steps=[
-            ('select', ItemSelector(key='numeric')),
-        ])),
-        ('class', Pipeline(steps=[
-            ('select', ItemSelector(key='text')),
-            ('text', TfidfVectorizer(analyzer='char_wb', ngram_range=(3, 3), use_idf=False))
-        ]))],
-        transformer_weights={
-            'numeric': 1.0,
-            'class': 1.0
-        },
-    )),
-    ('normalizer', MaxAbsScaler()),
-    ('reduce_dim', SelectPercentile(chi2)),
-    ('classify', None)
-])
-
-# define all the fixed params for each of the models
-
-LOGISTIC_FIXED = [{
-    'classify': [LogisticRegression()]
-}]
-
-SVM_FIXED = [{
-    'classify': [LinearSVC()]
-}]
-
-DECISION_TREE_FIXED = [{
-    'classify': [DecisionTreeClassifier()]
-}]
-
-RANDOM_FOREST_FIXED = [{
-    'classify': [RandomForestClassifier()]
-}]
-
-DEEP_FIXED = [{
-    'classify': [MyKerasClassifier(create_model, shuffle=True, expiration=2,
-                                   hidden_layers=[3000, 1000, 500] + [100] * 3,
-                                   optimizer='adagrad', dropout=0, activation='relu',
-                                   class_weight='balanced', epochs=500, patience=100)],
-}]
-
 # define all the tunable params for each of them
 
 LOGISTIC_TUNABLE = [{
@@ -109,12 +64,28 @@ MISC_TUNABLE = [{
 }]
 
 PARAM_COMBINATIONS = {
-    'logistic': [LOGISTIC_FIXED, LOGISTIC_TUNABLE, MISC_TUNABLE],
-    'svm': [SVM_FIXED, SVM_TUNABLE, MISC_TUNABLE],
-    'tree': [DECISION_TREE_FIXED, DECISION_TREE_TUNABLE, MISC_TUNABLE],
-    'random': [RANDOM_FOREST_FIXED, RANDOM_FOREST_TUNABLE, MISC_TUNABLE],
-    'deep': [MISC_TUNABLE, DEEP_FIXED, DEEP_TUNABLE]
+    'logistic': [LOGISTIC_TUNABLE, MISC_TUNABLE],
+    'svm': [SVM_TUNABLE, MISC_TUNABLE],
+    'tree': [DECISION_TREE_TUNABLE, MISC_TUNABLE],
+    'random': [RANDOM_FOREST_TUNABLE, MISC_TUNABLE],
+    'deep': [MISC_TUNABLE, DEEP_TUNABLE]
 }
+
+
+def create_classifier(classifier_name):
+    """Based on the passed name, return a Classifier object."""
+    CLASSIFIER_MAP = {
+        'logistic': LogisticRegression(),
+        'svm': LinearSVC(),
+        'tree': DecisionTreeClassifier(),
+        'random': RandomForestClassifier(),
+        'deep': MyKerasClassifier(create_model, shuffle=True, expiration=2,
+                                  hidden_layers=[3000, 1000, 500] + [100] * 3,
+                                  optimizer='adagrad', dropout=0, activation='relu',
+                                  class_weight='balanced', epochs=500, patience=100)
+    }
+
+    return CLASSIFIER_MAP[classifier_name]
 
 
 def create_pipeline(**parameters):
@@ -125,36 +96,55 @@ def create_pipeline(**parameters):
     Mainly concerned with the feature ones.
     """
 
+    # height and depth
+    height = parameters.get('height', 0)
+    depth = parameters.get('depth', 0)
+
+    # create a selector for ancestor and descendants
+    height_depth_selector = create_verbosity_selectors(depth, height)
+
     # feature subset
     use_numeric = parameters.get('use_numeric', False)
     use_classes = parameters.get('use_classes', False)
     use_ids = parameters.get('use_ids', False)
     use_tags = parameters.get('use_tags', False)
 
-    # height and depth
-    height = parameters.get('height', 0)
-    depth = parameters.get('depth', 0)
+    transformer_list = create_feature_transformers(use_classes, use_ids, use_numeric, use_tags)
 
-    # create a selector for ancestor and descendants
+    estimator = Pipeline(steps=[
+        ('verbosity', height_depth_selector),
+        ('union', FeatureUnion(transformer_list=transformer_list)),
+        ('normalizer', MaxAbsScaler()),
+        ('reduce_dim', SelectPercentile(chi2)),
+        ('classify', create_classifier(parameters.get('classify', 'logistic')))
+    ])
+
+    return estimator
+
+
+def create_verbosity_selectors(depth, height):
+    """Get an ItemSelector that selects features based on a height and depth"""
     # ancestor
     ancestor_regex = ''
     if height != 0:
         ancestor_regex = r'(ancestor({}).+)'.format(
             r'|'.join(str(x) for x in range(1, height + 1)))
-
     # descendant
     depth_regex = ''
     if depth != 0:
         depth_regex = r'(descendant({}).+)'.format(
             r'|'.join(str(x) for x in range(1, depth + 1)))
-
     regexes = [r'((?!ancestor|descendant).+)', ancestor_regex, depth_regex]  # generic one and the ancestor and depth
     hd_regex = r'^' + r'|'.join(regexes) + r'$'
     height_depth_selector = ItemSelector(regex=hd_regex)
+    return height_depth_selector
+
+
+def create_feature_transformers(use_classes, use_ids, use_numeric, use_tags):
+    """Get a set of transformers for the features"""
 
     # feature_union_creation
     transformer_list = []  # number of transformers
-
     if use_tags:
         # transform the tags, label binarizer for categorical tags
         # ancestor and normal
@@ -172,7 +162,6 @@ def create_pipeline(**parameters):
                 ('vectorize', TfidfVectorizer(analyzer='word', ngram_range=(1, 1), use_idf=False))
             ]))
         )
-
     if use_classes:
         # classes, use with td-idf
         transformer_list.append(
@@ -181,7 +170,6 @@ def create_pipeline(**parameters):
                 ('vectorize', TfidfVectorizer(analyzer='char_wb', ngram_range=(3, 3), use_idf=False))
             ]))
         )
-
     if use_ids:
         # ids, use tf-idf
         transformer_list.append(
@@ -190,7 +178,6 @@ def create_pipeline(**parameters):
                 ('vectorize', TfidfVectorizer(analyzer='char_wb', ngram_range=(3, 3), use_idf=False))
             ]))
         )
-
     if use_numeric:
         # get the numeric features
         transformer_list.append(
@@ -198,16 +185,7 @@ def create_pipeline(**parameters):
                 ('select', ItemSelector(predicate=lambda x: str(x[1]) != 'object')),
             ]))
         )
-
-    estimator = Pipeline(steps=[
-        ('verbosity', height_depth_selector),
-        ('union', FeatureUnion(transformer_list=transformer_list)),
-        ('normalizer', MaxAbsScaler()),
-        ('reduce_dim', SelectPercentile(chi2)),
-        ('classify', None)
-    ])
-
-    return estimator
+    return transformer_list
 
 
 def get_param_grid(**parameters):

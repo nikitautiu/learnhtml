@@ -1,9 +1,8 @@
 from unittest import TestCase
 
-import keras
 import numpy as np
 from scipy import sparse
-from sklearn.datasets import make_classification, make_blobs
+from sklearn.datasets import make_blobs
 from sklearn.metrics import accuracy_score
 
 from keras_utils import sparse_generator, create_model, KerasSparseClassifier
@@ -92,4 +91,3 @@ class TestSparseGenerator(TestCase):
         acc = accuracy_score(y[80:], est.predict(X[80:]))
         self.assertEqual(acc_sparse, acc)
         self.assertGreater(acc, .95)
-

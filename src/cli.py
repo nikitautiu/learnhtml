@@ -39,7 +39,7 @@ def dom(input_file, output_dir, height, depth, num_workers):
     feats = extract_features_from_ddf(dd.from_pandas(df, npartitions=max(num_workers * 2, 64)), depth, height)
 
     # output all the three to csvs
-    click.echo('OUTPUTING FEATURES')
+    click.echo('OUTPUTTING FEATURES')
     feats.to_csv(os.path.join(output_dir, 'feats-*.csv'), index=False)
 
     click.secho('DONE!', bold=True)
@@ -132,6 +132,8 @@ def convert(dataset_directory, output_directory, raw, labels, num_workers, clean
               default=42, help='The random seed to use')
 def evaluate(dataset, output, estimator, features, blocks, external_folds, internal_folds,
              n_iter, n_jobs, random_seed, block_text):
+    # TODO: Accommodate for passing json settings
+
     """Evaluate the expected f1-score with nested CV"""
     # unpacking the fold numbers
     internal_n_folds, internal_total_folds = internal_folds
@@ -147,7 +149,7 @@ def evaluate(dataset, output, estimator, features, blocks, external_folds, inter
     # load the dataset
     click.echo('LOADING THE DATASET...')
     estimator, param_distributions = get_param_grid(estimator, features)  # get the appropriate
-    X, y, groups = get_ordered_dataset(dataset, blocks_only=blocks, shuffle=True, block_text=block_text)
+    X, y, groups = get_ordered_dataset(dataset, blocks_only=blocks, shuffle=True)
 
     # training the model
     click.echo('TRAINING THE MODEL...')
@@ -164,6 +166,8 @@ def evaluate(dataset, output, estimator, features, blocks, external_folds, inter
     np.savetxt(output_scores, scores)
     cv.to_csv(output_cv, index=False)
 
+
+# TODO: add a train command that saves the model
 
 if __name__ == '__main__':
     cli()

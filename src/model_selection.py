@@ -1,6 +1,8 @@
+import dask.dataframe as dd
 import numpy as np
 import pandas as pd
-from scipy import stats
+from scipy import stats, sparse
+from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_selection import SelectPercentile, chi2
@@ -12,9 +14,8 @@ from sklearn.preprocessing import MaxAbsScaler, LabelBinarizer
 from sklearn.svm import LinearSVC
 from sklearn.tree import DecisionTreeClassifier
 
-import tf_utils
 from keras_utils import create_model
-from utils import ItemSelector, MyKerasClassifier, RecDict, group_argsort, dict_combinations
+from utils import ItemSelector, MyKerasClassifier, group_argsort, dict_combinations
 
 
 def get_percentile_distr():
@@ -70,6 +71,62 @@ PARAM_COMBINATIONS = {
     'random': [RANDOM_FOREST_TUNABLE, MISC_TUNABLE],
     'deep': [MISC_TUNABLE, DEEP_TUNABLE]
 }
+
+
+class MultiColumnTransformer(BaseEstimator, TransformerMixin):
+    """Transformer that takes an estimator and applies it to all the columns
+    of a DataFrame. Properly handles sparse outputs."""
+
+    def __init__(self, estimator):
+        """Creates the transformer. Receives a transformer to wrap."""
+        self.est = estimator  # estimator to use on the selected columns
+        self.cloned_estimators = {}
+
+    def __repr__(self):
+        """Return the representation of the estimator."""
+        return 'MultiColumnTransformer(estimator={})'.format(repr(self.est))
+
+    def fit(self, X, y=None):
+        """Fits an estimator for each of the columns in X."""
+        self.cloned_estimators = {}
+
+        for col in X.columns.tolist():
+            # clone the estimator for every column
+            # and fit it to the data
+            cloned_est = clone(self.est)
+            cloned_est.fit(X[col])
+            self.cloned_estimators[col] = cloned_est
+
+        return self  # not relevant here
+
+    def transform(self, X, y=None):
+        """Transforms every column with its pre-fitted estimator."""
+
+        # transform every given col
+        extracted = []
+        for col in X.columns.tolist():
+            transformed_data = self.cloned_estimators[col].transform(X[col])
+            extracted.append(transformed_data)
+
+        if any(sparse.issparse(fea) for fea in extracted):
+            stacked = sparse.hstack(extracted).tocsr()
+            # return a sparse matrix only if the mapper was initialized
+            # with sparse=True
+        else:
+            stacked = np.hstack(extracted)
+
+        return stacked
+
+    def get_params(self, deep=True):
+        """Gets the parameters of the estimator."""
+        return self.est.get_params(deep=deep)
+
+    def set_params(self, **params):
+        """Set the parameters"""
+        self.est.set_params(**params)  # set the original estimator
+        # and the cloned ones
+        for key in self.cloned_estimators.keys():
+            self.cloned_estimators[key].set_params(**params)
 
 
 def create_classifier(classifier_name):
@@ -151,15 +208,17 @@ def create_feature_transformers(use_classes, use_ids, use_numeric, use_tags):
         transformer_list.append(
             ('categorical_tags', Pipeline(steps=[
                 ('select', ItemSelector(regex=r'^.*tag$')),
-                ('vectorize', LabelBinarizer(sparse_output=True))
+                ('vectorize', MultiColumnTransformer(LabelBinarizer(sparse_output=True)))
             ]))
         )
 
-        # descendant tags
+        # descendant tags. "tags" not "tag" this time
         transformer_list.append(
             ('frequency_tags', Pipeline(steps=[
                 ('select', ItemSelector(regex=r'^.*tags$')),
-                ('vectorize', TfidfVectorizer(analyzer='word', ngram_range=(1, 1), use_idf=False))
+                ('vectorize', MultiColumnTransformer(TfidfVectorizer(analyzer='word',
+                                                                     ngram_range=(1, 1),
+                                                                     use_idf=False)))
             ]))
         )
     if use_classes:
@@ -167,7 +226,9 @@ def create_feature_transformers(use_classes, use_ids, use_numeric, use_tags):
         transformer_list.append(
             ('classes', Pipeline(steps=[
                 ('select', ItemSelector(regex=r'^(.*class_text)|.+([0-9]_classes)$')),
-                ('vectorize', TfidfVectorizer(analyzer='char_wb', ngram_range=(3, 3), use_idf=False))
+                ('vectorize', MultiColumnTransformer(TfidfVectorizer(analyzer='char_wb',
+                                                                     ngram_range=(3, 3),
+                                                                     use_idf=False)))
             ]))
         )
     if use_ids:
@@ -175,7 +236,9 @@ def create_feature_transformers(use_classes, use_ids, use_numeric, use_tags):
         transformer_list.append(
             ('ids', Pipeline(steps=[
                 ('select', ItemSelector(regex=r'^(.*id_text)|(.*ids)$$')),
-                ('vectorize', TfidfVectorizer(analyzer='char_wb', ngram_range=(3, 3), use_idf=False))
+                ('vectorize', MultiColumnTransformer(TfidfVectorizer(analyzer='char_wb',
+                                                                     ngram_range=(3, 3),
+                                                                     use_idf=False)))
             ]))
         )
     if use_numeric:
@@ -328,25 +391,24 @@ def nested_cv(estimator, X, y, groups=None, param_distributions=None,
     return scores, pd.concat(all_cv_results, ignore_index=True)
 
 
-def get_ordered_dataset(file_pattern, blocks_only=True, shuffle=True, block_text=False):
+def get_ordered_dataset(file_pattern, blocks_only=True, shuffle=True):
     """Given a file pattern,return the dataset contained.
     If specified, shuffle the dataset group-wise."""
-    block_cols = ['block_text'] if block_text else []
-    dataset = tf_utils.get_numpy_dataset(file_pattern, text_cols=['class_text', 'id_text'] + block_cols)
+    dataset = dd.read_csv(file_pattern).compute()
 
-    is_block = np.ones(dataset['y'].shape[0], dtype=bool)
+    is_block = np.ones(dataset.shape[0], dtype=bool)
     if blocks_only:
         # if only blocks return just the blocks
-        is_block = dataset['is_block'].ravel()
+        is_block = dataset['is_extracted_block']
 
-    data_X = RecDict({'numeric': dataset['numeric'][is_block], 'text': dataset['text'][is_block, 0]})
-    data_y = dataset['y'][is_block]
-    groups = dataset['id'][is_block]
+    data_X = dataset.drop(['content_label', 'url', 'path', 'block_text', 'is_extracted_block'], axis=1)
+    data_y = dataset['content_label'][is_block]
+    groups = dataset['url'][is_block]
 
     # order them
     order = group_argsort(groups, shuffle=shuffle)
-    groups = groups[order]
-    data_X = data_X[order]
-    data_y = data_y[order]
+    groups = groups.iloc[order]
+    data_X = data_X.iloc[order]
+    data_y = data_y.iloc[order]
 
     return data_X, data_y, groups

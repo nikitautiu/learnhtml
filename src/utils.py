@@ -2,15 +2,13 @@ import functools
 import itertools
 import tempfile
 from urllib.parse import urlparse
-from collections import UserDict
-
 
 import numpy as np
 import pandas as pd
 from keras.callbacks import Callback
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.metrics import f1_score, precision_score, recall_score
 from sklearn.model_selection import GridSearchCV
-from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils import class_weight
 
 from keras_utils import sparse_generator, KerasSparseClassifier, constrain_memory
@@ -86,7 +84,7 @@ def group_argsort(x, shuffle=True):
         elem_indices = np.where(x == elem)[0]  # the positions of elem
         new_indices[current_pos:current_pos + len(elem_indices)] = elem_indices
         current_pos += len(elem_indices)
-    
+
     return new_indices
 
 
@@ -103,6 +101,7 @@ class ItemSelector(BaseEstimator, TransformerMixin):
     filter_kws:
         Arguments to pass to the filter method of a DataFrame
     """
+
     def __init__(self, key=None, **filter_kws):
         # do some param checks
         if sum([len(filter_kws), key is not None]) > 1:
@@ -135,34 +134,11 @@ class ItemSelector(BaseEstimator, TransformerMixin):
             # the predicate receives the column name and dtype
 
             cols = filter(predicate, zip(data_dict.columns, data_dict.dtypes))
-            cols = list(map(lambda x: x[00], cols))
+            cols = list(map(lambda x: x[0], cols))
             return data_dict[cols]
 
         # default to filtering
         return data_dict.filter(**self.filters)
-
-
-class RecDict(UserDict):
-    """Dictionary containing arrays that is indexable, both by keys
-    and by slices. Used as a lightweight replacement for `recarray`"""
-    # TODO: add a check for lengths
-
-    def __getitem__(self, key):
-        if isinstance(key, str):
-            return super().__getitem__(key)
-        return RecDict({k: val[key] for k, val in self.data.items()})
-
-    def __len__(self):
-        """Return the length of the elements, just fetch the first one"""
-        item = next(iter(self.data.values()))
-        if isinstance(item, list):
-            return len(item)
-        return item.shape[0]
-
-    @property
-    def shape(self):
-        # workaround for sklearn
-        return (len(self),)
 
 
 class Metrics(Callback):
@@ -195,12 +171,13 @@ class MyKerasClassifier(KerasSparseClassifier):
     """Custom KerasClassifier
     Ensures that we can use early stopping and checkpointing
     """
+
     def __init__(self, *args, patience=10, expiration=-1, checkpoint_file=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.sk_params['patience'] = patience
         self.sk_params['checkpoint_file'] = checkpoint_file
         self.sk_params['expiration'] = expiration  # number of predicts after which to delete the model
-    
+
     def fit(self, X, y, **kwargs):
         # local imports, needed for multiprocessing
         import keras
@@ -210,15 +187,15 @@ class MyKerasClassifier(KerasSparseClassifier):
         # delete model flag. tells the estimator to delete the model after a said number of turns
         # after finishing the first predict after a fit. prevents memory leaks?
         self._predict_turns = 0
-        
+
         # cleanup the memory. We can't run models in a parallel anyway, so at least, prevent
         # the huge memory leak
         if 'tensorflow' == K.backend():
             K.clear_session()
-        
+
         # declare the additional kwargs to pass done to the classifier
         additional_sk_params = {}
-        
+
         # leave a 10% chunk out on which to do validation
         additional_sk_params['validation_data'] = self.sk_params.get('validation_data', None)
         if additional_sk_params['validation_data'] is None:
@@ -268,10 +245,10 @@ class MyKerasClassifier(KerasSparseClassifier):
         # wrapper that deletes the model if the estimator reaches EXPIRATION
         # the rationale is that after finishing fitting, girdsearch does 2
         # predictions, after which the model remains in memory, causing a memory leak
-        
+
         result = super().predict(*args, **kwargs)
         self._predict_turns += 1
-        
+
         if self._predict_turns == self.sk_params['expiration']:
             from keras import backend as K
             if 'tensorflow' == K.backend():
@@ -279,5 +256,5 @@ class MyKerasClassifier(KerasSparseClassifier):
                 K.clear_session()  # clear the session just for good measure
                 tf.reset_default_graph()  # this is needed for the python state
             del self.model
-            
+
         return result

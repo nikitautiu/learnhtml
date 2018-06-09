@@ -122,7 +122,10 @@ class ItemSelector(BaseEstimator, TransformerMixin):
         """Returns the representation of the object"""
         if self.key is not None:
             return 'ItemSelector(key={key})'.format(key=repr(self.key))
-        name, key = list(self.filters.items())[0]
+
+        all_args = {'regex': self.regex, 'like': self.like,
+                    'items': self.items, 'predicate': self.predicate, 'key': self.key}
+        name, key = list(all_args.items())[0]
         return 'ItemSelector({name}={key})'.format(key=repr(key), name=name)
 
     def set_params(self, key=None, regex=None, like=None, items=None, predicate=None):

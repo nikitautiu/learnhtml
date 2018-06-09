@@ -14,6 +14,7 @@ from sklearn.svm import LinearSVC
 from sklearn.tree import DecisionTreeClassifier
 
 from keras_utils import create_model
+from log import logger
 from utils import ItemSelector, MyKerasClassifier, group_argsort, dict_combinations, MultiColumnTransformer
 
 
@@ -280,6 +281,12 @@ def cv_train(estimator, X, y, groups=None, param_distributions=None,
     resulting dataset. Parameters are the same as for `nested_cv` but
     only a set of folds is specifiable now."""
 
+    # convert groups and labels
+    if isinstance(y, pd.Series):
+        y = y.values
+    if isinstance(groups, pd.Series):
+        groups = groups.values
+
     # specify the defaults
     if groups is None:
         groups = np.arange(y.shape[0])
@@ -302,10 +309,8 @@ def cv_train(estimator, X, y, groups=None, param_distributions=None,
     return best_est
 
 
-def nested_cv(estimator, X, y, groups=None, param_distributions=None,
-              n_iter=20, internal_n_folds=5, internal_total_folds=None,
-              external_n_folds=5, external_total_folds=None,
-              n_jobs=-1, scoring='f1', verbose=True):
+def nested_cv(estimator, X, y, groups=None, param_distributions=None, n_iter=20, internal_n_folds=5,
+              internal_total_folds=None, external_n_folds=5, external_total_folds=None, n_jobs=-1, scoring='f1'):
     """Perform nested cv with internal randomized CV for model selection
     Given a dataset with optional grouping, a parameter distribution for an estimator
     perform nested CV.
@@ -316,14 +321,19 @@ def nested_cv(estimator, X, y, groups=None, param_distributions=None,
     and the returned values are a list of scores and a dataframe containing all internal
     CV results.
     """
+    # convert groups and labels
+    if isinstance(y, pd.Series):
+        y = y.values
+    if isinstance(groups, pd.Series):
+        groups = groups.values
+
+    # select defaults
     if groups is None:
         groups = np.arange(y.shape[0])
     if internal_total_folds is None:
         internal_total_folds = internal_n_folds
     if external_total_folds is None:
         external_total_folds = external_n_folds
-
-
 
     # get the external splits
     splits = generate_grouped_splits(X, y, groups, total_folds=external_total_folds,
@@ -337,15 +347,15 @@ def nested_cv(estimator, X, y, groups=None, param_distributions=None,
     scores = np.zeros(external_n_folds, dtype='float32')
 
     for run_nb, split in zip(range(external_n_folds), splits):
-        if verbose:
-            # monitor message
-            print('Model selection on fold number {}...'.format(run_nb))
+        logger.info('Model selection on fold number {}...'.format(run_nb))
 
         # split the dataset
         if isinstance(X, pd.DataFrame):
             X_train, X_test = X.iloc[split[0]], X.iloc[split[1]]
         else:
             X_train, X_test = X[split[0]], X[split[1]]
+        y_train, y_test = y[split[0]], y[split[1]]
+        groups_train, groups_test = groups[split[0]], groups[split[1]]
 
         # do the internal loop, pass the corresponding groups
         best_params, cv_results = search_params(estimator, X_train, y_train, groups=groups_train,
@@ -355,8 +365,7 @@ def nested_cv(estimator, X, y, groups=None, param_distributions=None,
                                                 scoring=scoring)
 
         # refit the the best estimator with all the data
-        if verbose:
-            print('Refitting estimator with best params...')
+        logger.info('Refitting estimator with best params...')
         best_est = estimator
         best_est.set_params(**best_params)  # set as kwargs!
         best_est.fit(X_train, y_train)
@@ -365,8 +374,7 @@ def nested_cv(estimator, X, y, groups=None, param_distributions=None,
         scores[run_nb] = scorer(best_est, X_test, y_test)
 
         # log the result
-        if verbose:
-            print('SCORE FOR BEST ESTIMATOR ON FOLD NUMBER {} = {}'.format(run_nb, scores[run_nb]))
+        logger.info('SCORE FOR BEST ESTIMATOR ON FOLD NUMBER {} = {}'.format(run_nb, scores[run_nb]))
 
         # add the cross validation dataframe to the list
         cv_results['run_nb'] = run_nb

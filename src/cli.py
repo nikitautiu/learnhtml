@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """This module provides a utility to easily download and label website tags."""
 import json
-import logging
 import os
 import pickle
 import pprint
@@ -16,9 +15,10 @@ from scipy.stats._distn_infrastructure import rv_frozen
 
 from dataset_conversion.conversion import convert_dataset
 from features import extract_features_from_ddf
+from log import logger
 from model_selection import nested_cv, get_param_grid, get_ordered_dataset, cv_train
 
-logger = logging.getLogger(__name__)
+# configure the logger to use the click settings
 click_log.basic_config(logger)
 
 
@@ -196,10 +196,10 @@ def train(dataset, output, external_folds, internal_folds,
     if output is not None:
         # training the model
         logger.info('Performing nested CV')
-        scores, cv = nested_cv(estimator, X, y, groups, param_distributions=param_distributions,
-                               n_iter=n_iter, internal_n_folds=internal_n_folds,
-                               internal_total_folds=internal_total_folds, external_n_folds=external_n_folds,
-                               external_total_folds=external_total_folds, n_jobs=n_jobs)
+        scores, cv = nested_cv(estimator, X, y, groups, param_distributions=param_distributions, n_iter=n_iter,
+                               internal_n_folds=internal_n_folds, internal_total_folds=internal_total_folds,
+                               external_n_folds=external_n_folds, external_total_folds=external_total_folds,
+                               n_jobs=n_jobs)
 
         # outputting
         logger.info('Saving the results')
@@ -216,7 +216,7 @@ def train(dataset, output, external_folds, internal_folds,
         trained_est = cv_train(estimator, X, y, groups,
                                param_distributions=param_distributions,
                                n_iter=n_iter, n_folds=external_n_folds,
-                               total_folds=external_total_folds)
+                               total_folds=external_total_folds, n_jobs=n_jobs)
 
         logger.info('Saving the model')
         with open(model_file, 'wb') as f:

@@ -1,6 +1,7 @@
 from unittest import TestCase
 
 import pandas as pd
+from sklearn import clone
 
 from utils import ItemSelector
 
@@ -111,3 +112,38 @@ class TestItemSelector(TestCase):
         selected_data = selector.transform(data)
         expected_data = pd.DataFrame({'ab': ['a', 'ab', 4]})
         pd.testing.assert_frame_equal(selected_data, expected_data)
+
+    def test_param_setting(self):
+        """Test parameters"""
+        selector = ItemSelector(regex='[b2]$')
+
+        # initial get
+        expected_params = {'regex': '[b2]$', 'key': None, 'predicate': None, 'items': None, 'like': None}
+        received_params = selector.get_params()
+        self.assertDictEqual(expected_params, received_params)
+
+        # set params
+        selector.set_params(key='a', regex=None, predicate=None, items=None, like=None)
+
+        expected_params = {'regex': None, 'key': 'a', 'predicate': None, 'items': None, 'like': None}
+        received_params = selector.get_params()
+        self.assertDictEqual(expected_params, received_params)
+
+        # test cloning
+        selector = ItemSelector(regex='[b2]$')
+        selector_clone = clone(selector)
+
+        self.assertDictEqual(selector.get_params(), selector_clone.get_params())
+
+    def test_param_exceptions(self):
+        """Test whether passing invalid parameters raises exceptions"""
+        # test with no params
+        with self.failUnlessRaises(Exception):
+            ItemSelector()
+
+        with self.failUnlessRaises(Exception):
+            ItemSelector(regex='aaa', items=[11, 1, 1])
+
+        selector = ItemSelector(regex='a')
+        with self.failUnlessRaises(Exception):
+            selector.set_params(items=['aaa'], regex='aaa')

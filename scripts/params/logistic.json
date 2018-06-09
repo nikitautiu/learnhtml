@@ -1,0 +1,20 @@
+{
+  "classify": "logistic",
+
+  "classify__penalty": ["l1", "l2"],
+
+  "classify__class_weight": ["balanced", null],
+  "reduce_dim__percentile": [100, 75, 50, 25, 15, 10, 5],
+
+  "union__classes__vectorize__estimator__analyzer": ["char_wb", "word"],
+  "union__classes__vectorize__estimator__ngram_range": [[3, 3], [1, 3], [1, 1]],
+  "union__classes__vectorize__estimator__use_idf": [true, false],
+
+  "union__frequency_tags__vectorize__estimator__analyzer": "word",
+  "union__frequency_tags__vectorize__estimator__ngram_range": [[1, 1]],
+  "union__frequency_tags__vectorize__estimator__use_idf": [true, false],
+
+  "union__ids__vectorize__estimator__analyzer": ["char_wb", "word"],
+  "union__ids__vectorize__estimator__ngram_range": [[3, 3], [1, 3], [1, 1]],
+  "union__ids__vectorize__estimator__use_idf": [true, false]
+}

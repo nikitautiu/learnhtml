@@ -1,4 +1,6 @@
+scipy
 tensorflow
+keras
 seaborn
 matplotlib
 numpy
@@ -11,3 +13,4 @@ click
 scikit-learn
 chardet
 Cython
+click-log

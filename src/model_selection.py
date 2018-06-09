@@ -1,21 +1,20 @@
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
-from scipy import stats, sparse
-from sklearn.base import BaseEstimator, TransformerMixin, clone
+from scipy import stats
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.feature_selection import SelectPercentile, chi2
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import get_scorer
 from sklearn.model_selection import GroupKFold, RandomizedSearchCV
 from sklearn.pipeline import Pipeline, FeatureUnion
-from sklearn.preprocessing import MaxAbsScaler, LabelBinarizer
+from sklearn.preprocessing import MaxAbsScaler
 from sklearn.svm import LinearSVC
 from sklearn.tree import DecisionTreeClassifier
 
 from keras_utils import create_model
-from utils import ItemSelector, MyKerasClassifier, group_argsort, dict_combinations
+from utils import ItemSelector, MyKerasClassifier, group_argsort, dict_combinations, MultiColumnTransformer
 
 
 def get_percentile_distr():
@@ -73,65 +72,9 @@ PARAM_COMBINATIONS = {
 }
 
 
-class MultiColumnTransformer(BaseEstimator, TransformerMixin):
-    """Transformer that takes an estimator and applies it to all the columns
-    of a DataFrame. Properly handles sparse outputs."""
-
-    def __init__(self, estimator):
-        """Creates the transformer. Receives a transformer to wrap."""
-        self.est = estimator  # estimator to use on the selected columns
-        self.cloned_estimators = {}
-
-    def __repr__(self):
-        """Return the representation of the estimator."""
-        return 'MultiColumnTransformer(estimator={})'.format(repr(self.est))
-
-    def fit(self, X, y=None):
-        """Fits an estimator for each of the columns in X."""
-        self.cloned_estimators = {}
-
-        for col in X.columns.tolist():
-            # clone the estimator for every column
-            # and fit it to the data
-            cloned_est = clone(self.est)
-            cloned_est.fit(X[col])
-            self.cloned_estimators[col] = cloned_est
-
-        return self  # not relevant here
-
-    def transform(self, X, y=None):
-        """Transforms every column with its pre-fitted estimator."""
-
-        # transform every given col
-        extracted = []
-        for col in X.columns.tolist():
-            transformed_data = self.cloned_estimators[col].transform(X[col])
-            extracted.append(transformed_data)
-
-        if any(sparse.issparse(fea) for fea in extracted):
-            stacked = sparse.hstack(extracted).tocsr()
-            # return a sparse matrix only if the mapper was initialized
-            # with sparse=True
-        else:
-            stacked = np.hstack(extracted)
-
-        return stacked
-
-    def get_params(self, deep=True):
-        """Gets the parameters of the estimator."""
-        return self.est.get_params(deep=deep)
-
-    def set_params(self, **params):
-        """Set the parameters"""
-        self.est.set_params(**params)  # set the original estimator
-        # and the cloned ones
-        for key in self.cloned_estimators.keys():
-            self.cloned_estimators[key].set_params(**params)
-
-
 def create_classifier(classifier_name):
     """Based on the passed name, return a Classifier object."""
-    CLASSIFIER_MAP = {
+    classifier_map = {
         'logistic': LogisticRegression(),
         'svm': LinearSVC(),
         'tree': DecisionTreeClassifier(),
@@ -142,7 +85,7 @@ def create_classifier(classifier_name):
                                   class_weight='balanced', epochs=500, patience=100)
     }
 
-    return CLASSIFIER_MAP[classifier_name]
+    return classifier_map[classifier_name]
 
 
 def create_pipeline(**parameters):
@@ -197,6 +140,11 @@ def create_verbosity_selectors(depth, height):
     return height_depth_selector
 
 
+def is_not_object(x):
+    """Helper function for selecting only object cols"""
+    return str(x[1]) != 'object'
+
+
 def create_feature_transformers(use_classes, use_ids, use_numeric, use_tags):
     """Get a set of transformers for the features"""
 
@@ -208,7 +156,7 @@ def create_feature_transformers(use_classes, use_ids, use_numeric, use_tags):
         transformer_list.append(
             ('categorical_tags', Pipeline(steps=[
                 ('select', ItemSelector(regex=r'^.*tag$')),
-                ('vectorize', MultiColumnTransformer(LabelBinarizer(sparse_output=True)))
+                ('vectorize', MultiColumnTransformer(CountVectorizer(binary=True)))
             ]))
         )
 
@@ -245,7 +193,7 @@ def create_feature_transformers(use_classes, use_ids, use_numeric, use_tags):
         # get the numeric features
         transformer_list.append(
             ('numeric', Pipeline(steps=[
-                ('select', ItemSelector(predicate=lambda x: str(x[1]) != 'object')),
+                ('select', ItemSelector(predicate=is_not_object)),
             ]))
         )
     return transformer_list
@@ -282,9 +230,13 @@ def get_param_grid(**parameters):
     estimator = create_pipeline(**parameters)
 
     # pop the other params
-    for param in ['classify', 'use_numeric', 'use_classes', 'use_ids', 'use_tags', 'height', 'depth']:
+    for param in ['classify', 'use_numeric', 'use_classes', 'use_ids',
+                  'use_tags', 'height', 'depth']:
         parameters.pop(param, None)
-    return estimator, list(dict_combinations([parameters], *pipeline_grids))
+
+    # return the estimator and the parameter grid
+    param_grid = list(dict_combinations(*pipeline_grids, [parameters]))[0]
+    return estimator, param_grid
 
 
 def generate_grouped_splits(X, y, groups, total_folds=10, n_folds=10):
@@ -321,6 +273,35 @@ def search_params(estimator, X, y, groups=None, param_distributions=None,
     return searcher.best_params_, pd.DataFrame(searcher.cv_results_)
 
 
+def cv_train(estimator, X, y, groups=None, param_distributions=None,
+             n_iter=20, n_folds=5, total_folds=None,
+             n_jobs=-1, scoring='f1'):
+    """Train the estimator on the entire dataset(no nested CV) and return the
+    resulting dataset. Parameters are the same as for `nested_cv` but
+    only a set of folds is specifiable now."""
+
+    # specify the defaults
+    if groups is None:
+        groups = np.arange(y.shape[0])
+    if total_folds is None:
+        total_folds = n_folds
+
+    # do the CV loop, pass the corresponding groups
+    # we only need the best parameters
+    best_params, _ = search_params(estimator, X, y, groups=groups,
+                                   param_distributions=param_distributions,
+                                   n_iter=n_iter, n_folds=n_folds,
+                                   total_folds=total_folds, n_jobs=n_jobs,
+                                   scoring=scoring)
+
+    # refit entire dataset
+    best_est = estimator
+    best_est.set_params(**best_params)  # set as kwargs!
+    best_est.fit(X, y)  # fit the dataset with the best params
+
+    return best_est
+
+
 def nested_cv(estimator, X, y, groups=None, param_distributions=None,
               n_iter=20, internal_n_folds=5, internal_total_folds=None,
               external_n_folds=5, external_total_folds=None,
@@ -342,6 +323,8 @@ def nested_cv(estimator, X, y, groups=None, param_distributions=None,
     if external_total_folds is None:
         external_total_folds = external_n_folds
 
+
+
     # get the external splits
     splits = generate_grouped_splits(X, y, groups, total_folds=external_total_folds,
                                      n_folds=external_n_folds)
@@ -359,9 +342,10 @@ def nested_cv(estimator, X, y, groups=None, param_distributions=None,
             print('Model selection on fold number {}...'.format(run_nb))
 
         # split the dataset
-        X_train, X_test = X[split[0]], X[split[1]]
-        y_train, y_test = y[split[0]], y[split[1]]
-        groups_train, groups_test = groups[split[0]], groups[split[1]]
+        if isinstance(X, pd.DataFrame):
+            X_train, X_test = X.iloc[split[0]], X.iloc[split[1]]
+        else:
+            X_train, X_test = X[split[0]], X[split[1]]
 
         # do the internal loop, pass the corresponding groups
         best_params, cv_results = search_params(estimator, X_train, y_train, groups=groups_train,
@@ -393,7 +377,15 @@ def nested_cv(estimator, X, y, groups=None, param_distributions=None,
 
 def get_ordered_dataset(file_pattern, blocks_only=True, shuffle=True):
     """Given a file pattern,return the dataset contained.
-    If specified, shuffle the dataset group-wise."""
+    If specified, shuffle the dataset group-wise.
+
+    :param blocks_only: whether to only use records with 'is_extracted_block' == True
+    :type blocks_only: bool
+    :param file_pattern: the pattern of csv from which to read the DataFrame
+    :type file_pattern: str
+    :param shuffle: whether to shuffle the dataset group-wise
+    :type shuffle: bool
+    """
     dataset = dd.read_csv(file_pattern).compute()
 
     is_block = np.ones(dataset.shape[0], dtype=bool)
@@ -404,6 +396,9 @@ def get_ordered_dataset(file_pattern, blocks_only=True, shuffle=True):
     data_X = dataset.drop(['content_label', 'url', 'path', 'block_text', 'is_extracted_block'], axis=1)
     data_y = dataset['content_label'][is_block]
     groups = dataset['url'][is_block]
+
+    # fill in the missing string values
+    data_X = data_X.replace(np.nan, '', regex=True)
 
     # order them
     order = group_argsort(groups, shuffle=shuffle)

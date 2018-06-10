@@ -110,7 +110,7 @@ def create_pipeline(**parameters):
     use_ids = parameters.get('use_ids', False)
     use_tags = parameters.get('use_tags', False)
 
-    transformer_list = create_feature_transformers(use_classes, use_ids, use_numeric, use_tags)
+    transformer_list = create_feature_transformers(use_classes, use_ids, use_numeric, use_tags, height, depth)
 
     estimator = Pipeline(steps=[
         ('verbosity', height_depth_selector),
@@ -126,16 +126,22 @@ def create_pipeline(**parameters):
 def create_verbosity_selectors(depth, height):
     """Get an ItemSelector that selects features based on a height and depth"""
     # ancestor
-    ancestor_regex = ''
+    ancestor_regex = None
     if height != 0:
         ancestor_regex = r'(ancestor({}).+)'.format(
             r'|'.join(str(x) for x in range(1, height + 1)))
     # descendant
-    depth_regex = ''
+    depth_regex = None
     if depth != 0:
         depth_regex = r'(descendant({}).+)'.format(
             r'|'.join(str(x) for x in range(1, depth + 1)))
-    regexes = [r'((?!ancestor|descendant).+)', ancestor_regex, depth_regex]  # generic one and the ancestor and depth
+    regexes = [r'((?!ancestor|descendant).+)']  # generic one and the ancestor and depth
+
+    if ancestor_regex is not None:
+        regexes.append(ancestor_regex)
+    if depth_regex is not None:
+        regexes.append(depth_regex)
+
     hd_regex = r'^' + r'|'.join(regexes) + r'$'
     height_depth_selector = ItemSelector(regex=hd_regex)
     return height_depth_selector
@@ -146,7 +152,7 @@ def is_not_object(x):
     return str(x[1]) != 'object'
 
 
-def create_feature_transformers(use_classes, use_ids, use_numeric, use_tags):
+def create_feature_transformers(use_classes, use_ids, use_numeric, use_tags, height, depth):
     """Get a set of transformers for the features"""
 
     # feature_union_creation
@@ -161,15 +167,17 @@ def create_feature_transformers(use_classes, use_ids, use_numeric, use_tags):
             ]))
         )
 
-        # descendant tags. "tags" not "tag" this time
-        transformer_list.append(
-            ('frequency_tags', Pipeline(steps=[
-                ('select', ItemSelector(regex=r'^.*tags$')),
-                ('vectorize', MultiColumnTransformer(TfidfVectorizer(analyzer='word',
-                                                                     ngram_range=(1, 1),
-                                                                     use_idf=False)))
-            ]))
-        )
+        if depth > 0:
+            # descendant tags. "tags" not "tag" this time
+            transformer_list.append(
+                ('frequency_tags', Pipeline(steps=[
+                    ('select', ItemSelector(regex=r'^.*tags$')),
+                    ('vectorize', MultiColumnTransformer(TfidfVectorizer(analyzer='word',
+                                                                         ngram_range=(1, 1),
+                                                                         use_idf=False,
+                                                                         token_pattern=r'(?u)\b\w+\b')))
+                ]))
+            )
     if use_classes:
         # classes, use with td-idf
         transformer_list.append(

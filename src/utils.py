@@ -125,6 +125,8 @@ class ItemSelector(BaseEstimator, TransformerMixin):
 
         all_args = {'regex': self.regex, 'like': self.like,
                     'items': self.items, 'predicate': self.predicate, 'key': self.key}
+        all_args = dict(filter(lambda item: item[1] is not None, all_args.items()))
+
         name, key = list(all_args.items())[0]
         return 'ItemSelector({name}={key})'.format(key=repr(key), name=name)
 

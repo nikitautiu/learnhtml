@@ -1,3 +1,5 @@
+import re
+
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
@@ -152,6 +154,12 @@ def is_not_object(x):
     return str(x[1]) != 'object'
 
 
+def camel_case_split(text, sep=' '):
+    """Splits a text  on capitalization and rejoins them with a give string"""
+    matches = re.finditer('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', text)
+    return sep.join(m.group(0) for m in matches)
+
+
 def create_feature_transformers(use_classes, use_ids, use_numeric, use_tags, height, depth):
     """Get a set of transformers for the features"""
 
@@ -160,10 +168,13 @@ def create_feature_transformers(use_classes, use_ids, use_numeric, use_tags, hei
     if use_tags:
         # transform the tags, label binarizer for categorical tags
         # ancestor and normal
+        # must specify the new token_pattern to take 1 character tokens
         transformer_list.append(
             ('categorical_tags', Pipeline(steps=[
                 ('select', ItemSelector(regex=r'^.*tag$')),
-                ('vectorize', MultiColumnTransformer(CountVectorizer(binary=True)))
+                ('vectorize', MultiColumnTransformer(CountVectorizer(binary=True,
+                                                                     analyzer='word',
+                                                                     token_pattern=r'(?u)\b\w+\b')))
             ]))
         )
 
@@ -185,7 +196,8 @@ def create_feature_transformers(use_classes, use_ids, use_numeric, use_tags, hei
                 ('select', ItemSelector(regex=r'^(.*class_text)|.+([0-9]_classes)$')),
                 ('vectorize', MultiColumnTransformer(TfidfVectorizer(analyzer='char_wb',
                                                                      ngram_range=(3, 3),
-                                                                     use_idf=False)))
+                                                                     use_idf=False,
+                                                                     preprocessor=camel_case_split)))
             ]))
         )
     if use_ids:
@@ -195,7 +207,8 @@ def create_feature_transformers(use_classes, use_ids, use_numeric, use_tags, hei
                 ('select', ItemSelector(regex=r'^(.*id_text)|(.*ids)$$')),
                 ('vectorize', MultiColumnTransformer(TfidfVectorizer(analyzer='char_wb',
                                                                      ngram_range=(3, 3),
-                                                                     use_idf=False)))
+                                                                     use_idf=False,
+                                                                     preprocessor=camel_case_split)))
             ]))
         )
     if use_numeric:

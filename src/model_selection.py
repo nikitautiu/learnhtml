@@ -11,7 +11,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import get_scorer
 from sklearn.model_selection import GroupKFold, RandomizedSearchCV
 from sklearn.pipeline import Pipeline, FeatureUnion
-from sklearn.preprocessing import MaxAbsScaler
+from sklearn.preprocessing import MaxAbsScaler, LabelBinarizer
 from sklearn.svm import LinearSVC
 from sklearn.tree import DecisionTreeClassifier
 
@@ -172,9 +172,7 @@ def create_feature_transformers(use_classes, use_ids, use_numeric, use_tags, hei
         transformer_list.append(
             ('categorical_tags', Pipeline(steps=[
                 ('select', ItemSelector(regex=r'^.*tag$')),
-                ('vectorize', MultiColumnTransformer(CountVectorizer(binary=True,
-                                                                     analyzer='word',
-                                                                     token_pattern=r'(?u)\b\w+\b')))
+                ('vectorize', MultiColumnTransformer(LabelBinarizer()))
             ]))
         )
 

@@ -145,9 +145,11 @@ def convert(dataset_directory, output_directory, raw, labels, num_workers, clean
               help='The file in which to save the pickled model trained'
                    'over the entire dataset.',
               default=None)
+@click.option('--shuffle/--no-shuffle', default=True,
+              help='Whether to shuffle the dataset beforehand')
 def train(dataset, output, external_folds, internal_folds,
           n_iter, n_jobs, random_seed, param_file, model_file,
-          cli_params):
+          cli_params, shuffle):
     """Trains a model over a dataset, given a set of values of parameters to use for
     the CV. Parameters used:
 
@@ -184,7 +186,7 @@ def train(dataset, output, external_folds, internal_folds,
 
     # load the dataset
     logger.info('Loading the dataset')
-    X, y, groups = get_ordered_dataset(dataset, blocks_only=blocks_only, shuffle=True)
+    X, y, groups = get_ordered_dataset(dataset, blocks_only=blocks_only, shuffle=shuffle)
 
     # properly format params. wrap them if lists if necessary
     # rv_frozen makes an exception because it is a scipy distribution

@@ -420,9 +420,10 @@ def get_ordered_dataset(file_pattern, blocks_only=True, shuffle=True):
         # if only blocks return just the blocks
         is_block = dataset['is_extracted_block']
 
-    data_X = dataset.drop(['content_label', 'url', 'path', 'block_text', 'is_extracted_block'], axis=1)
-    data_y = dataset['content_label'][is_block]
-    groups = dataset['url'][is_block]
+    data_X = dataset.drop(['content_label', 'url', 'path', 'block_text', 'is_extracted_block'],
+                          axis='columns').loc[is_block]
+    data_y = dataset['content_label'].loc[is_block]
+    groups = dataset['url'].loc[is_block]
 
     # fill in the missing string values
     data_X = data_X.replace(np.nan, '', regex=True)

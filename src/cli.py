@@ -43,10 +43,10 @@ def dom(input_file, output_dir, height, depth, num_workers):
     feats = extract_features_from_ddf(dd.from_pandas(df, npartitions=max(num_workers * 2, 64)), depth, height)
 
     # output all the three to csvs
-    click.echo('OUTPUTTING FEATURES')
+    logger.info('Outputting features')
     feats.to_csv(os.path.join(output_dir, 'feats-*.csv'), index=False)
 
-    click.secho('DONE!', bold=True)
+    logger.info('DONE!')
 
 
 @cli.command(short_help='merge csv files')
@@ -61,20 +61,22 @@ def merge(cache, output_files, input_files, on):
     and outputs the result to output_files."""
     # set the cache if specified
     if cache is not None:
-        click.echo('Using {} as cache'.format(cache))
+        logger.info('Using {} as cache'.format(cache))
         dask.set_options(temporary_directory=cache)
 
     on_columns = on.split(',')  # get the columns to merge on
     result_ddf = dd.read_csv(input_files[0])  # the first one
     for in_files in input_files[1:]:
         # merge with the others
-        click.secho('MERGING {}'.format(in_files))
+        logger.info('Merging {}'.format(in_files))
         in_file_ddf = dd.read_csv(in_files)
         result_ddf = result_ddf.merge(in_file_ddf, on=on_columns)
 
     # output it
-    click.echo('OUTPUTTING')
+    logger.info('Outputting')
     result_ddf.to_csv(output_files, index=False)
+
+    logger.info('Done')
 
 
 @cli.command(short_help='convert datasets')
@@ -99,12 +101,14 @@ def convert(dataset_directory, output_directory, raw, labels, num_workers, clean
     dask.set_options(get=dask.multiprocessing.get, num_workers=num_workers)  # set the number of workers
     if raw:
         # output the html
-        click.echo('OUTPUTTING RAW')
+        logger.info('Outputting raw')
         html_ddf.compute().to_csv(output_directory + '/raw.csv', index=False)
     if labels:
         # output the html
-        click.echo('OUTPUTTING LABELS')
+        logger.info('Outputting labels')
         label_ddf.compute().to_csv(output_directory + '/labels.csv', index=False)
+
+    logger.info('Done!')
 
 
 @cli.command(short_help='train models')

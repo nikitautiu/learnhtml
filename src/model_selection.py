@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_selection import SelectPercentile, chi2
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import get_scorer

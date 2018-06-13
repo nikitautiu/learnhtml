@@ -1,3 +1,3 @@
-## Deep HTML
+## LearnHtml
 
-Html tag supervised semantic classification. Leveraging deep learning to identify semantic content in html documents.
+Html web content extraction using *mostly* DOM features as well as some textual features.

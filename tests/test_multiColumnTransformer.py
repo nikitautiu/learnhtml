@@ -6,7 +6,7 @@ from scipy.sparse import csr_matrix
 from sklearn.base import TransformerMixin, BaseEstimator, clone
 from sklearn.preprocessing import LabelBinarizer
 
-from utils import MultiColumnTransformer
+from learnhtml.utils.sklearn import MultiColumnTransformer
 
 
 class AddTransformer(BaseEstimator, TransformerMixin):

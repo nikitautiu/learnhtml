@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from features import extract_features_from_html
+from learnhtml.features import extract_features_from_html
 
 
 class TestFeatures(TestCase):

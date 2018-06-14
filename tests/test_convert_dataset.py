@@ -4,8 +4,8 @@ import unittest
 
 import pandas as pd
 
-from dataset_conversion import lcs
-from dataset_conversion.conversion import convert_dataset, get_block_ratios, get_blocks_for_file, get_ratios_per_html, \
+from learnhtml.dataset_conversion import lcs
+from learnhtml.dataset_conversion.conversion import convert_dataset, get_block_ratios, get_blocks_for_file, get_ratios_per_html, \
     extract_ratios_from_df, NON_CONTENT_BLOCK_RATIO
 
 

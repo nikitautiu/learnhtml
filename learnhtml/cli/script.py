@@ -1,117 +1,80 @@
-#!/usr/bin/env python3
-"""This module provides a utility to easily download and label website tags."""
+"""Command line script for web content extraction"""
 import json
 import os
 import pickle
 import pprint
+import subprocess
 
 import click
 import click_log
 import dask
-import dask.dataframe as dd
 import numpy as np
 import pandas as pd
+import pkg_resources
 from scipy.stats._distn_infrastructure import rv_frozen
 
-from dataset_conversion.conversion import convert_dataset
-from features import extract_features_from_ddf
-from log import logger
-from model_selection import nested_cv, get_param_grid, get_ordered_dataset, cv_train
-
-# configure the logger to use the click settings
-click_log.basic_config(logger)
+from learnhtml.features import extract_features_from_df
+from learnhtml.log import logger
+from learnhtml.model_selection import get_ordered_dataset, get_param_grid, nested_cv, cv_train
 
 
 @click.group()
-def cli():
-    """Dataset creation tool"""
+def script():
+    """Feature extraction and training"""
     pass
 
 
-@cli.command(short_help='extract om features')
-@click.argument('input_file', type=click.Path(file_okay=True, dir_okay=False, readable=True), metavar='INPUT_FILE')
-@click.argument('output_dir', type=click.Path(file_okay=False, dir_okay=True, readable=True), metavar='OUTPUT_DIR')
+@script.command(short_help='extract dom features')
+@click_log.simple_verbosity_option(logger)
+@click.argument('input_files', type=click.Path(file_okay=True, dir_okay=False, readable=True), metavar='INPUT_FILES')
+@click.argument('output_files', type=click.Path(file_okay=True, dir_okay=False, writable=True), metavar='OUTPUT_FILES')
 @click.option('--height', type=int, default=5, metavar='HEIGHT', help='The height of the neighbourhood')
 @click.option('--depth', type=int, default=5, metavar='DEPTH', help='The depth of the neighbourhood')
 @click.option('--num-workers', metavar='NUM_WORKERS', type=click.INT,
               default=8, help='The number of workers to parallelize to(default 8)')
-def dom(input_file, output_dir, height, depth, num_workers):
-    """Extract the dom features and output them to a directory, in a partitioned fashion"""
+def dom(input_files, output_files, height, depth, num_workers):
+    """Extract the dom features and output them to a directory, in a partitioned fashion.
+
+    INPUT_FILES can be a glob pattern to either a bunch of csvs containing "html,url" or
+    the html files themselves. their filename will be used as url in that case("file://filename").
+
+    OUTPUT_FILES names the pattern of the CSV files where to output the features.
+    """
     dask.set_options(get=dask.multiprocessing.get, num_workers=num_workers)  # set the number of workers
 
-    df = pd.read_csv(input_file)  # must read as pandas because dask makes a fuss about html
-    feats = extract_features_from_ddf(dd.from_pandas(df, npartitions=max(num_workers * 2, 64)), depth, height)
+    # must read as pandas because dask makes a fuss about html
+    html_df = pd.read_csv(input_files)  # df of 'html'/'url'
+    feats = extract_features_from_df(html_df, depth=depth, height=height, num_workers=num_workers)
 
     # output all the three to csvs
     logger.info('Outputting features')
-    feats.to_csv(os.path.join(output_dir, 'feats-*.csv'), index=False)
+    feats.to_csv(output_files, index=False)
 
     logger.info('DONE!')
 
 
-@cli.command(short_help='merge csv files')
-@click.option('--cache', type=click.Path(dir_okay=True, file_okay=False, exists=True),
-              metavar='CACHE_DIR', help='where to store cache for larger-than-memory merging',
-              default=None)
-@click.option('--on', type=click.STRING, metavar='MERGE_COLS', help='the columns to merge on(comma separated)')
-@click.argument('output_files', metavar='OUTPUT_FILES', nargs=1)
-@click.argument('input_files', metavar='INPUT_FILES', nargs=-1)
-def merge(cache, output_files, input_files, on):
-    """Merges the given files on the columns specified withthe --on option
-    and outputs the result to output_files."""
-    # set the cache if specified
-    if cache is not None:
-        logger.info('Using {} as cache'.format(cache))
-        dask.set_options(temporary_directory=cache)
+@script.command(short_help='download and convert datasets')
+@click_log.simple_verbosity_option(logger)
+@click.argument('destination', metavar='DESTINATION_DIR',
+                type=click.Path(dir_okay=True, file_okay=False, writable=True), nargs=1)
+@click.option('-n', '--num-workers', metavar='NUM_WORKERS', type=click.INT,
+              default=8, help='The number of workers to parallelize to(default 8)')
+def init_datasets(destination, num_workers):
+    """Download and convert Cleaneval and Dragnet datasets in DESTINATION_DIR"""
+    if not os.path.exists(destination):
+        logger.info('Path does not exist - creating')
+        os.makedirs(destination)
 
-    on_columns = on.split(',')  # get the columns to merge on
-    result_ddf = dd.read_csv(input_files[0])  # the first one
-    for in_files in input_files[1:]:
-        # merge with the others
-        logger.info('Merging {}'.format(in_files))
-        in_file_ddf = dd.read_csv(in_files)
-        result_ddf = result_ddf.merge(in_file_ddf, on=on_columns)
+    # get script location
+    script_path = pkg_resources.resource_filename(__name__, 'prepare_data.sh')
+    logger.info('Beginning download')  # runs subscript
+    subprocess.run(['bash', script_path, destination, str(num_workers)])
 
-    # output it
-    logger.info('Outputting')
-    result_ddf.to_csv(output_files, index=False)
-
+    # finished
     logger.info('Done')
 
 
-@cli.command(short_help='convert datasets')
-@click.argument('dataset_directory', metavar='DATASET_DIRECTORY', type=click.Path(file_okay=False, dir_okay=True),
-                nargs=1)
-@click.argument('output_directory', metavar='OUTPUT_DIRECTORY', type=click.Path(file_okay=False, dir_okay=True),
-                nargs=1)
-@click.option('--raw/--no-raw', default=True, help='Whether to output the raw file')
-@click.option('--labels/--no-labels', default=True, help='Whether to output the label files')
-@click.option('--blocks/--no-blocks', default=True,
-              help='Whether to output to the label file which tags correspond to a block')
-@click.option('--num-workers', metavar='NUM_WORKERS', type=click.INT,
-              default=8, help='The number of workers to parallelize to(default 8)')
-@click.option('--cleaneval/--dragnet', default=False,
-              help='Whether the dataset is cleaneval or dragnet(default dragnet)')
-def convert(dataset_directory, output_directory, raw, labels, num_workers, cleaneval, blocks):
-    """Converts the dataset from DATASET_DIRECTORY to our format and
-    outputs it to OUTPUT_DIRECTORY"""
-    html_ddf, label_ddf = convert_dataset(dataset_directory, 'dragnet-' if not cleaneval else 'cleaneval-',
-                                          cleaneval=cleaneval, return_extracted_blocks=blocks)
-
-    dask.set_options(get=dask.multiprocessing.get, num_workers=num_workers)  # set the number of workers
-    if raw:
-        # output the html
-        logger.info('Outputting raw')
-        html_ddf.compute().to_csv(output_directory + '/raw.csv', index=False)
-    if labels:
-        # output the html
-        logger.info('Outputting labels')
-        label_ddf.compute().to_csv(output_directory + '/labels.csv', index=False)
-
-    logger.info('Done!')
-
-
-@cli.command(short_help='train models')
+@script.command(short_help='train models')
 @click_log.simple_verbosity_option(logger)  # add a verbosity option
 @click.argument('dataset', metavar='DATASET_FILES', nargs=1)
 @click.option('output', '--score-files', metavar='OUTPUT_PATTERN',
@@ -173,6 +136,10 @@ def train(dataset, output, external_folds, internal_folds,
     # extract the params
     blocks_only = params.pop('blocks_only', True)  # use only the blocks
 
+    # load the dataset
+    logger.info('Loading the dataset')
+    X, y, groups = get_ordered_dataset(dataset, blocks_only=blocks_only, shuffle=shuffle)
+
     """Evaluate the expected f1-score with nested CV"""
     # unpacking the fold numbers
     internal_n_folds, internal_total_folds = internal_folds
@@ -187,10 +154,6 @@ def train(dataset, output, external_folds, internal_folds,
     # load the estimator
     estimator, param_distributions = get_param_grid(**params)  # get the appropriate
     logger.debug('Computed params(after default values):\n{}'.format(pprint.pformat(param_distributions)))
-
-    # load the dataset
-    logger.info('Loading the dataset')
-    X, y, groups = get_ordered_dataset(dataset, blocks_only=blocks_only, shuffle=shuffle)
 
     # properly format params. wrap them if lists if necessary
     # rv_frozen makes an exception because it is a scipy distribution
@@ -232,4 +195,4 @@ def train(dataset, output, external_folds, internal_folds,
 
 
 if __name__ == '__main__':
-    cli()
+    script()

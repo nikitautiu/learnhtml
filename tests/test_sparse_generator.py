@@ -5,7 +5,7 @@ from scipy import sparse
 from sklearn.datasets import make_blobs
 from sklearn.metrics import accuracy_score
 
-from keras_utils import sparse_generator, create_model, KerasSparseClassifier
+from learnhtml.utils.keras import sparse_generator, KerasSparseClassifier, create_model
 
 
 class TestSparseGenerator(TestCase):

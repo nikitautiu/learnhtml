@@ -5,8 +5,8 @@ import pandas as pd
 from dask import dataframe as dd
 from lxml import etree
 
-from . import lcs
-from .blocks import Blockifier, simple_tokenizer
+from learnhtml.dataset_conversion import lcs
+from learnhtml.dataset_conversion.blocks import Blockifier, simple_tokenizer
 
 NON_CONTENT_BLOCK_RATIO = 1e-10
 

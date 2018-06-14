@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from utils import zip_dicts, dict_combinations
+from learnhtml.utils.general import zip_dicts, dict_combinations
 
 
 class TestUtils(TestCase):

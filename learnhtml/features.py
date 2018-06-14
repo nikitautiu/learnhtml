@@ -1,6 +1,7 @@
 import itertools
 from urllib.parse import urlparse
 
+import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 from lxml import etree
@@ -291,32 +292,47 @@ def get_domain_from_url(url):
     return parsed_uri.netloc
 
 
-def extract_features_from_df(df, depth, height):
-    """Given a dataframe of htmls and urls, return
-    a dataframe of node features, return a dataframe
-    with the node features extracted also, for each node,
-    add the url and path respectively
+def _serial_extract_features_from_df(df, height, depth):
+    """Extract features from a dataframe of "html,url"
 
-    :param df: the `DataFrame` containing `url` and `html` columns or `None`
-    :param depth: the depth of the tree to add descendant features from
-    :param height: the height of the tree to add ancestor features from
-    :returns the feature `DataFrame` or a default set if the dataframe is empty
+    :param df: the DataFrame with "url" and "html" columns
+    :param height: the height which to extract ancestors frm
+    :param depth:  the depth up to which to extract descendants
     """
+
     feat_dfs = []
     rows = df.iterrows()
     if df is None or len(df) == 0:
         # return dummy data in non inputted(for dask)
         rows = [(0, {'html': '<html><head></head><body></body></html>', 'url': 'aaa'})]
-
     for index, row in rows:
         # extract the html features from each of the entries
         feat_df = extract_features_from_html(row['html'], depth, height)
         feat_df['url'] = row['url']
         feat_dfs.append(feat_df)  # add the features to the list
-
     # concat them all
     result_df = pd.concat(feat_dfs, ignore_index=True)
     return result_df
+
+
+def extract_features_from_df(df, depth=5, height=5, num_workers=4):
+    """Given a dataframe of htmls and urls, return
+    a dataframe of node features, return a dataframe
+    with the node features extracted also, for each node,
+    add the url and path respectively
+
+    :param num_workers: the number of workers to parallelize the job to(if 1, do it single threaded)
+    :param df: the `DataFrame` containing `url` and `html` columns or `None`
+    :param depth: the depth of the tree to add descendant features from
+    :param height: the height of the tree to add ancestor features from
+    :returns the feature `DataFrame` or a default set if the dataframe is empty
+    """
+    if num_workers == 1:
+        return _serial_extract_features_from_df(df, height=height, depth=depth)
+
+    # else perform it parallel with dask
+    ddf = dd.from_pandas(df, npartitions=num_workers, sort=False)
+    return extract_features_from_ddf(ddf, height=height, depth=depth)
 
 
 def extract_features_from_ddf(ddf, depth, height):
@@ -326,7 +342,8 @@ def extract_features_from_ddf(ddf, depth, height):
     :returns the dask dataframe containing all the features
     :rtype dask.DataFrame
     """
-    feat_ddf = ddf.map_partitions(lambda df: extract_features_from_df(df, depth, height),
-                                  meta=extract_features_from_df(pd.DataFrame(), depth, height)).clear_divisions()
+    feat_ddf = ddf.map_partitions(lambda df: _serial_extract_features_from_df(df, depth, height),
+                                  meta=_serial_extract_features_from_df(pd.DataFrame(), depth,
+                                                                        height)).clear_divisions()
 
     return feat_ddf

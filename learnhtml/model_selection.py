@@ -15,9 +15,10 @@ from sklearn.preprocessing import MaxAbsScaler, LabelBinarizer
 from sklearn.svm import LinearSVC
 from sklearn.tree import DecisionTreeClassifier
 
-from keras_utils import create_model
-from log import logger
-from utils import ItemSelector, MyKerasClassifier, group_argsort, dict_combinations, MultiColumnTransformer
+from learnhtml.log import logger
+from learnhtml.utils.keras import MyKerasClassifier, create_model
+from learnhtml.utils.general import dict_combinations, group_argsort
+from learnhtml.utils.sklearn import ItemSelector, MultiColumnTransformer
 
 
 def get_percentile_distr():

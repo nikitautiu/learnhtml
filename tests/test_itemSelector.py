@@ -3,7 +3,7 @@ from unittest import TestCase
 import pandas as pd
 from sklearn import clone
 
-from utils import ItemSelector
+from learnhtml.utils.sklearn import ItemSelector
 
 
 class TestItemSelector(TestCase):

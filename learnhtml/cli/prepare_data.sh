@@ -1,5 +1,20 @@
 #!/bin/bash
 
+
+function stack {
+    OutFileName="feats.csv"                       # Fix the output name
+    i=0                                       # Reset a counter
+    for filename in ./*.csv; do
+        if [ "$filename"  != "$OutFileName" ]; then
+            if [[ $i -eq 0 ]] ; then
+                head -1  $filename >   $OutFileName # Copy header if it is the first file
+            fi
+            tail -n +2  $filename >>  $OutFileName # Append from the 2nd line each file
+            i=$(( $i + 1 ))                        # Increase the counter
+        fi
+    done
+}
+
 # split seed andn umber of workers
 NUM_WORKERS=$2
 DATADIR=$1
@@ -67,10 +82,24 @@ learnhtml dom --num-workers $NUM_WORKERS raw/cleaneval/raw.csv interim/cleaneval
 echo DRAGNET
 learnhtml dom --num-workers $NUM_WORKERS raw/dragnet/raw.csv interim/dragnet/feats-\*.csv
 
+cd interim/cleaneval
+stack
+cd ../dragnet
+stack
+cd ../..
 
 # merge data but do not split afterwards
 echo MERGING CSVS
-python -m learnhtml.cli.utils merge --cache ./partd --on "url,path" dragnet-\*.csv interim/cleaneval/feats-\*.csv raw/cleaneval/labels.csv
-python -m learnhtml.cli.utils merge --cache ./partd --on "url,path" cleaneval-\*.csv interim/dragnet/feats-\*.csv raw/dragnet/labels.csv
+python -m learnhtml.cli.utils merge --cache ./partd --on "url,path" final/cleaneval/feats-\*.csv interim/cleaneval/feats.csv raw/cleaneval/labels.csv
+python -m learnhtml.cli.utils merge --cache ./partd --on "url,path" final/dragnet/feats-\*.csv interim/dragnet/feats.csv raw/dragnet/labels.csv
+
+cd final/dragnet
+stack
+cd ../cleaneval
+stack
+cd ../..
+
+mv final/cleaneval/feats.csv ./cleaneval.csv
+mv final/dragnet/feats.csv ./dragnet.csv
 
 rm -r interim external raw partd

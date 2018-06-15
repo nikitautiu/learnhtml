@@ -4,6 +4,7 @@ import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 from scipy import stats
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_selection import SelectPercentile, chi2
@@ -124,6 +125,33 @@ def create_pipeline(**parameters):
     ])
 
     return estimator
+
+
+class HeightDepthSelector(BaseEstimator, TransformerMixin):
+    """Class for height/depth selection
+    Basically a glorified ItemSelector, but has parameters to
+    extract what height and depth are needed.
+
+    Receives a height and depth which it passes to the
+    wrapped item selector.
+    """
+
+    def __init__(self, height=0, depth=0):
+        self.height = height
+        self.depth = depth
+        self._est = None
+
+    def __repr__(self):
+        return 'HeightDepthSelector(height={}, depth={})'.format(self.height, self.depth)
+
+    def fit(self, X, y=None):
+        self._est = create_verbosity_selectors(height=self.height,
+                                               depth=self.depth)
+        self._est.fit(X, y)  # pass it through
+        return self  # yet return this object
+
+    def transform(self, X):
+        return self._est.transform(X)  # pass it through
 
 
 def create_verbosity_selectors(depth, height):

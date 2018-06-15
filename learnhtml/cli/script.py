@@ -187,6 +187,7 @@ def train(dataset, output, external_folds, internal_folds,
                                n_iter=n_iter, n_folds=external_n_folds,
                                total_folds=external_total_folds, n_jobs=n_jobs)
 
+        # save the estimator in pickle
         logger.info('Saving the model')
         with open(model_file, 'wb') as f:
             pickle.dump(trained_est, f)  # pickle the file

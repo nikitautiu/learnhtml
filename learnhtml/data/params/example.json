@@ -1,28 +1,27 @@
 {
-  "classify": "svm",
+  "classify": "random",
 
-  "height": 5,
-  "depth": 5,
-
-  "use_numeric": false,
-  "use_classes": false,
-  "use_tags": false,
+  "height": 2,
+  "depth": 2,
+    
+  "use_numeric": true,
+  "use_classes": true,
+  "use_tags": true,
   "use_ids": false,
 
-  "classify__penalty": ["l2"],
+  "classify__max_features": ["sqrt", "log2"],
+  "classify__criterion": ["gini", "entropy"],
+  "classify__n_estimators": [10, 50, 100],
 
   "classify__class_weight": ["balanced", null],
   "reduce_dim__percentile": [100, 75, 50, 25, 15, 10, 5],
 
-  "union__classes__vectorize__analyzer": ["char_wb", "word"],
-  "union__classes__vectorize__ngram_range": [[3, 3], [1, 3], [1, 1]],
-  "union__classes__vectorize__use_idf": [true, false],
+  "union__frequency_tags__vectorize__estimator__analyzer": "word",
+  "union__frequency_tags__vectorize__estimator__ngram_range": [[1, 1]],
+  "union__frequency_tags__vectorize__estimator__use_idf": [true, false],
 
-  "union__frequency_tags__vectorize__analyzer": "word",
-  "union__frequency_tags__vectorize__ngram_range": [[1, 1]],
-  "union__frequency_tags__vectorize__use_idf": [true, false],
-
-  "union__ids__vectorize__analyzer": ["char_wb", "word"],
-  "union__ids__vectorize__ngram_range": [[3, 3], [1, 3], [1, 1]],
-  "union__ids__vectorize__use_idf": [true, false]
+    
+  "union__classes__vectorize__estimator__analyzer": ["char_wb"],
+  "union__classes__vectorize__estimator__ngram_range": [[3, 3], [2, 2], [1, 1]],
+  "union__classes__vectorize__estimator__use_idf": [true, false]
 }

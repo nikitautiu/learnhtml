@@ -1,3 +1,4 @@
+Cython
 tensorflow==1.8.0
 numpy>=1.14.3
 lxml==4.2.1

@@ -106,7 +106,7 @@ def create_pipeline(**parameters):
     depth = parameters.get('depth', 0)
 
     # create a selector for ancestor and descendants
-    height_depth_selector = create_verbosity_selectors(depth, height)
+    height_depth_selector = HeightDepthSelector(depth=depth, height=height)
 
     # feature subset
     use_numeric = parameters.get('use_numeric', False)

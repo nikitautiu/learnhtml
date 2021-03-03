@@ -76,12 +76,12 @@ REQUIRES = [
     'click_log==0.3.2',
     'dask[complete]==0.17.5',
     'keras==2.2.0',
-    'pandas>=0.23.1',
+    'pandas==0.23.1',
     'scipy==1.1.0',
     'scikit_learn==0.19.1',
     'sparse==0.3.1',
     'lxml==4.2.1',
-    'numpy>=1.14.3'
+    'numpy==1.14.3'
 ]
 
 SETUP_REQUIRES = [
